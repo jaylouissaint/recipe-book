@@ -1,26 +1,114 @@
 @import "tailwindcss";
 
+/* Design tokens taken from the spiral recipe book */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --paper: #fbf8f2;
+  --desk: #efebe6;
+  --rule: #ddd8dc;
+  --ink: #7b3f61;
+  --label: #8c8c8c;
+  --mauve: #9a8597;
+  --cover: #a3174b;
+  --teal: #1e5e5e;
+  --tab-pink: #e6b8ae;
+  --tab-blue: #9fb4bf;
+  --tab-mustard: #ddaa3a;
+  --tab-orange: #ee9a78;
+  --ring: #b9b9bd;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not([data-theme="light"]) {
+    --paper: #2a2527;
+    --desk: #1c1819;
+    --rule: #3a3336;
+    --ink: #e3b6cc;
+    --label: #a39ea0;
+    --mauve: #6f5e6c;
+    --cover: #7d1239;
+    --teal: #6fb3b3;
+    --ring: #6b686c;
   }
 }
 
+:root[data-theme="dark"] {
+  --paper: #2a2527;
+  --desk: #1c1819;
+  --rule: #3a3336;
+  --ink: #e3b6cc;
+  --label: #a39ea0;
+  --mauve: #6f5e6c;
+  --cover: #7d1239;
+  --teal: #6fb3b3;
+  --ring: #6b686c;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-desk: var(--desk);
+  --color-rule: var(--rule);
+  --color-ink: var(--ink);
+  --color-label: var(--label);
+  --color-mauve: var(--mauve);
+  --color-cover: var(--cover);
+  --color-teal: var(--teal);
+  --color-tab-pink: var(--tab-pink);
+  --color-tab-blue: var(--tab-blue);
+  --color-tab-mustard: var(--tab-mustard);
+  --color-tab-orange: var(--tab-orange);
+  --color-ring: var(--ring);
+  --font-hand: var(--font-hand-family), cursive;
+  --font-sans: var(--font-montserrat), system-ui, sans-serif;
+  --font-slab: var(--font-zilla), Georgia, serif;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--desk);
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+/* Small letter-spaced caps used for INGREDIENTS / DIRECTIONS */
+.label-caps {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--label);
+}
+
+/* One ruled line on the page */
+.ruled {
+  border-bottom: 1px solid var(--rule);
+  min-height: 2.25rem;
+  line-height: 2.25rem;
+}
+
+/* Ruled paper for blocks of text that wrap, so every wrapped line sits on a rule */
+.paper-lines {
+  --line: 2.25rem;
+  line-height: var(--line);
+  background-origin: content-box;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(var(--line) - 1px),
+    var(--rule) calc(var(--line) - 1px),
+    var(--rule) var(--line)
+  );
+}
+
+/* Vertical text for the colored side tabs */
+@utility tab-vertical {
+  writing-mode: vertical-rl;
+}
+
+@media print {
+  body {
+    background: white;
+  }
+  .no-print {
+    display: none !important;
+  }
 }
