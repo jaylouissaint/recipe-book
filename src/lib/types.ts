@@ -15,15 +15,18 @@ export type StepGroup = {
 };
 
 export type Recipe = {
-  id: string;
+  id: string; // uuid
+  slug: string; // web address: /recipe/<slug>
   title: string;
   servings: number | null;
   prepMin: number | null;
   cookMin: number | null;
-  category: string; // a category slug from categories.ts
-  tags: string[]; // tag ids from tags.ts
+  category: string; // a category slug from book.ts
+  tags: string[]; // tag ids from book.ts
   ingredientGroups: IngredientGroup[];
   stepGroups: StepGroup[];
   notes?: string;
-  source: "typed" | "scribble" | "upload";
+  source: "typed" | "scribble" | "pencil" | "scan" | "upload";
+  originalFilePath?: string; // in the "originals" storage bucket
+  handwritingPath?: string; // in the "handwriting" storage bucket
 };

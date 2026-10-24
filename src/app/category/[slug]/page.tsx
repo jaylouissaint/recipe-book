@@ -4,6 +4,8 @@ import Cover from "@/components/Cover";
 import { CATEGORIES, categoryBySlug } from "@/lib/book";
 import { listRecipes } from "@/lib/recipes";
 
+export const revalidate = 60;
+
 type Props = { params: Promise<{ slug: string }> };
 
 export function generateStaticParams() {

@@ -10,7 +10,7 @@ export default function RecipeCard({ recipe }: { recipe: Recipe }) {
 
   return (
     <Link
-      href={`/recipe/${recipe.id}`}
+      href={`/recipe/${recipe.slug}`}
       className="paper-lines block rounded-sm bg-paper px-4 pt-1 pb-6 shadow-[0_2px_10px_rgba(0,0,0,0.1)] transition-transform hover:-translate-y-0.5"
     >
       <p className="flex items-start gap-1.5">

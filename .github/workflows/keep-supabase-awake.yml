@@ -1,0 +1,23 @@
+# Free Supabase projects pause after about a week with no activity. This makes one tiny read
+# twice a week. Needs repository secrets SUPABASE_URL and SUPABASE_ANON_KEY
+# (GitHub -> Settings -> Secrets and variables -> Actions).
+name: Keep Supabase awake
+
+on:
+  schedule:
+    - cron: "17 14 * * 1,4" # Mondays and Thursdays, 14:17 UTC
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call keep_alive()
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          curl --fail-with-body -sS -X POST "${SUPABASE_URL%/}/rest/v1/rpc/keep_alive" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}'

@@ -1,0 +1,6 @@
+# Supabase CLI settings. Only what this project changes from the defaults.
+project_id = "recipe_book"
+
+# No login yet: the function checks the x-write-key header itself.
+[functions.save-recipe]
+verify_jwt = false
