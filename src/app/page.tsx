@@ -1,5 +1,6 @@
 import AddButton from "@/components/AddButton";
 import { RecipeStrip, ShelfTabs } from "@/components/Shelf";
+import ViewToggle from "@/components/ViewToggle";
 import { listRecipes } from "@/lib/recipes";
 
 export const revalidate = 60;
@@ -11,7 +12,10 @@ export default async function Home() {
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8 md:px-8 md:py-12">
-      <h1 className="mb-6 font-serif text-[2.6rem] leading-none md:text-5xl">{"Ramiya’s Recipes"}</h1>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <h1 className="font-serif text-[2.6rem] leading-none md:text-5xl">{"Ramiya’s Recipes"}</h1>
+        <ViewToggle active="shelf" />
+      </div>
       <ShelfTabs recipes={recipes} />
       <RecipeStrip title="Family Favorites" recipes={favorites} />
       <RecipeStrip title="Recently added" recipes={recent} />

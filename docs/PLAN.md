@@ -141,6 +141,7 @@ The same "write it" page with the keyboard, on any device.
 - Specs in `Specification Documentation/` are regenerated with `python3 scripts/specs/build_specs.py`.
 
 ## Docket (queued, not scheduled)
+- **Custom book cover** (Louis will provide later): replace the plain raspberry cover page in the book view (`PageFace` cover in `src/components/book/BookView.tsx`) with an uploaded image or design.
 - **Write key → your own passphrase** (queued 2026-10-28): rerun `npm run setup:supabase` and paste a passphrase of 4–5 random words instead of pressing Enter; then unlock each browser again (and the iPad app later). No code change. Bigger alternatives if ever wanted: a separate simple website password with the long key kept on the server (new code plus a rate limit), or login (below), which replaces the key.
 - **Login** (deferred 2026-10-20): Supabase Auth, `owner_id` on recipes, owner-only RLS, optional `shared` flag for family. Replaces the write key.
 - Custom handwriting font

@@ -300,7 +300,7 @@ export default function RecipeEditor({ recipe }: { recipe: Recipe | null }) {
         }}
         className="relative rounded-sm bg-paper px-4 py-6 text-ink shadow-[0_2px_12px_rgba(0,0,0,0.12)] md:pr-12 md:pl-14 md:py-8"
       >
-        <Spiral />
+        <Spiral className="top-6 bottom-6 -left-5 hidden md:block" />
 
         {/* Category: the book's colored side tabs */}
         <fieldset className="mb-4 md:absolute md:top-24 md:-right-9 md:mb-0">

@@ -84,11 +84,14 @@ Run each migration only once. A second run stops with an error like "column auth
   - `src/lib/recipes.ts` selects `*`, so the site works before and after migration 001.
   - Specs still describe R2 as planned; refresh `scripts/specs/spec_content.py` once R2 is verified live.
 
+- **Book view (2026-10-28, built, not yet deployed):** `/book` with the Shelf | Book `ViewToggle` on Home; `src/components/book/BookView.tsx` (measures every block in a hidden copy styled like a page, packs fixed-size pages with `pack()` in `src/lib/bookLayout.ts`, single page or two-page spread, WAAPI page-turn, swipe/arrows/buttons, category tabs, contents, `#slug` deep links) and `BookBlocks.tsx` (em/`--line` sized blocks). Long single ingredient groups now split across both columns. The spiral is a repeating background, so the rings always reach the bottom (writing page too). Removed: `/recipe/[slug]/book`, `RecipePage`, `StatBox`, `TagRow`, `SideTabs`. Tests: `src/lib/bookLayout.test.mts`. Checked in headless Chrome at desktop, iPad portrait and phone with test recipes (a long stew and a short cake, added only in a build copy): no clipped blocks on any page.
+
 ## Next
 1. **Website R3** (PLAN.md build order): Save from the web (schema.org import), Add from photos. Then R4 (import), R4 (groceries, cooking, search), R5 (polish).
 2. **iPad app Phase 0** can run in parallel: Louis installs Xcode (not installed yet; this Mac is an M4 on macOS 15.6.1) and sets up SideStore; Claude makes a minimal SwiftUI app in `ios/` and `scripts/build-ipa.sh`.
 
 ## Docket (queued, not scheduled)
+- **Custom book cover** (Louis will provide later): replace the plain raspberry cover page in the book view (`PageFace` cover in `src/components/book/BookView.tsx`) with an uploaded image or design.
 - **Write key → your own passphrase** (queued 2026-10-28): rerun `npm run setup:supabase` and paste a passphrase of 4–5 random words instead of pressing Enter; then unlock each browser again (and the iPad app later). No code change. Bigger alternatives if ever wanted: a separate simple website password with the long key kept on the server (new code plus a rate limit), or login (below), which replaces the key.
 - Login (Supabase Auth, `owner_id`, owner-only RLS, `shared` flag for family). Replaces the write key.
 - Custom handwriting font; Next.js 16 upgrade; instant website refresh after saves; app Share extension (uses extra app IDs on a free account).

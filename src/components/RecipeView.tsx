@@ -41,8 +41,8 @@ export default function RecipeView({ recipe }: { recipe: Recipe }) {
               <MenuIcon />
             </summary>
             <div className="absolute right-0 z-20 mt-1 w-56 overflow-hidden rounded-2xl bg-surface py-1 shadow-card">
-              <Link href={`/recipe/${recipe.slug}/book`} className="block px-4 py-3 text-[15px] hover:bg-field">
-                View my book page
+              <Link href={`/book#${recipe.slug}`} className="block px-4 py-3 text-[15px] hover:bg-field">
+                Open in the book
               </Link>
               <EditOnly>
                 <Link href={`/recipe/${recipe.slug}/edit`} className="block px-4 py-3 text-[15px] hover:bg-field">

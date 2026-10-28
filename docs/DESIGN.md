@@ -45,6 +45,14 @@ The book-page tokens (ruled lines `#DDD8DC`, label gray `#8C8C8C`, mauve `#9A859
 ## Screens
 **Home (book shelf).** Serif title "Recipe Book"; the four category tabs as large colored book tabs (Mains, Sides, Desserts, More Recipes); then rows for Family Favorites and Recently added, as horizontal strips of cards.
 
+**Book view (`/book`, the Shelf | Book toggle on Home).** The whole recipe book to flip through like the spiral book:
+- **Pages:** every page is the same size (about 0.78 wide to 1 tall), sized to fit the screen, with whole ruled lines. Fewer, bigger lines on small screens (18–30 lines per page) keep the writing readable.
+- **Long recipes:** a recipe that doesn't fit continues on the next page, which starts "recipe: … (continued)". No page is ever longer than the screen.
+- **Layout:** an open two-page spread with the spiral down the middle on landscape screens (iPad landscape, desktop); one page with the spiral on its left edge on phones and portrait.
+- **What's in it:** the cover (plain raspberry with "Ramiya's Recipes" for now; a custom cover comes later), then contents with page numbers, then recipes grouped by category in tab order.
+- **Getting around:** turn pages by swiping, with the arrow keys, or with the ‹ › buttons, with a page-turn animation (none with Reduce Motion). The colored category tabs on the outer edge jump to that section; contents entries jump to their recipe.
+- **Links:** each recipe's first page has "open recipe →". The recipe view's menu has "Open in the book" (`/book#slug`).
+
 **Library ("My Recipes").** Serif title, a search pill ("Search your library") and a filter button (categories and tags). Below them, a list of white rounded cards. Each card has:
 - a photo thumbnail on the left: the recipe photo, else the handwritten page, else the original card, else a cream placeholder with the first letter in handwriting
 - a source line with a small icon (a link icon with the site name, a camera icon for "From a photo", a pencil icon for "Written by hand", or the cookbook name)

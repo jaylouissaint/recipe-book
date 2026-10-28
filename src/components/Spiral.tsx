@@ -1,41 +1,26 @@
-// Wire binding down the left edge of a page. Decorative only.
+// Wire binding: one ring repeated down the whole height of the page, however long it is.
+// Decorative only.
 
-const RING_GAP = 18;
-const RINGS = 60;
+const RING = encodeURIComponent(
+  `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="18" viewBox="0 0 40 18">` +
+    `<circle cx="30" cy="12" r="2.5" fill="#fbf8f2"/>` +
+    `<path d="M30 12 C 22 3, 4 3, 4 10" stroke="#b9b9bd" stroke-width="3" fill="none" stroke-linecap="round"/>` +
+    `<path d="M4 10 C 4 16, 18 17, 26 13" stroke="#b9b9bd" stroke-opacity="0.6" stroke-width="3" fill="none" stroke-linecap="round"/>` +
+    `</svg>`,
+);
 
-export default function Spiral() {
+// `ringHeight` scales the rings with the page (the book view); the writing page uses the default.
+export default function Spiral({ className = "", ringHeight = 18 }: { className?: string; ringHeight?: number }) {
   return (
     <div
       aria-hidden
-      className="no-print pointer-events-none absolute top-6 bottom-6 -left-5 hidden w-10 overflow-hidden md:block"
-    >
-      <svg width="40" height={RINGS * RING_GAP} viewBox={`0 0 40 ${RINGS * RING_GAP}`}>
-        {Array.from({ length: RINGS }, (_, i) => {
-          const y = i * RING_GAP + 9;
-          return (
-            <g key={i}>
-              {/* punched hole in the paper */}
-              <circle cx="30" cy={y + 3} r="2.5" fill="var(--bg)" />
-              {/* the ring: back half is darker, front half lighter */}
-              <path
-                d={`M30 ${y + 3} C 22 ${y - 6}, 4 ${y - 6}, 4 ${y + 1}`}
-                stroke="var(--ring)"
-                strokeWidth="3"
-                fill="none"
-                strokeLinecap="round"
-              />
-              <path
-                d={`M4 ${y + 1} C 4 ${y + 7}, 18 ${y + 8}, 26 ${y + 4}`}
-                stroke="var(--ring)"
-                strokeOpacity="0.6"
-                strokeWidth="3"
-                fill="none"
-                strokeLinecap="round"
-              />
-            </g>
-          );
-        })}
-      </svg>
-    </div>
+      className={`no-print pointer-events-none absolute ${className}`}
+      style={{
+        width: (ringHeight * 40) / 18,
+        backgroundImage: `url("data:image/svg+xml,${RING}")`,
+        backgroundRepeat: "repeat-y",
+        backgroundSize: `${(ringHeight * 40) / 18}px ${ringHeight}px`,
+      }}
+    />
   );
 }
