@@ -15,7 +15,7 @@ export default function Spiral() {
           return (
             <g key={i}>
               {/* punched hole in the paper */}
-              <circle cx="30" cy={y + 3} r="2.5" fill="var(--desk)" />
+              <circle cx="30" cy={y + 3} r="2.5" fill="var(--bg)" />
               {/* the ring: back half is darker, front half lighter */}
               <path
                 d={`M30 ${y + 3} C 22 ${y - 6}, 4 ${y - 6}, 4 ${y + 1}`}

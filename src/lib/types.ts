@@ -29,4 +29,5 @@ export type Recipe = {
   source: "typed" | "scribble" | "pencil" | "scan" | "upload";
   originalFilePath?: string; // in the "originals" storage bucket
   handwritingPath?: string; // in the "handwriting" storage bucket
+  createdAt: string;
 };

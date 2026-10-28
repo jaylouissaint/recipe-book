@@ -1,22 +1,10 @@
-import type { Ingredient, IngredientGroup, Recipe } from "@/lib/types";
+import { ingredientText } from "@/lib/format";
+import type { IngredientGroup, Recipe } from "@/lib/types";
 import SideTabs from "./SideTabs";
 import Spiral from "./Spiral";
 import StatBox from "./StatBox";
 import { PlateSetting, RollingPin, WhiskAndSpoon } from "./Stickers";
 import TagRow from "./TagRow";
-
-const FRACTIONS: Record<string, string> = {
-  "1/2": "½",
-  "1/3": "⅓",
-  "2/3": "⅔",
-  "1/4": "¼",
-  "3/4": "¾",
-};
-
-function ingredientText({ quantity, unit, item }: Ingredient) {
-  const q = quantity.replace(/\d+\/\d+/g, (f) => FRACTIONS[f] ?? f);
-  return [q && unit ? `${q} ${unit}` : q, item].filter(Boolean).join(" ");
-}
 
 // One ruled line per entry: a group name, an ingredient, a blank spacer,
 // or padding that evens up the two columns (hidden when they stack on phones).
@@ -70,7 +58,7 @@ export default function RecipePage({ recipe }: { recipe: Recipe }) {
 
   return (
     <div className="relative mx-auto max-w-4xl px-4 py-6 md:px-10 md:py-10">
-      <article className="relative rounded-sm bg-paper px-5 py-6 shadow-[0_2px_12px_rgba(0,0,0,0.12)] md:pr-10 md:pl-14 md:py-8">
+      <article className="relative rounded-sm bg-paper text-ink px-5 py-6 shadow-[0_2px_12px_rgba(0,0,0,0.12)] md:pr-10 md:pl-14 md:py-8">
         <Spiral />
         <SideTabs active={recipe.category} />
 

@@ -149,7 +149,7 @@ The same "write it" page with the keyboard, on any device.
 ## 6. Build order
 1. ✅ **Skeleton:** Supabase, tables and RLS (anon read-only; writes only through the `save-recipe` Edge Function with the write key), deployed to Vercel. Login left out (see Docket). Done 2026-10-27
 2. ✅ **Design system v1:** the book page matching the photo. Done 2026-10-20. It becomes the **writing page** in R2
-3. **R1 – New look and navigation** (DESIGN.md): light-only tokens, Instrument Serif / Figtree / Patrick Hand, sidebar and tab bar, Home book shelf, Library ("My Recipes") cards with search pill, Recipe view in handwriting on cream
+3. ✅ **R1 – New look and navigation** (built 2026-10-28, not yet deployed) (DESIGN.md): light-only tokens, Instrument Serif / Figtree / Patrick Hand, sidebar and tab bar, Home book shelf, Library ("My Recipes") cards with search pill, Recipe view in handwriting on cream
 4. **R2 – Editing on the website:** migration 001 (author, source, photo, description, times cooked, imported flag, grocery items), unlock with the write key (httpOnly cookie), server-side save through `save-recipe`, the **writing page** ("Enter your own" and Edit) with one field per ruled line, recipe photo upload
 5. **R3 – Bringing recipes in:** Save from the web (schema.org recipe data, no AI), Add from photos (upload, original beside the writing page, Paste text box with the paste parser); parser tests with shared fixtures
 6. **R4 – In the kitchen:** Groceries (one list, optional group by recipe), Start Cooking, serving scaler, search and tag filters

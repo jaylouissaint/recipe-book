@@ -1,11 +1,21 @@
 @import "tailwindcss";
 
-/* Design tokens taken from the spiral recipe book */
+/* Light only (docs/DESIGN.md). Interface tokens first, then the book-page tokens
+   used by the writing page, the handwritten view and the Home shelf tabs. */
 :root {
-  --paper: #fbf8f2;
-  --desk: #efebe6;
-  --rule: #ddd8dc;
+  color-scheme: light;
+
+  --bg: #fbf8f2;
+  --surface: #ffffff;
+  --surface-muted: #f1eee8;
+  --text: #1c1b19;
+  --text-muted: #77736c;
+  --divider: #e8e4dd;
+  --accent: #1f4d3d;
   --ink: #7b3f61;
+
+  --paper: #fbf8f2;
+  --rule: #ddd8dc;
   --label: #8c8c8c;
   --mauve: #9a8597;
   --cover: #a3174b;
@@ -17,37 +27,18 @@
   --ring: #b9b9bd;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --paper: #2a2527;
-    --desk: #1c1819;
-    --rule: #3a3336;
-    --ink: #e3b6cc;
-    --label: #a39ea0;
-    --mauve: #6f5e6c;
-    --cover: #7d1239;
-    --teal: #6fb3b3;
-    --ring: #6b686c;
-  }
-}
-
-:root[data-theme="dark"] {
-  --paper: #2a2527;
-  --desk: #1c1819;
-  --rule: #3a3336;
-  --ink: #e3b6cc;
-  --label: #a39ea0;
-  --mauve: #6f5e6c;
-  --cover: #7d1239;
-  --teal: #6fb3b3;
-  --ring: #6b686c;
-}
-
 @theme inline {
-  --color-paper: var(--paper);
-  --color-desk: var(--desk);
-  --color-rule: var(--rule);
+  --color-page: var(--bg);
+  --color-surface: var(--surface);
+  --color-field: var(--surface-muted);
+  --color-fg: var(--text);
+  --color-muted: var(--text-muted);
+  --color-divider: var(--divider);
+  --color-accent: var(--accent);
   --color-ink: var(--ink);
+
+  --color-paper: var(--paper);
+  --color-rule: var(--rule);
   --color-label: var(--label);
   --color-mauve: var(--mauve);
   --color-cover: var(--cover);
@@ -57,20 +48,25 @@
   --color-tab-mustard: var(--tab-mustard);
   --color-tab-orange: var(--tab-orange);
   --color-ring: var(--ring);
+
   --font-hand: var(--font-hand-family), cursive;
-  --font-sans: var(--font-montserrat), system-ui, sans-serif;
+  --font-sans: var(--font-figtree), system-ui, sans-serif;
+  --font-serif: var(--font-instrument), Georgia, serif;
+  --font-label: var(--font-montserrat), system-ui, sans-serif;
   --font-slab: var(--font-zilla), Georgia, serif;
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 16px rgb(0 0 0 / 0.06);
 }
 
 body {
-  background: var(--desk);
-  color: var(--ink);
+  background: var(--bg);
+  color: var(--text);
   font-family: var(--font-sans);
 }
 
-/* Small letter-spaced caps used for INGREDIENTS / DIRECTIONS */
+/* Small letter-spaced caps printed on the book page (INGREDIENTS / DIRECTIONS) */
 .label-caps {
-  font-family: var(--font-sans);
+  font-family: var(--font-label);
   font-weight: 600;
   font-size: 0.7rem;
   letter-spacing: 0.12em;
@@ -78,7 +74,7 @@ body {
   color: var(--label);
 }
 
-/* One ruled line on the page */
+/* One ruled line on the book page */
 .ruled {
   border-bottom: 1px solid var(--rule);
   min-height: 2.25rem;

@@ -4,7 +4,7 @@ import type { Recipe } from "./types";
 // One query fetches a recipe with its groups, ingredients and steps.
 const SELECT = `
   id, slug, title, servings, prep_min, cook_min, category, tags, notes, source,
-  original_file_path, handwriting_path,
+  original_file_path, handwriting_path, created_at,
   ingredient_groups ( name, position, ingredients ( quantity, unit, item, position ) ),
   step_groups ( title, position, steps ( text, position ) )
 `;
@@ -22,6 +22,7 @@ type Row = {
   source: Recipe["source"];
   original_file_path: string | null;
   handwriting_path: string | null;
+  created_at: string;
   ingredient_groups: {
     name: string;
     position: number;
@@ -46,6 +47,7 @@ function toRecipe(row: Row): Recipe {
     source: row.source,
     originalFilePath: row.original_file_path ?? undefined,
     handwritingPath: row.handwriting_path ?? undefined,
+    createdAt: row.created_at,
     ingredientGroups: [...row.ingredient_groups].sort(byPosition).map((g) => ({
       name: g.name,
       items: [...g.ingredients].sort(byPosition).map(({ quantity, unit, item }) => ({ quantity, unit, item })),

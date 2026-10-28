@@ -45,8 +45,10 @@ A personal recipe book styled after Louis's handwritten spiral recipe book (refe
   - `scripts/setup-supabase.sh` (`npm run setup:supabase`) and `scripts/check-setup.sh` (`npm run check:setup <site url>`): all checks pass against the live site.
 - **Security (2026-10-27):** Next 15.5.4 → 15.5.28 and React → 19.1.10, because Vercel blocked the first deploy over React2Shell (CVE-2025-55182). Two `postcss` advisories bundled in Next remain; they're build-time only and need Next 16 to fix (docket).
 
+- **Website R1 (2026-10-28, built, not yet deployed):** light-only tokens, Instrument Serif / Figtree fonts, `AppNav` (sidebar at `lg`, bottom tab bar below; hidden on recipe pages on phones), Home shelf (`/`), Library (`/library`, client-side search + category/tag filters), recipe view (`/recipe/[slug]`), the book page moved to `/recipe/[slug]/book`, placeholder Groceries and Settings pages. `Cover`/`RecipeCard` removed. Recipes have no photos yet, so `Thumb` shows a ruled placeholder with the initial. Add to Groceries / Start Cooking are disabled until R4.
+
 ## Next
-1. **Website R1** (PLAN.md build order): new look and navigation, Home shelf, Library, Recipe view (DESIGN.md). Then R2 (editing + writing page), R3 (import), R4 (groceries, cooking, search), R5 (polish).
+1. **Website R2** (PLAN.md build order): migration 001, unlock with the write key, the writing page, photo upload. Then R3 (import), R4 (groceries, cooking, search), R5 (polish).
 2. **iPad app Phase 0** can run in parallel: Louis installs Xcode (not installed yet; this Mac is an M4 on macOS 15.6.1) and sets up SideStore; Claude makes a minimal SwiftUI app in `ios/` and `scripts/build-ipa.sh`.
 
 ## Docket (queued, not scheduled)
