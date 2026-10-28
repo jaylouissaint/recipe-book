@@ -86,11 +86,21 @@ if [ -n "$SITE" ]; then
   echo
   echo "Website ($SITE)"
   code=$(status "$SITE/")
-  [ "$code" = 200 ] && grep -qi "sweet chili chicken" "$BODY" && pass "cover lists the sweet chili chicken" || fail "cover returned $code"
+  if [ "$code" = 200 ] && grep -qi "sweet chili chicken" "$BODY"; then
+    pass "cover lists the sweet chili chicken"
+  elif [ "$code" = 200 ]; then
+    fail "the page loads but isn't the recipe book (is $SITE your site's address? Vercel -> project -> Domains)"
+  else
+    fail "cover returned $code"
+  fi
   code=$(status "$SITE/recipe/sweet-chili-chicken")
-  [ "$code" = 200 ] && grep -q "coconut lime drizzle" "$BODY" && pass "recipe page loads from the database" || fail "recipe page returned $code"
-  code=$(status "$SITE/recipe/setup-check")
-  [ "$code" = 404 ] && pass "deleted recipes are hidden" || echo "  INFO  /recipe/setup-check returned $code (pages refresh about once a minute)"
+  if [ "$code" = 200 ] && grep -q "coconut lime drizzle" "$BODY"; then
+    pass "recipe page loads from the database"
+    code=$(status "$SITE/recipe/setup-check")
+    [ "$code" = 404 ] && pass "deleted recipes are hidden" || echo "  INFO  /recipe/setup-check returned $code (pages refresh about once a minute)"
+  else
+    fail "recipe page returned $code"
+  fi
 fi
 
 echo

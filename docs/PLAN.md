@@ -1,10 +1,12 @@
 # Recipe Site — End-to-End Build Plan
 
+> **Status 2026-10-27:** the website is live at https://ramiyas-recipes.vercel.app, reading from Supabase. A native iPad app is planned as well (`docs/APP_PLAN.md`). **The look and screens are being redesigned after the Deglaze app: see `docs/DESIGN.md`, which wins over sections 1, 4 and 5 below.** The book-page design in section 1 now applies to the writing page. Current state and next steps: `docs/HANDOFF.md`.
+
 ## Context
 You want a personal recipe website with two ways to add recipes: typing them in, or writing them by hand on an iPad. It should also work well for reading recipes on the iPad. The look follows your spiral recipe book (photo: "Sweet chili chicken with coconut lime drizzle"), so it feels like an extension of the physical book.
 
 **Decisions so far**
-- **No native app.** Everything is a website; on the iPad you add it to the Home Screen so it opens full screen like an app.
+- **Website plus a native iPad app** (changed 2026-10-24; originally website only). The app is installed with SideStore on a free Apple ID and refreshed automatically; see `docs/APP_PLAN.md`. The website stays for family, other devices, and as a fallback, and can still be added to the Home Screen.
 - **No AI service.** Handwriting becomes text using what the iPad already does on the device: **Scribble** (write with the Apple Pencil into any text box) and **Live Text** (select text in a photo or PDF). The site never sends your pages to an outside service.
 - **PDF and photo upload** of handwritten pages (e.g. from GoodNotes, Notability, Apple Notes, or a scan of the spiral book). The upload is kept as the "original card".
 
@@ -41,8 +43,8 @@ Dark mode: paper `#2A2527`, ink `#E3B6CC`, lines `#3A3336`.
 
 ## 2. Stack
 - **Next.js** (App Router, TypeScript) + **Tailwind**, deployed on **Vercel**
-- **Supabase:** Postgres, Storage for uploaded PDFs and photos (login queued, see Docket)
-- **pdf.js** (`pdfjs-dist`) to show uploaded PDF pages in the browser
+- **Supabase:** Postgres, Storage for uploaded files, and the `save-recipe` Edge Function, the only way to save (it needs the write key; login queued, see Docket)
+- **pdf.js** (`pdfjs-dist`) to show original cards that are PDFs in the browser (uploading itself moves to the iPad app)
 - **Web app manifest** (PWA) so "Add to Home Screen" on the iPad opens it full screen with its own icon
 - No paid services; the free tiers cover a personal or family site
 
@@ -59,11 +61,13 @@ ingredients        id, group_id, quantity, unit, item, position
 step_groups        id, recipe_id, title ("cook chicken"), position   -- the ▷ line
 steps              id, group_id, text, position                      -- the "–" lines
 ```
-Row Level Security means each person sees only their own recipes, with an optional `shared` flag for family.
+The live schema is `supabase/migrations/000_initial_schema.sql`, which adds `slug` (web address), `handwriting_path`, `search`, `deleted_at` (soft delete, so the app can sync deletes) and uses uuid ids. Row Level Security lets everyone read and nobody write directly: saves go through `save_recipe()` / `delete_recipe()`, which only the Edge Function can call. Per-person privacy and a `shared` flag for family come with login (Docket).
 
 ---
 
 ## 4. Adding recipes
+
+> **Both the website and the app** add recipes (decided 2026-10-27; see DESIGN.md: Save from the web, Add from photos, Enter your own). The rules below are the reference for the ingredient and paste parsers in both.
 
 ### A. The "write it" page (main way to add a recipe on the iPad)
 The recipe form *is* the book page, designed so writing on it with the Apple Pencil feels like writing in the book, while Scribble turns it into text as you go.
@@ -118,8 +122,10 @@ The same "write it" page with the keyboard, on any device.
 ---
 
 ## 5. Viewing on the iPad (and everywhere)
+
+> Superseded by DESIGN.md (Home shelf, Library, Recipe view, Start Cooking, Groceries). Kept for history.
 - `/` the "cover": raspberry header, colored category tabs on the right edge, grid of page-style recipe cards
-- `/recipe/[id]` the book page; in landscape on the iPad, ingredients on the left and directions on the right
+- `/recipe/[slug]` the book page; in landscape on the iPad, ingredients on the left and directions on the right
 - **"View original card"** toggle shows the uploaded PDF or photo
 - **Cook mode:** large text, tap to check off steps, screen stays awake (Wake Lock API, supported in iPadOS Safari)
 - **Serving scaler** (4 → 8 doubles the quantities, using the parsed amounts)
@@ -128,35 +134,26 @@ The same "write it" page with the keyboard, on any device.
 
 ---
 
-## Progress (project: /Users/louis/Desktop/Misc/recipe_book — user commits/pushes)
-**Done (milestone 2, part 1)**
-- Next.js 15 + Tailwind 4 starter project created
-- `src/app/globals.css`: palette tokens (light and dark), `.label-caps`, `.ruled`, print rules
-- `src/app/layout.tsx`: Patrick Hand / Montserrat / Zilla Slab fonts, title, theme color
-- `src/lib/types.ts`: Recipe, IngredientGroup, Ingredient, StepGroup
-- `src/lib/book.ts`: tag list (from the photo) and categories with tab colors
-- `src/lib/recipes.ts`: sweet chili chicken hard-coded; `listRecipes()` and `getRecipe()` (to be switched to Supabase later)
-
-**Done (milestone 2, part 2, 2026-10-20; not committed)**
-- `src/components/`: `Spiral` (SVG ring pattern down the left edge), `SideTabs` (vertical colored tabs on the right; a horizontal strip on phones), `StatBox`, `TagRow` (circle checkboxes with a hand-drawn ✗), `Stickers` (SVG rolling pin, whisk + spoon, plate), `RecipePage` (title row with "recipe:" and a teal asterisk for favorites; ingredient groups split into two balanced columns padded to equal ruled lines; directions with ▷ steps and "–" sub-steps)
-- `src/app/page.tsx`: raspberry "cover" header with a thin white inner border, category strip, grid of page-style recipe cards
-- `src/app/recipe/[id]/page.tsx` (with `generateStaticParams`) and `src/app/category/[slug]/page.tsx`
-- Check with `npm run build` + `npm run lint`, then `npm run dev` and compare against the photo (lint and build pass; compared in headless Chrome; owner check pending)
-- Also added `Cover` and `RecipeCard` components and the `.paper-lines` ruled-paper class
-- Spec docs drafted in `Specification Documentation/` (Functional + Technical, matching the financial planner)
+## Progress (project: /Users/louis/Desktop/Misc/recipe_book — Louis commits and pushes)
+- **Milestone 2 (design system + hard-coded page): done 2026-10-20.** Components in `src/components/`; cover, category and recipe pages.
+- **Step 1 (skeleton): done 2026-10-27, without login.** Supabase schema (migration 000), `save-recipe` Edge Function with the write key, keep-awake workflow, website reading from Supabase and deployed to Vercel. All `scripts/check-setup.sh` checks pass against the live site.
+- Next.js upgraded to 15.5.28 (React 19.1.10) on 2026-10-27; Vercel blocks deploys of versions affected by React2Shell (CVE-2025-55182 / CVE-2025-66478).
+- Specs in `Specification Documentation/` are regenerated with `python3 scripts/specs/build_specs.py`.
 
 ## Docket (queued, not scheduled)
-- **Login page / sign-in** (deferred 2026-10-20): Supabase Auth, `owner_id` on recipes, owner-only RLS, optional `shared` flag for family. Until it exists, add/edit/upload pages must not be publicly reachable on a deployed site (Vercel deployment protection, or run them only locally)
-- Custom handwriting font; shopping list
+- **Login** (deferred 2026-10-20): Supabase Auth, `owner_id` on recipes, owner-only RLS, optional `shared` flag for family. Replaces the write key.
+- Custom handwriting font
+- Upgrade to Next.js 16 (clears two low-risk `postcss` advisories bundled in Next 15)
+- Instant website refresh when the app saves (today pages refresh within a minute)
 
 ## 6. Build order
-1. **Skeleton:** Next.js + Tailwind + Supabase, tables and RLS (anon read-only; writes only from server code), deploy to Vercel. Login left out for now (see Docket)
-2. **Design system:** tokens, fonts, ruled paper, stat box, tag row, side tabs, stickers. Build the sweet chili chicken page hard-coded to match the photo
-3. **Recipe pages:** view, home grid, categories, search
-4. **"Write it" page:** line-per-field form, ingredient parser, groups, steps and sub-steps, autosave; test with Scribble on the iPad
-5. **Upload + split-screen transcribe:** PDF/image upload, pdf.js viewer, original-card toggle
-6. **Paste-text parser** (plus PDF text-layer prefill)
-7. **iPad polish:** PWA manifest and offline cache, cook mode, scaler, dark mode, print
+1. ✅ **Skeleton:** Supabase, tables and RLS (anon read-only; writes only through the `save-recipe` Edge Function with the write key), deployed to Vercel. Login left out (see Docket). Done 2026-10-27
+2. ✅ **Design system v1:** the book page matching the photo. Done 2026-10-20. It becomes the **writing page** in R2
+3. **R1 – New look and navigation** (DESIGN.md): light-only tokens, Instrument Serif / Figtree / Patrick Hand, sidebar and tab bar, Home book shelf, Library ("My Recipes") cards with search pill, Recipe view in handwriting on cream
+4. **R2 – Editing on the website:** migration 001 (author, source, photo, description, times cooked, imported flag, grocery items), unlock with the write key (httpOnly cookie), server-side save through `save-recipe`, the **writing page** ("Enter your own" and Edit) with one field per ruled line, recipe photo upload
+5. **R3 – Bringing recipes in:** Save from the web (schema.org recipe data, no AI), Add from photos (upload, original beside the writing page, Paste text box with the paste parser); parser tests with shared fixtures
+6. **R4 – In the kitchen:** Groceries (one list, optional group by recipe), Start Cooking, serving scaler, search and tag filters
+7. **R5 – Polish:** Home Screen install, offline cache, print
 
 ---
 
@@ -177,6 +174,6 @@ Not hard, and it fits well here: the site would show recipes in the same handwri
 
 **Characters to include:** a–z, A–Z, 0–9, `. , ( ) - / : ' &`, the fractions ½ ⅓ ¼ ¾, and ▷ (or keep ▷ as a CSS icon instead).
 
-**Using it on the site:** convert the font to `.woff2`, put it in `web/public/fonts/`, and load it with `@font-face` (`font-display: swap`), falling back to Patrick Hand. It replaces the handwriting font everywhere, including the "write it" fields, at no cost to how well Scribble works.
+**Using it on the site:** convert the font to `.woff2`, put it in `public/fonts/`, and load it with `@font-face` (`font-display: swap`), falling back to Patrick Hand. It replaces the handwriting font everywhere, including the "write it" fields, at no cost to how well Scribble works.
 
 **When:** use Patrick Hand while building (milestone 2) and switch to your own font whenever it's ready. Swapping it in is a one-line change.

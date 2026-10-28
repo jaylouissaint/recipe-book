@@ -1,10 +1,12 @@
 # Recipe Book iPad App — Build and Run Plan (SideStore)
 
-Status: draft for approval, 2026-10-24. This changes an earlier decision: there will be a native iPad app, installed with **SideStore** using a free Apple ID (no $99/yr developer account). The app is a full recipe book, not only a writing and scanning tool. It is refreshed automatically, so the iPad never needs to be plugged in after setup.
+Status: Phase 1 done 2026-10-27 (see below); Phases 0 and 2–6 not started. Plan written 2026-10-24. This changes an earlier decision: there will be a native iPad app, installed with **SideStore** using a free Apple ID (no $99/yr developer account). The app is a full recipe book, not only a writing and scanning tool. It is refreshed automatically, so the iPad never needs to be plugged in after setup.
 
-## Decisions in this plan (please confirm)
-1. **Both an app and a website, sharing one database.** The iPad app does everything: reading, writing, scanning, cooking. The website stays for family and other devices, and as a fallback if the app ever stops opening. It becomes **read-only** (browse, search, print, Home Screen install), so the web "write it", upload and paste pages (old build-order steps 4–6) move to the app instead of being built twice.
-2. **Still no login.** Only the owner's iPad can save recipes. It sends a private **write key**, typed in once in the app's Settings and kept in the iPad Keychain (never compiled into the app), to a Supabase Edge Function that does the saving. Everyone else can only read. When login is built later (on the docket), it replaces the write key.
+## Decisions in this plan
+All in effect. The look and screens of both the app and the website follow `docs/DESIGN.md` (decided 2026-10-27, modeled on the Deglaze app).
+
+1. **Both an app and a website, sharing one database, with the same screens.** The iPad app does everything: reading, writing (including Apple Pencil page mode), scanning, cooking, groceries. The website does the same except page mode and on-device scanning; it can add recipes too (decided 2026-10-27; it was going to be read-only). The website stays the fallback if the app ever stops opening.
+2. **Still no login.** Only the owner's devices can save recipes (the iPad app, and website devices unlocked with the write key; see DESIGN.md). It sends a private **write key**, typed in once in the app's Settings and kept in the iPad Keychain (never compiled into the app), to a Supabase Edge Function that does the saving. Everyone else can only read. When login is built later (on the docket), it replaces the write key.
 3. **Works offline first.** Recipes live on the iPad (SwiftData) and sync with Supabase when online. An expired app or bad Wi-Fi never loses data.
 4. **Minimum iPadOS 17**, which SwiftData needs. Check: Settings → General → About → iPadOS version.
 5. **The app goes in the same GitHub repo**, in `ios/`.
@@ -43,7 +45,9 @@ Do this before writing the real app, because it's the riskiest part.
 
 **Done when:** the hello app is still opening 10+ days later with no cable, and SideStore shows the expiry date moving forward each day.
 
-## Phase 1 — Shared backend (also unblocks the website)
+## Phase 1 — Shared backend (also unblocks the website) ✅ done 2026-10-27
+Built as described below, except that the website doesn't need the service role key at all (it only reads), and `supabase/config.toml` turns off JWT checks for `save-recipe`. Setup is `npm run setup:supabase`; `npm run check:setup <site url>` checks everything (all passing on 2026-10-27 against https://ramiyas-recipes.vercel.app). Supabase project ref: `trdlqlulpfwsfhqnfqfu`.
+
 - Supabase project (Louis creates it; keys go in `.env.local`, which git ignores, and in Vercel).
 - Migration `supabase/migrations/000_initial_schema.sql`: `recipes`, `ingredient_groups`, `ingredients`, `step_groups`, `steps` (from PLAN.md §3), plus `updated_at` triggers and a `deleted_at` column so deletes sync. RLS on everything; anon can **read only**.
 - Storage buckets: `originals` (scans, photos, PDFs) and `handwriting` (PencilKit drawings + rendered PNGs). Public read; writes only through the Edge Function.
@@ -55,15 +59,15 @@ Do this before writing the real app, because it's the riskiest part.
 
 ## Phase 2 — App: reading the book
 - SwiftUI app for iPad (portrait and landscape, Split View and Slide Over).
-- Design system ported from the website: the same color tokens and dark mode; Patrick Hand, Montserrat and Zilla Slab bundled (all free Google Fonts, OFL licensed).
-- Screens: **Cover** (raspberry header, category tabs, recipe grid) → **Recipe page** matching the photo (stat box, tag row with hand-drawn ✗, two balanced ingredient columns, ▷ steps with – sub-steps, ruled paper, stickers, spiral), side tabs for categories.
+- Design from `docs/DESIGN.md`: light only, Deglaze green accent, Instrument Serif / Figtree / Patrick Hand bundled (all free Google Fonts, OFL licensed).
+- Screens: tab bar (Home book shelf, Library, Groceries, Settings) and the + Add sheet; **Library** cards; **Recipe view** in handwriting on cream with "Add to Groceries" and "Start Cooking"; "View handwritten page" shows the book-style page.
 - Data: SwiftData model matching the database; sync on launch, on pull-to-refresh and after saving (download rows with a newer `updated_at` since the last sync; on conflict, the newest save wins, which is fine with one person writing).
 - Settings screen: write key (Keychain), sync status, last refresh.
 
-**Done when:** the sweet chili chicken page on the iPad matches the photo side by side, and opens in airplane mode.
+**Done when:** the app's screens match the website's (after website step R1), and every recipe opens in airplane mode.
 
 ## Phase 3 — App: writing recipes by hand
-Two ways to write, on the same book-page layout:
+The **writing page** looks like the book page from the photo (DESIGN.md). Two ways to write on it:
 - **Write on the lines (Scribble):** each ruled line is a native text field; Scribble turns writing into text as you go (the old "write it" page, now native).
 - **Write on the page (PencilKit):** write freely anywhere with the Apple Pencil. The drawing is kept as the recipe's **handwritten page**, and Apple's on-device Vision text recognition turns it into text, which you then check line by line. Nothing leaves the iPad.
 - Ingredient line parser in Swift ("1/3 c sweet chili sauce" → amount / unit / item), groups, steps and sub-steps, stat box, tags, notes.
@@ -81,7 +85,8 @@ Two ways to write, on the same book-page layout:
 **Done when:** scanning the reference photo's page gives the title, 2 ingredient groups (7 and 6 items) and 4 step groups for review.
 
 ## Phase 5 — App: in the kitchen
-- **Cook mode:** large text, tap to check off steps, screen stays awake.
+- **Groceries:** one list, optional group by recipe, synced with the website.
+- **Start Cooking:** one step at a time in large handwriting, check off steps, screen stays awake.
 - **Serving scaler** using the parsed amounts.
 - **Search** (title, ingredient, tag) and **tag filters** using the checkbox row; works offline.
 - Print / share a recipe as a PDF from the share sheet.
@@ -94,13 +99,12 @@ Two ways to write, on the same book-page layout:
 **Done when:** pushing a tag produces a Release, and SideStore offers the new version without a computer.
 
 ## Website changes
-- Keep: deploy (Phase 1), recipes from the database, cover, categories, search, print, Home Screen install and offline reading (old steps 1, 3, 7).
-- Drop from the website (now in the app): the "write it" page, upload/transcribe and paste parser (old steps 4–6). An optional simple typed editor can be added later for adding recipes from a laptop.
-- The parsing rules are written once in the docs, with shared test cases in `shared/fixtures/*.json` that both the Swift tests and any website tests run against.
+- The website gets the same redesign and the same ways to add recipes (PLAN.md build steps R1–R5). It's built first, since it's live; the app phases then copy its screens.
+- Save from the web runs on the website's server (`/api/import`), and the app calls the same endpoint, so there is one importer.
+- The parsing rules are written once in the docs, with shared test cases in `shared/fixtures/*.json` that both the Swift and the TypeScript tests run against.
 
-## Docs to update after approval
-- PLAN.md (website scope and decisions), HANDOFF.md.
-- Functional and Technical Specifications: new sections for the iPad app, SideStore install and refresh, the write key, sync, and the release pipeline; mark the web "write it"/upload/paste requirements as moved to the app.
+## Docs
+Updated 2026-10-27: PLAN.md, HANDOFF.md, and both specifications (v1.1, which cover the iPad app, SideStore, the write key, sync and the release pipeline). Keep them in step with each phase.
 
 ## Risks
 | Risk | What happens | Mitigation |
