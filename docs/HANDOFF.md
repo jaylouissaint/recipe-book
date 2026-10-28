@@ -79,6 +79,7 @@ Run each migration only once. A second run stops with an error like "column auth
   - Writing page `RecipeEditor` at `/new` and `/recipe/[slug]/edit`: one field per ruled line, section names, ▷ / – directions (leading "-" or tap the marker; Tab/Shift+Tab), editable stat box, tag circles, category tabs, photo upload (signed URL, supabase-js loaded on demand), drafts in localStorage, Delete.
   - Parser `src/lib/parse.ts` with `npm test` (node:test) against `shared/fixtures/ingredient-lines.json` (shared with the future Swift tests).
   - Recipe view shows photo, by/from, description, "Check this import"; Library cards show author and times cooked; green + and Add sheet (web/photo imports say "soon").
+  - Cover photo: set when writing a recipe (Add a photo), or later straight from the recipe view (`CoverPhoto`: "Add a cover photo" / "Change cover" on unlocked devices; uploads, then re-saves the recipe with `photoPath`, keeping the "Check this import" flag). Shared upload code in `src/lib/uploadPhoto.ts`.
   - Not yet tested against the live database (saving, photo upload): do that after the migration and redeploy.
   - `src/lib/recipes.ts` selects `*`, so the site works before and after migration 001.
   - Specs still describe R2 as planned; refresh `scripts/specs/spec_content.py` once R2 is verified live.

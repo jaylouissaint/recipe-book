@@ -2,11 +2,11 @@ import Link from "next/link";
 import { TAGS, categoryBySlug } from "@/lib/book";
 import { ingredientText, siteName } from "@/lib/format";
 import type { Recipe } from "@/lib/types";
+import CoverPhoto from "./CoverPhoto";
 import EditOnly from "./EditOnly";
 import { BackIcon, MenuIcon } from "./Icons";
 import ShareButton from "./ShareButton";
 import SourceLine from "./SourceLine";
-import Thumb from "./Thumb";
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
@@ -54,7 +54,7 @@ export default function RecipeView({ recipe }: { recipe: Recipe }) {
         </div>
       </header>
 
-      <Thumb recipe={recipe} className="mt-2 aspect-[16/9] max-h-72 w-full md:aspect-auto md:h-64" />
+      <CoverPhoto recipe={recipe} className="mt-2 aspect-[16/9] max-h-72 w-full md:aspect-auto md:h-64" />
 
       <h1 className="mt-6 font-hand text-4xl leading-tight text-ink md:text-5xl">
         {recipe.title}

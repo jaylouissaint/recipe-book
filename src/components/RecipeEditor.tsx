@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { deleteRecipe, photoUploadUrl, saveRecipe } from "@/app/actions";
+import { deleteRecipe, saveRecipe } from "@/app/actions";
 import { CATEGORIES, TAGS } from "@/lib/book";
 import {
   type DirectionLine,
@@ -15,6 +15,7 @@ import {
 } from "@/lib/parse";
 import { publicFileUrl } from "@/lib/storage";
 import type { Recipe } from "@/lib/types";
+import { uploadPhoto } from "@/lib/uploadPhoto";
 import { useUnlocked } from "./EditOnly";
 import { CameraIcon } from "./Icons";
 import Spiral from "./Spiral";
@@ -208,18 +209,6 @@ export default function RecipeEditor({ recipe }: { recipe: Recipe | null }) {
     if (photo) URL.revokeObjectURL(photo.preview);
     setPhoto({ file, preview: URL.createObjectURL(file) });
   }
-  async function uploadPhoto(file: File): Promise<string> {
-    const ext = (file.name.split(".").pop() || file.type.split("/").pop() || "jpg").toLowerCase();
-    const link = await photoUploadUrl(id, ext === "jpeg" ? "jpg" : ext);
-    if (!link.ok) throw new Error(link.error);
-    const { supabase } = await import("@/lib/supabase"); // only needed for uploads
-    const { error } = await supabase.storage.from("photos").uploadToSignedUrl(link.path, link.token, file, {
-      contentType: file.type || undefined,
-    });
-    if (error) throw new Error(`The photo didn't upload: ${error.message}`);
-    return link.path;
-  }
-
   // ---- save / delete
   function save() {
     setError("");
@@ -229,7 +218,7 @@ export default function RecipeEditor({ recipe }: { recipe: Recipe | null }) {
         const servings = readNumber("Servings", draft.servings);
         const prepMin = readNumber("Prep time", draft.prepMin);
         const cookMin = readNumber("Cook time", draft.cookMin);
-        const photoPath = photo ? await uploadPhoto(photo.file) : draft.photoPath;
+        const photoPath = photo ? await uploadPhoto(id, photo.file) : draft.photoPath;
         const result = await saveRecipe({
           id,
           title: draft.title.trim(),
