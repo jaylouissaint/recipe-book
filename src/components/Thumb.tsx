@@ -1,8 +1,20 @@
+import { publicFileUrl } from "@/lib/storage";
 import type { Recipe } from "@/lib/types";
 
-// Recipe picture. Until recipes have photos (migration 001), a cream card with faint ruled
-// lines and the title's first letter in handwriting.
+// Recipe picture: the photo, else a cream card with faint ruled lines and the title's first
+// letter in handwriting.
 export default function Thumb({ recipe, className = "" }: { recipe: Recipe; className?: string }) {
+  if (recipe.photoPath) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- Supabase public URLs, shown as is
+      <img
+        src={publicFileUrl("photos", recipe.photoPath)}
+        alt=""
+        loading="lazy"
+        className={`rounded-2xl bg-field object-cover ${className}`}
+      />
+    );
+  }
   const initial = recipe.title.trim().charAt(0).toUpperCase();
   return (
     <div

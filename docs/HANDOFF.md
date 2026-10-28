@@ -14,8 +14,33 @@ A personal recipe book styled after Louis's handwritten spiral recipe book (refe
 | GitHub | https://github.com/jaylouissaint/recipe-book (public) |
 | Supabase project | ref `trdlqlulpfwsfhqnfqfu` (https://trdlqlulpfwsfhqnfqfu.supabase.co) |
 | Website env vars | `.env.local` (git-ignored) and Vercel: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (read-only) |
-| Write key | Supabase secret `WRITE_KEY` and Louis's password manager. Never in the repo, the app binary, or chat |
+| Write key | Supabase secret `WRITE_KEY` and Louis's password manager (also in `.env.local` as `WRITE_KEY`, which is git-ignored and not read by the website). Never in the repo, the app binary, or chat. **Never rename it to `NEXT_PUBLIC_WRITE_KEY`:** anything starting with `NEXT_PUBLIC_` is built into the page and visible to everyone |
 | GitHub Actions secrets | `SUPABASE_URL`, `SUPABASE_ANON_KEY` (for the keep-awake workflow) |
+
+## How to use the website
+**Settings → Unlock editing**
+- Paste your write key once per browser. It's kept in a secure cookie that page scripts can't read, and only the website's server sends it on.
+- Locked browsers see no + button and no Edit.
+
+## Running a database migration
+Migrations live in `supabase/migrations/` and are run by hand, once each, in order (000, 001, …).
+
+**To run one**
+1. Open the migration file in VS Code (for example `supabase/migrations/001_redesign_fields_and_groceries.sql`), then select all (Cmd+A) and copy (Cmd+C).
+2. In Supabase, open the project → **SQL Editor** → **New query**.
+3. Paste it and click **Run**. You should see "Success. No rows returned".
+
+**How to tell it worked (migration 001)**
+- **Table Editor** (left sidebar) lists **grocery_items** under the existing tables.
+- In the **recipes** table, scrolling right shows the new columns: author, source_name, source_url, photo_path, description, times_cooked, imported.
+- **Storage** shows a third bucket, **photos**.
+- Or ask Claude to check the live database; it can tell from the public key whether the new column and table exist.
+
+Run each migration only once. A second run stops with an error like "column author already exists" and changes nothing, so it's harmless, but it means the migration was already done. To undo one, run its `_rollback.sql` file the same way (back up first).
+
+**Migration history**
+- 000_initial_schema: run 2026-10-24.
+- 001_redesign_fields_and_groceries: run 2026-10-28 (save-recipe redeployed as version 2 the same day).
 
 ## Decisions (don't reopen these)
 - **Website plus a native iPad app** (changed 2026-10-24; it was website only). The app is installed with **SideStore** on a free Apple ID (no $99/yr developer account) and refreshed by a daily Shortcuts automation, so no cable after setup. It is a full recipe book, not only a writing tool.
@@ -47,11 +72,23 @@ A personal recipe book styled after Louis's handwritten spiral recipe book (refe
 
 - **Website R1 (2026-10-28, built, not yet deployed):** light-only tokens, Instrument Serif / Figtree fonts, `AppNav` (sidebar at `lg`, bottom tab bar below; hidden on recipe pages on phones), Home shelf (`/`), Library (`/library`, client-side search + category/tag filters), recipe view (`/recipe/[slug]`), the book page moved to `/recipe/[slug]/book`, placeholder Groceries and Settings pages. `Cover`/`RecipeCard` removed. Recipes have no photos yet, so `Thumb` shows a ruled placeholder with the initial. Add to Groceries / Start Cooking are disabled until R4.
 
+- **Website R2 (2026-10-28, built, not yet live):**
+  - `supabase/migrations/001_redesign_fields_and_groceries.sql` (+ rollback), tested in PGlite: author, source_name, source_url, photo_path, description, times_cooked, imported; `grocery_items`; `record_cooked`, `add_groceries`, `set_grocery_checked`, `clear_groceries` (service role only); `photos` bucket. **Louis must run it in the SQL Editor**, then `npm run deploy:functions`.
+  - `save-recipe` gained actions `check`, `cooked`, `groceries-add`, `grocery-check`, `groceries-clear` and the `photos` bucket.
+  - Website write path: `src/lib/write.ts` (httpOnly `rb_write_key` cookie + readable `rb_unlocked` flag), server actions in `src/app/actions.ts`, `EditOnly`/`useUnlocked`, Settings → Unlock editing.
+  - Writing page `RecipeEditor` at `/new` and `/recipe/[slug]/edit`: one field per ruled line, section names, ▷ / – directions (leading "-" or tap the marker; Tab/Shift+Tab), editable stat box, tag circles, category tabs, photo upload (signed URL, supabase-js loaded on demand), drafts in localStorage, Delete.
+  - Parser `src/lib/parse.ts` with `npm test` (node:test) against `shared/fixtures/ingredient-lines.json` (shared with the future Swift tests).
+  - Recipe view shows photo, by/from, description, "Check this import"; Library cards show author and times cooked; green + and Add sheet (web/photo imports say "soon").
+  - Not yet tested against the live database (saving, photo upload): do that after the migration and redeploy.
+  - `src/lib/recipes.ts` selects `*`, so the site works before and after migration 001.
+  - Specs still describe R2 as planned; refresh `scripts/specs/spec_content.py` once R2 is verified live.
+
 ## Next
-1. **Website R2** (PLAN.md build order): migration 001, unlock with the write key, the writing page, photo upload. Then R3 (import), R4 (groceries, cooking, search), R5 (polish).
+1. **Website R3** (PLAN.md build order): Save from the web (schema.org import), Add from photos. Then R4 (import), R4 (groceries, cooking, search), R5 (polish).
 2. **iPad app Phase 0** can run in parallel: Louis installs Xcode (not installed yet; this Mac is an M4 on macOS 15.6.1) and sets up SideStore; Claude makes a minimal SwiftUI app in `ios/` and `scripts/build-ipa.sh`.
 
 ## Docket (queued, not scheduled)
+- **Write key → your own passphrase** (queued 2026-10-28): rerun `npm run setup:supabase` and paste a passphrase of 4–5 random words instead of pressing Enter; then unlock each browser again (and the iPad app later). No code change. Bigger alternatives if ever wanted: a separate simple website password with the long key kept on the server (new code plus a rate limit), or login (below), which replaces the key.
 - Login (Supabase Auth, `owner_id`, owner-only RLS, `shared` flag for family). Replaces the write key.
 - Custom handwriting font; Next.js 16 upgrade; instant website refresh after saves; app Share extension (uses extra app IDs on a free account).
 

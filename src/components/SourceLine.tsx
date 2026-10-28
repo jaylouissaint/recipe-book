@@ -1,8 +1,8 @@
 import { sourceLabel } from "@/lib/format";
 import type { Recipe } from "@/lib/types";
-import { BookIcon, CameraIcon, PencilIcon } from "./Icons";
+import { BookIcon, CameraIcon, LinkIcon, PencilIcon } from "./Icons";
 
-const ICONS = { hand: PencilIcon, photo: CameraIcon, typed: BookIcon };
+const ICONS = { link: LinkIcon, hand: PencilIcon, photo: CameraIcon, typed: BookIcon };
 
 export default function SourceLine({ recipe, className = "" }: { recipe: Recipe; className?: string }) {
   const { kind, text } = sourceLabel(recipe);

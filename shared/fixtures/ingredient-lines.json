@@ -1,0 +1,22 @@
+[
+  { "line": "2 lbs chicken thighs", "quantity": "2", "unit": "lbs", "item": "chicken thighs" },
+  { "line": "1/3 c sweet chili sauce", "quantity": "1/3", "unit": "c", "item": "sweet chili sauce" },
+  { "line": "1/3c sweet chili sauce", "quantity": "1/3", "unit": "c", "item": "sweet chili sauce" },
+  { "line": "2 TB soy sauce", "quantity": "2", "unit": "TB", "item": "soy sauce" },
+  { "line": "1 TB sesame oil", "quantity": "1", "unit": "TB", "item": "sesame oil" },
+  { "line": "2 garlic cloves (minced)", "quantity": "2", "unit": "", "item": "garlic cloves (minced)" },
+  { "line": "1 tsp grated fresh ginger", "quantity": "1", "unit": "tsp", "item": "grated fresh ginger" },
+  { "line": "1/2 c canned coconut milk", "quantity": "1/2", "unit": "c", "item": "canned coconut milk" },
+  { "line": "pinch of salt", "quantity": "", "unit": "", "item": "pinch of salt" },
+  { "line": "2c cooked rice", "quantity": "2", "unit": "c", "item": "cooked rice" },
+  { "line": "1 1/2 cups flour", "quantity": "1 1/2", "unit": "cups", "item": "flour" },
+  { "line": "½ tsp ground turmeric", "quantity": "½", "unit": "tsp", "item": "ground turmeric" },
+  { "line": "1½ c milk", "quantity": "1½", "unit": "c", "item": "milk" },
+  { "line": "2-3 limes", "quantity": "2-3", "unit": "", "item": "limes" },
+  { "line": "1.5 lb salmon", "quantity": "1.5", "unit": "lb", "item": "salmon" },
+  { "line": "3 eggs", "quantity": "3", "unit": "", "item": "eggs" },
+  { "line": "  2   TB   mayo ", "quantity": "2", "unit": "TB", "item": "mayo" },
+  { "line": "fine sea salt", "quantity": "", "unit": "", "item": "fine sea salt" },
+  { "line": "1 tsp. vanilla", "quantity": "1", "unit": "tsp", "item": "vanilla" },
+  { "line": "4", "quantity": "4", "unit": "", "item": "" }
+]

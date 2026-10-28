@@ -6,7 +6,7 @@ import { BookIcon, CartIcon, GearIcon, HomeIcon } from "./Icons";
 
 const ITEMS = [
   { href: "/", label: "Home", Icon: HomeIcon, match: (p: string) => p === "/" || p.startsWith("/category/") },
-  { href: "/library", label: "Library", Icon: BookIcon, match: (p: string) => p.startsWith("/library") || p.startsWith("/recipe/") },
+  { href: "/library", label: "Library", Icon: BookIcon, match: (p: string) => p.startsWith("/library") || p.startsWith("/recipe/") || p === "/new" },
   { href: "/groceries", label: "Groceries", Icon: CartIcon, match: (p: string) => p.startsWith("/groceries") },
   { href: "/settings", label: "Settings", Icon: GearIcon, match: (p: string) => p.startsWith("/settings") },
 ];
@@ -15,7 +15,8 @@ const ITEMS = [
 // Recipe pages hide the tab bar on small screens: their own buttons sit at the bottom instead.
 export default function AppNav() {
   const pathname = usePathname();
-  const onRecipe = pathname.startsWith("/recipe/");
+  // Recipe and writing pages have their own bottom buttons on phones.
+  const onRecipe = pathname.startsWith("/recipe/") || pathname === "/new";
 
   return (
     <nav aria-label="Main" className="no-print">

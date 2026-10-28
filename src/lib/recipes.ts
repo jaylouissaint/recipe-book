@@ -1,10 +1,10 @@
 import { supabase } from "./supabase";
 import type { Recipe } from "./types";
 
-// One query fetches a recipe with its groups, ingredients and steps.
+// One query fetches a recipe with its groups, ingredients and steps. "*" rather than a column
+// list, so the site keeps working whichever migrations have run (newer columns default below).
 const SELECT = `
-  id, slug, title, servings, prep_min, cook_min, category, tags, notes, source,
-  original_file_path, handwriting_path, created_at,
+  *,
   ingredient_groups ( name, position, ingredients ( quantity, unit, item, position ) ),
   step_groups ( title, position, steps ( text, position ) )
 `;
@@ -23,6 +23,13 @@ type Row = {
   original_file_path: string | null;
   handwriting_path: string | null;
   created_at: string;
+  author?: string | null;
+  source_name?: string | null;
+  source_url?: string | null;
+  photo_path?: string | null;
+  description?: string | null;
+  times_cooked?: number;
+  imported?: boolean;
   ingredient_groups: {
     name: string;
     position: number;
@@ -48,6 +55,13 @@ function toRecipe(row: Row): Recipe {
     originalFilePath: row.original_file_path ?? undefined,
     handwritingPath: row.handwriting_path ?? undefined,
     createdAt: row.created_at,
+    author: row.author ?? undefined,
+    sourceName: row.source_name ?? undefined,
+    sourceUrl: row.source_url ?? undefined,
+    photoPath: row.photo_path ?? undefined,
+    description: row.description ?? undefined,
+    timesCooked: row.times_cooked ?? 0,
+    imported: row.imported ?? false,
     ingredientGroups: [...row.ingredient_groups].sort(byPosition).map((g) => ({
       name: g.name,
       items: [...g.ingredients].sort(byPosition).map(({ quantity, unit, item }) => ({ quantity, unit, item })),

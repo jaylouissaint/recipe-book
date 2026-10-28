@@ -46,7 +46,7 @@ code=$(status -X POST "$URL/rest/v1/rpc/save_recipe" -H "apikey: $ANON" -H "Cont
   -d '{"payload":{"title":"should not save"}}')
 case $code in 401 | 403 | 404) pass "public key can't call save_recipe ($code)" ;; *) fail "save_recipe with the public key returned $code" ;; esac
 
-for bucket in originals handwriting; do
+for bucket in photos originals handwriting; do
   # Uploading without a signed URL from save-recipe must be refused.
   up=$(status -X POST "$URL/storage/v1/object/$bucket/setup-check.png" -H "apikey: $ANON" \
     -H "Authorization: Bearer $ANON" -H "Content-Type: image/png" --data-binary 'x')
@@ -66,13 +66,16 @@ else
 fi
 
 if [ -n "${WRITE_KEY:-}" ]; then
+  code=$(status -X POST "$FN" -H "x-write-key: $WRITE_KEY" -H "Content-Type: application/json" -d '{"action":"check"}')
+  [ "$code" = 200 ] && pass "accepts the write key (check)" || fail "check returned $code: $(head -c 200 "$BODY") (redeploy with npm run deploy:functions?)"
+
   TEST_ID=00000000-0000-4000-8000-00000000c0de
   code=$(status -X POST "$FN" -H "x-write-key: $WRITE_KEY" -H "Content-Type: application/json" \
     -d "{\"action\":\"save\",\"recipe\":{\"id\":\"$TEST_ID\",\"slug\":\"setup-check\",\"title\":\"setup check\",\"ingredientGroups\":[{\"name\":\"\",\"items\":[{\"quantity\":\"1\",\"unit\":\"c\",\"item\":\"test\"}]}]}}")
   [ "$code" = 200 ] && pass "saves a recipe with the write key" || fail "save with the write key returned $code: $(head -c 200 "$BODY")"
 
   code=$(status -X POST "$FN" -H "x-write-key: $WRITE_KEY" -H "Content-Type: application/json" \
-    -d "{\"action\":\"upload-url\",\"bucket\":\"originals\",\"recipeId\":\"$TEST_ID\",\"ext\":\"jpg\"}")
+    -d "{\"action\":\"upload-url\",\"bucket\":\"photos\",\"recipeId\":\"$TEST_ID\",\"ext\":\"jpg\"}")
   [ "$code" = 200 ] && grep -q uploadUrl "$BODY" && pass "hands out a signed upload URL" || fail "upload-url returned $code: $(head -c 200 "$BODY")"
 
   code=$(status -X POST "$FN" -H "x-write-key: $WRITE_KEY" -H "Content-Type: application/json" \

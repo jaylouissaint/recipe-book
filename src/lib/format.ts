@@ -14,13 +14,23 @@ export function ingredientText({ quantity, unit, item }: Ingredient) {
   return [q && unit ? `${q} ${unit}` : q, item].filter(Boolean).join(" ");
 }
 
+// "smittenkitchen.com" from a link, or "" if the link can't be read.
+export function siteName(url: string) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return "";
+  }
+}
+
 export function totalMinutes(recipe: Recipe) {
   return (recipe.prepMin ?? 0) + (recipe.cookMin ?? 0);
 }
 
-// The source line on cards and the recipe view. Becomes the site or cookbook name once
-// recipes store a source (migration 001).
-export function sourceLabel(recipe: Recipe): { kind: "hand" | "photo" | "typed"; text: string } {
+// The source line on cards and the recipe view: the website or cookbook when there is one,
+// otherwise how the recipe got here.
+export function sourceLabel(recipe: Recipe): { kind: "link" | "hand" | "photo" | "typed"; text: string } {
+  if (recipe.sourceName) return { kind: recipe.sourceUrl ? "link" : "typed", text: recipe.sourceName };
   switch (recipe.source) {
     case "scribble":
     case "pencil":

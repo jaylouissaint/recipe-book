@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { TAGS, categoryBySlug } from "@/lib/book";
-import { ingredientText } from "@/lib/format";
+import { ingredientText, siteName } from "@/lib/format";
 import type { Recipe } from "@/lib/types";
+import EditOnly from "./EditOnly";
 import { BackIcon, MenuIcon } from "./Icons";
 import ShareButton from "./ShareButton";
 import SourceLine from "./SourceLine";
@@ -43,7 +44,11 @@ export default function RecipeView({ recipe }: { recipe: Recipe }) {
               <Link href={`/recipe/${recipe.slug}/book`} className="block px-4 py-3 text-[15px] hover:bg-field">
                 View my book page
               </Link>
-              <p className="px-4 py-3 text-[15px] text-muted">Edit (coming soon)</p>
+              <EditOnly>
+                <Link href={`/recipe/${recipe.slug}/edit`} className="block px-4 py-3 text-[15px] hover:bg-field">
+                  Edit recipe
+                </Link>
+              </EditOnly>
             </div>
           </details>
         </div>
@@ -60,14 +65,29 @@ export default function RecipeView({ recipe }: { recipe: Recipe }) {
         )}
       </h1>
 
+      {recipe.imported && (
+        <p className="mt-3 inline-block rounded-2xl bg-field px-4 py-2 text-[14px] text-fg">
+          Check this import against the original before cooking.
+        </p>
+      )}
+
       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-        <SourceLine recipe={recipe} className="!text-[15px]" />
+        {recipe.author && <span className="text-[15px] text-muted">by {recipe.author}</span>}
+        {recipe.sourceUrl ? (
+          <a href={recipe.sourceUrl} target="_blank" rel="noreferrer" className="text-[15px] text-muted underline underline-offset-4">
+            from {recipe.sourceName || siteName(recipe.sourceUrl) || "the original"}
+          </a>
+        ) : (
+          <SourceLine recipe={recipe} className="!text-[15px]" />
+        )}
         {category && (
           <Link href={`/category/${category.slug}`} className="text-[15px] text-muted underline underline-offset-4">
             in {category.name}
           </Link>
         )}
       </div>
+
+      {recipe.description && <p className="mt-4 max-w-2xl font-hand text-xl leading-8 text-ink">{recipe.description}</p>}
 
       {stats.length > 0 && (
         <div className="mt-5 flex max-w-md gap-3">

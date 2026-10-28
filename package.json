@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "setup:supabase": "bash scripts/setup-supabase.sh",
+    "deploy:functions": "supabase functions deploy save-recipe --no-verify-jwt",
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test src/lib/parse.test.mts",
     "check:setup": "bash scripts/check-setup.sh"
   },
   "dependencies": {

@@ -1,10 +1,15 @@
-// save-recipe: the only way to change the recipe book. Called by the iPad app.
+// save-recipe: the only way to change the recipe book. Called by the iPad app and the website's server.
 //
 // Every request is a POST with the header `x-write-key: <WRITE_KEY>` and a JSON body:
 //   { "action": "save", "recipe": { ...Recipe payload, see save_recipe in 000_initial_schema.sql } }
 //   { "action": "delete", "id": "<recipe uuid>" }
-//   { "action": "upload-url", "bucket": "originals" | "handwriting", "recipeId": "<uuid>", "ext": "jpg" }
+//   { "action": "upload-url", "bucket": "photos" | "originals" | "handwriting", "recipeId": "<uuid>", "ext": "jpg" }
 //     -> a signed URL the app uploads one file to, and the path to save on the recipe
+//   { "action": "check" }                                   -> { ok: true } if the write key is right
+//   { "action": "cooked", "id": "<recipe uuid>" }           -> adds one to times cooked
+//   { "action": "groceries-add", "items": ["2 lbs chicken"], "recipeId"?: "<uuid>" }
+//   { "action": "grocery-check", "id": "<item uuid>", "checked": true }
+//   { "action": "groceries-clear", "onlyChecked": true }
 //
 // WRITE_KEY is set with `supabase secrets set`. SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are
 // provided to Edge Functions by Supabase. Deploy with --no-verify-jwt (there is no login yet;
@@ -21,6 +26,7 @@ const supabase = createClient(
 );
 
 const UPLOAD_TYPES: Record<string, string[]> = {
+  photos: ["jpg", "jpeg", "png", "heic", "heif", "webp"],
   originals: ["jpg", "jpeg", "png", "heic", "heif", "pdf"],
   handwriting: ["png", "drawing"],
 };
@@ -57,7 +63,12 @@ Deno.serve(async (req) => {
     return json({ error: "Body must be JSON" }, 400);
   }
 
+  const isUuid = (v: unknown): v is string => typeof v === "string" && UUID.test(v);
+
   switch (body.action) {
+    case "check":
+      return json({ ok: true });
+
     case "save": {
       if (typeof body.recipe !== "object" || body.recipe === null) {
         return json({ error: "recipe is required" }, 400);
@@ -69,9 +80,7 @@ Deno.serve(async (req) => {
     }
 
     case "delete": {
-      if (typeof body.id !== "string" || !UUID.test(body.id)) {
-        return json({ error: "id must be a recipe uuid" }, 400);
-      }
+      if (!isUuid(body.id)) return json({ error: "id must be a recipe uuid" }, 400);
       const { error } = await supabase.rpc("delete_recipe", { rid: body.id });
       if (error) return json({ error: error.message }, 400);
       return json({ deleted: body.id });
@@ -83,16 +92,45 @@ Deno.serve(async (req) => {
       if (!UPLOAD_TYPES[bucket]?.includes(ext)) {
         return json({ error: `Allowed for ${bucket}: ${UPLOAD_TYPES[bucket]?.join(", ") ?? "none"}` }, 400);
       }
-      if (typeof body.recipeId !== "string" || !UUID.test(body.recipeId)) {
-        return json({ error: "recipeId must be a recipe uuid" }, 400);
-      }
+      if (!isUuid(body.recipeId)) return json({ error: "recipeId must be a recipe uuid" }, 400);
       const path = `${body.recipeId}/${crypto.randomUUID()}.${ext}`;
       const { data, error } = await supabase.storage.from(bucket).createSignedUploadUrl(path);
       if (error) return json({ error: error.message }, 400);
       return json({ bucket, path, uploadUrl: data.signedUrl, token: data.token });
     }
 
+    case "cooked": {
+      if (!isUuid(body.id)) return json({ error: "id must be a recipe uuid" }, 400);
+      const { data, error } = await supabase.rpc("record_cooked", { rid: body.id });
+      if (error) return json({ error: error.message }, 400);
+      return json({ timesCooked: data });
+    }
+
+    case "groceries-add": {
+      const items = Array.isArray(body.items) ? body.items.filter((i) => typeof i === "string") : [];
+      if (items.length === 0) return json({ error: "items must be a list of text" }, 400);
+      if (body.recipeId != null && !isUuid(body.recipeId)) {
+        return json({ error: "recipeId must be a recipe uuid" }, 400);
+      }
+      const { data, error } = await supabase.rpc("add_groceries", { items, rid: body.recipeId ?? null });
+      if (error) return json({ error: error.message }, 400);
+      return json({ items: data });
+    }
+
+    case "grocery-check": {
+      if (!isUuid(body.id)) return json({ error: "id must be a grocery item uuid" }, 400);
+      const { error } = await supabase.rpc("set_grocery_checked", { item_id: body.id, is_checked: body.checked === true });
+      if (error) return json({ error: error.message }, 400);
+      return json({ ok: true });
+    }
+
+    case "groceries-clear": {
+      const { data, error } = await supabase.rpc("clear_groceries", { only_checked: body.onlyChecked !== false });
+      if (error) return json({ error: error.message }, 400);
+      return json({ removed: data });
+    }
+
     default:
-      return json({ error: "action must be save, delete or upload-url" }, 400);
+      return json({ error: "unknown action" }, 400);
   }
 });

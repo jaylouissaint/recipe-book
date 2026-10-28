@@ -1,3 +1,4 @@
+import AddButton from "@/components/AddButton";
 import { RecipeStrip, ShelfTabs } from "@/components/Shelf";
 import { listRecipes } from "@/lib/recipes";
 
@@ -14,6 +15,7 @@ export default async function Home() {
       <ShelfTabs recipes={recipes} />
       <RecipeStrip title="Family Favorites" recipes={favorites} />
       <RecipeStrip title="Recently added" recipes={recent} />
+      <AddButton />
     </main>
   );
 }

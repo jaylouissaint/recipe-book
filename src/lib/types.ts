@@ -30,4 +30,11 @@ export type Recipe = {
   originalFilePath?: string; // in the "originals" storage bucket
   handwritingPath?: string; // in the "handwriting" storage bucket
   createdAt: string;
+  author?: string;
+  sourceName?: string; // "Smitten Kitchen", a cookbook title
+  sourceUrl?: string; // the page a web import came from
+  photoPath?: string; // in the "photos" storage bucket
+  description?: string;
+  timesCooked: number;
+  imported: boolean; // shows "Check this import" until edited and saved
 };

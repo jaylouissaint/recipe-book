@@ -141,6 +141,7 @@ The same "write it" page with the keyboard, on any device.
 - Specs in `Specification Documentation/` are regenerated with `python3 scripts/specs/build_specs.py`.
 
 ## Docket (queued, not scheduled)
+- **Write key → your own passphrase** (queued 2026-10-28): rerun `npm run setup:supabase` and paste a passphrase of 4–5 random words instead of pressing Enter; then unlock each browser again (and the iPad app later). No code change. Bigger alternatives if ever wanted: a separate simple website password with the long key kept on the server (new code plus a rate limit), or login (below), which replaces the key.
 - **Login** (deferred 2026-10-20): Supabase Auth, `owner_id` on recipes, owner-only RLS, optional `shared` flag for family. Replaces the write key.
 - Custom handwriting font
 - Upgrade to Next.js 16 (clears two low-risk `postcss` advisories bundled in Next 15)
@@ -150,7 +151,7 @@ The same "write it" page with the keyboard, on any device.
 1. ✅ **Skeleton:** Supabase, tables and RLS (anon read-only; writes only through the `save-recipe` Edge Function with the write key), deployed to Vercel. Login left out (see Docket). Done 2026-10-27
 2. ✅ **Design system v1:** the book page matching the photo. Done 2026-10-20. It becomes the **writing page** in R2
 3. ✅ **R1 – New look and navigation** (built 2026-10-28, not yet deployed) (DESIGN.md): light-only tokens, Instrument Serif / Figtree / Patrick Hand, sidebar and tab bar, Home book shelf, Library ("My Recipes") cards with search pill, Recipe view in handwriting on cream
-4. **R2 – Editing on the website:** migration 001 (author, source, photo, description, times cooked, imported flag, grocery items), unlock with the write key (httpOnly cookie), server-side save through `save-recipe`, the **writing page** ("Enter your own" and Edit) with one field per ruled line, recipe photo upload
+4. ✅ **R2 – Editing on the website** (built 2026-10-28; needs migration 001 and a function redeploy before it works live): migration 001 (author, source, photo, description, times cooked, imported flag, grocery items), unlock with the write key (httpOnly cookie), server-side save through `save-recipe`, the **writing page** ("Enter your own" and Edit) with one field per ruled line, recipe photo upload
 5. **R3 – Bringing recipes in:** Save from the web (schema.org recipe data, no AI), Add from photos (upload, original beside the writing page, Paste text box with the paste parser); parser tests with shared fixtures
 6. **R4 – In the kitchen:** Groceries (one list, optional group by recipe), Start Cooking, serving scaler, search and tag filters
 7. **R5 – Polish:** Home Screen install, offline cache, print

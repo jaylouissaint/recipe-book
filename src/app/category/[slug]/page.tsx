@@ -1,3 +1,4 @@
+import AddButton from "@/components/AddButton";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -34,6 +35,7 @@ export default async function Page({ params }: Props) {
         {category.name}
       </h1>
       <LibraryList recipes={await listRecipes(slug)} showCategories={false} />
+      <AddButton />
     </main>
   );
 }

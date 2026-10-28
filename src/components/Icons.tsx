@@ -100,6 +100,20 @@ export const KeyboardIcon = (p: Props) => (
   </Icon>
 );
 
+export const LinkIcon = (p: Props) => (
+  <Icon {...p}>
+    <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" />
+    <path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />
+  </Icon>
+);
+
+export const PotIcon = (p: Props) => (
+  <Icon {...p}>
+    <path d="M4 10h16v6a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z" />
+    <path d="M2.5 10h19M9 7h6" />
+  </Icon>
+);
+
 export const PlusIcon = (p: Props) => (
   <Icon {...p}>
     <path d="M12 5v14M5 12h14" />
