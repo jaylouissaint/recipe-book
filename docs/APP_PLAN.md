@@ -43,6 +43,8 @@ Do this before writing the real app, because it's the riskiest part.
 | Louis | Install the `.ipa` through SideStore |
 | Louis | Shortcuts → Automation → **Time of Day, daily 3:00 AM, Run Immediately**: connect VPN → SideStore **Refresh All** → disconnect VPN. Add a second automation **When charging** with the same actions |
 
+**Until SideStore works:** install straight from Xcode over a cable with the free Apple ID (steps in HANDOFF.md "Running the iPad app"). It must be reinstalled every 7 days, so it's a stopgap; SideStore stays the plan.
+
 **Done when:** the hello app is still opening 10+ days later with no cable, and SideStore shows the expiry date moving forward each day.
 
 ## Phase 1 — Shared backend (also unblocks the website) ✅ done 2026-10-27

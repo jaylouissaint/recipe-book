@@ -28,8 +28,31 @@ A personal recipe book styled after Louis's handwritten spiral recipe book (refe
 - Rotate the Simulator with ⌘ → (or ⌘ ←) to see landscape.
 - `npm run ios:test` runs the app's Swift tests.
 
-**On the iPad, through SideStore**
+**On the iPad, straight from Xcode (for now)**
+Installs over a cable with the free Apple ID. The app stops opening after 7 days; plug in and press ▶ again (recipes are safe in the database). The long-term plan is still SideStore (below), which re-signs the app by itself.
+
+First, check the iPad's version (Settings → General → About). On iPadOS 18, Xcode 16.4 is fine. On iPadOS 26, Xcode 16.4 may refuse to install; get **Xcode 26.0** from developer.apple.com/download/all (it runs on macOS Sequoia 15.6).
+
+1. From the project folder:
+   ```
+   npm run ios:project
+   open ios/RamiyasRecipes.xcodeproj
+   ```
+2. Plug the iPad into the Mac, unlock it, and tap **Trust** if it asks.
+3. If the iPad asks for **Developer Mode**: Settings → Privacy & Security → Developer Mode → on. The iPad restarts; confirm when it asks.
+4. In Xcode, click the blue **RamiyasRecipes** project at the top of the left sidebar → target **RamiyasRecipes** → **Signing & Capabilities**:
+   - Tick **Automatically manage signing**.
+   - **Team** → **Add an Account…** → sign in with the signing Apple ID → pick its **(Personal Team)**.
+   - If Xcode says the bundle identifier isn't available, add something to the end, e.g. `com.jaylouissaint.ramiyasrecipes.louis`.
+5. In the bar at the top of Xcode, pick **the iPad** as the device (not a Simulator) and press **▶** (⌘R). The first build takes a minute or two.
+6. The first launch is blocked: on the iPad, Settings → General → **VPN & Device Management** → the Apple ID under Developer App → **Trust**. Then open Ramiya's Recipes.
+7. In the app's **Settings** tab, paste the write key to unlock writing.
+
+Notes: running `npm run ios:project` again clears the Team, so pick it again in step 4. Signing complaints about **RamiyasRecipesUITests** don't matter for installing; they're only for the UI test.
+
+**On the iPad, through SideStore (long term)**
 - `npm run ios:ipa` builds the file SideStore installs: `build/ios/RamiyasRecipes.ipa`.
+- Setup and the daily refresh automations are in APP_PLAN.md Phase 0 (blocked on SideStore's -80045 sign-in fix).
 
 ## Running a database migration
 Migrations live in `supabase/migrations/` and are run by hand, once each, in order (000, 001, …).
