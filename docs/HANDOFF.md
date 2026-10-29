@@ -25,6 +25,8 @@ A personal recipe book styled after Louis's handwritten spiral recipe book (refe
 ## Running the iPad app
 **On the Mac, in the iPad Simulator**
 - To open it yourself, run `npm run ios:sim` from the project folder. The first build takes about a minute, then the Simulator opens with the app.
+- Rotate the Simulator with ⌘ → (or ⌘ ←) to see landscape.
+- `npm run ios:test` runs the app's Swift tests.
 
 **On the iPad, through SideStore**
 - `npm run ios:ipa` builds the file SideStore installs: `build/ios/RamiyasRecipes.ipa`.
@@ -102,12 +104,15 @@ Run each migration only once. A second run stops with an error like "column auth
   - Also fixed: "1 ½ cups" now reads as 1 ½ (added to the shared ingredient fixtures); the writing page's category tabs no longer make phones scroll sideways.
   - Tested in a build copy with headless Chrome: the guard refusals, a BBC Good Food import (16 ingredients, 11 steps, stats, photo), the blocked-site fallback, and the photo flow with the pasted sweet chili chicken text (title, stats, 2 sections with 14 ingredients, 4 steps with sub-steps). **Saving an import was not tested against the live database**; check that on localhost.
 
+- **App Phase 2, reading the book (2026-10-28, built, Simulator only):** Home shelf, Library (search and filters), category pages, recipe view, book page, Settings (write key in the Keychain, sync status), Groceries placeholder; syncs from the live database and keeps recipes and photos on the device. Checked in the iPad Simulator in portrait with the 3 live recipes; 6 Swift tests pass. Landscape and true airplane mode still to check (the Simulator shares the Mac's connection).
+
 ## Next
-1. **Check R3 on localhost**, then commit and push: save one web import (its photo should copy) and one photo import (the original should open from the recipe menu).
+1. **App on the iPad**, waiting on SideStore's -80045 sign-in fix (Louis gets GitHub emails for SideStore releases and PR #1683). Then: install `build/ios/RamiyasRecipes.ipa` (`npm run ios:ipa`) through SideStore, set up the two refresh automations (APP_PLAN.md Phase 0), and check the app in airplane mode.
 2. **Website R4**: Groceries, Start Cooking, serving scaler, search. Then R5 (polish).
-3. **iPad app Phase 0** (see APP_PLAN.md; Xcode 16.4 and XcodeGen installed, hello app built and running in the Simulator, waiting on SideStore's -80045 sign-in fix) can run in parallel: Louis installs Xcode (not installed yet; this Mac is an M4 on macOS 15.6.1) and sets up SideStore; Claude makes a minimal SwiftUI app in `ios/` and `scripts/build-ipa.sh`.
+3. **App Phase 3**: writing recipes by hand (Scribble lines and PencilKit page mode). Later: the flip-through book in the app.
 
 ## Docket (queued, not scheduled)
+- **Photo paste parsing needs work** (Louis, 2026-10-28): pasting the Live Text of a real photo into Add from photos didn't sort well. Next time: get the exact text Live Text copies from the sweet chili chicken photo, replace the guessed first case in `shared/fixtures/pasted-recipes.json` with it, and tune `parseRecipeText` (`src/lib/pasteText.ts`) until it passes. The iPad app's on-device text recognition (Phase 4) will reuse the same rules.
 - **Custom book cover** (Louis will provide later): replace the plain raspberry cover page in the book view (`PageFace` cover in `src/components/book/BookView.tsx`) with an uploaded image or design.
 - **Write key → your own passphrase** (queued 2026-10-28): rerun `npm run setup:supabase` and paste a passphrase of 4–5 random words instead of pressing Enter; then unlock each browser again (and the iPad app later). No code change. Bigger alternatives if ever wanted: a separate simple website password with the long key kept on the server (new code plus a rate limit), or login (below), which replaces the key.
 - Login (Supabase Auth, `owner_id`, owner-only RLS, `shared` flag for family). Replaces the write key.

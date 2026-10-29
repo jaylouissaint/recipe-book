@@ -12,19 +12,32 @@ targets:
   RamiyasRecipes:
     type: application
     platform: iOS
-    sources: [RamiyasRecipes]
+    sources:
+      - path: RamiyasRecipes
+        excludes: [Fonts/README.md]
     info:
       path: RamiyasRecipes/Info.plist
       properties:
         CFBundleDisplayName: Ramiya's Recipes
-        CFBundleShortVersionString: "0.1.0"
-        CFBundleVersion: "1"
-        UILaunchScreen: {}
+        CFBundleShortVersionString: "0.2.0"
+        CFBundleVersion: "2"
+        UILaunchScreen:
+          UIColorName: ""
         UISupportedInterfaceOrientations~ipad:
           - UIInterfaceOrientationPortrait
           - UIInterfaceOrientationPortraitUpsideDown
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
+        UIAppFonts:
+          - Figtree-Regular.ttf
+          - Figtree-Medium.ttf
+          - Figtree-SemiBold.ttf
+          - Figtree-Bold.ttf
+          - InstrumentSerif-Regular.ttf
+          - Montserrat-SemiBold.ttf
+          - PatrickHand-Regular.ttf
+          - ZillaSlab-Light.ttf
+          - ZillaSlab-Medium.ttf
         # Filled in from Secrets.xcconfig (made from .env.local by scripts/ios-secrets.sh)
         SupabaseHost: $(SUPABASE_HOST)
         SupabaseAnonKey: $(SUPABASE_ANON_KEY)
@@ -35,3 +48,21 @@ targets:
         SWIFT_VERSION: "5.0"
         GENERATE_INFOPLIST_FILE: NO
         CODE_SIGN_STYLE: Automatic
+  RamiyasRecipesTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources: [RamiyasRecipesTests]
+    dependencies:
+      - target: RamiyasRecipes
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        TARGETED_DEVICE_FAMILY: "2"
+        SWIFT_VERSION: "5.0"
+schemes:
+  RamiyasRecipes:
+    build:
+      targets:
+        RamiyasRecipes: all
+    test:
+      targets: [RamiyasRecipesTests]

@@ -13,7 +13,8 @@
     "check:setup": "bash scripts/check-setup.sh",
     "ios:project": "bash scripts/ios-secrets.sh && cd ios && xcodegen generate",
     "ios:sim": "bash scripts/ios-sim.sh",
-    "ios:ipa": "bash scripts/build-ipa.sh"
+    "ios:ipa": "bash scripts/build-ipa.sh",
+    "ios:test": "bash scripts/ios-test.sh"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",

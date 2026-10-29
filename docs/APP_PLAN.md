@@ -57,7 +57,9 @@ Built as described below, except that the website doesn't need the service role 
 
 **Done when:** the website shows the recipe from the database; a save with the anon key is rejected; a save with the write key works.
 
-## Phase 2 — App: reading the book
+## Phase 2 — App: reading the book ✅ built 2026-10-28 (Simulator; not on the iPad yet)
+Built as described below, in `ios/RamiyasRecipes/` (App, Model, Data, Views; fonts in `Fonts/`, the website's stickers as SVGs and a placeholder icon in `Assets.xcassets`). SwiftData keeps each recipe with its ingredient groups and steps as Codable arrays. `Sync` downloads rows with `updated_at` newer than the last one seen and removes deleted ones, and pictures are saved in Application Support. Settings checks the write key with save-recipe's `check` action and keeps it in the Keychain. The recipe menu has "View the book page" (the book-page layout, one scrolling page per recipe) and "View the original". Not yet: the flip-through book (the website's `/book`), and Add / Groceries / Start Cooking (later phases). Tests: `npm run ios:test` (formatting, column split, decoding).
+
 - SwiftUI app for iPad (portrait and landscape, Split View and Slide Over).
 - Design from `docs/DESIGN.md`: light only, Deglaze green accent, Instrument Serif / Figtree / Patrick Hand bundled (all free Google Fonts, OFL licensed).
 - Screens: tab bar (Home book shelf, Library, Groceries, Settings) and the + Add sheet; **Library** cards; **Recipe view** in handwriting on cream with "Add to Groceries" and "Start Cooking"; "View handwritten page" shows the book-style page.
