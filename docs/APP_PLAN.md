@@ -35,11 +35,11 @@ Do this before writing the real app, because it's the riskiest part.
 
 | Who | Step |
 |---|---|
-| Louis | Install **Xcode** from the Mac App Store (about 15 GB), open it once, then run `sudo xcode-select -s /Applications/Xcode.app` |
+| Louis | ✅ Install **Xcode**. The App Store's Xcode needs macOS 26, so on Sequoia (15.6.1) it's **Xcode 16.4** from developer.apple.com/download/all; then `sudo xcode-select -s /Applications/Xcode.app` (your Mac password). Also `brew install xcodegen` ✅ |
 | Louis | Create a **separate Apple ID** used only for signing; don't type your main Apple ID into a community tool |
-| Louis | On the iPad: turn on Developer Mode; install SideStore and create its pairing file following the current guide at sidestore.io (needs the Mac once) |
-| Louis | Install the local VPN app SideStore's guide names, and sign in to SideStore with the signing Apple ID |
-| Claude | Create a minimal "Hello Recipe" SwiftUI project in `ios/` and `scripts/build-ipa.sh` (builds an unsigned `.ipa` that SideStore signs) |
+| Louis | On the iPad: install **LocalDevVPN** and connect; on the Mac, install SideStore with **iloader** (github.com/nab138/iloader) signed in with the signing Apple ID; trust the developer app, turn on Developer Mode, sign in to SideStore with the same Apple ID and tap the 7 DAYS counter (docs.sidestore.io/docs/installation/install) |
+| — | **Blocked 2026-10-28:** iloader signs in fine, but SideStore's own sign-in fails with -80045 (Apple changed sign-in in October; many open SideStore issues, fix pending in PR #1683). Try other anisette servers in SideStore Settings, or wait for a SideStore release |
+| Claude | ✅ "Hello Recipe" SwiftUI app in `ios/` (XcodeGen `ios/project.yml`; shows build date, version and the recipe titles read with the public key). `npm run ios:sim` opens it in the iPad Simulator; `npm run ios:ipa` builds the unsigned `build/ios/RamiyasRecipes.ipa` for SideStore. Builds go to `~/Library/Developer/Xcode/DerivedData/RamiyasRecipes-cli`, because code signing refuses the Desktop's iCloud file metadata. `scripts/ios-secrets.sh` writes the git-ignored `ios/Secrets.xcconfig` from `.env.local` (Supabase host and public key only, never the write key) |
 | Louis | Install the `.ipa` through SideStore |
 | Louis | Shortcuts → Automation → **Time of Day, daily 3:00 AM, Run Immediately**: connect VPN → SideStore **Refresh All** → disconnect VPN. Add a second automation **When charging** with the same actions |
 

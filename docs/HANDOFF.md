@@ -22,6 +22,13 @@ A personal recipe book styled after Louis's handwritten spiral recipe book (refe
 - Paste your write key once per browser. It's kept in a secure cookie that page scripts can't read, and only the website's server sends it on.
 - Locked browsers see no + button and no Edit.
 
+## Running the iPad app
+**On the Mac, in the iPad Simulator**
+- To open it yourself, run `npm run ios:sim` from the project folder. The first build takes about a minute, then the Simulator opens with the app.
+
+**On the iPad, through SideStore**
+- `npm run ios:ipa` builds the file SideStore installs: `build/ios/RamiyasRecipes.ipa`.
+
 ## Running a database migration
 Migrations live in `supabase/migrations/` and are run by hand, once each, in order (000, 001, …).
 
@@ -98,7 +105,7 @@ Run each migration only once. A second run stops with an error like "column auth
 ## Next
 1. **Check R3 on localhost**, then commit and push: save one web import (its photo should copy) and one photo import (the original should open from the recipe menu).
 2. **Website R4**: Groceries, Start Cooking, serving scaler, search. Then R5 (polish).
-3. **iPad app Phase 0** can run in parallel: Louis installs Xcode (not installed yet; this Mac is an M4 on macOS 15.6.1) and sets up SideStore; Claude makes a minimal SwiftUI app in `ios/` and `scripts/build-ipa.sh`.
+3. **iPad app Phase 0** (see APP_PLAN.md; Xcode 16.4 and XcodeGen installed, hello app built and running in the Simulator, waiting on SideStore's -80045 sign-in fix) can run in parallel: Louis installs Xcode (not installed yet; this Mac is an M4 on macOS 15.6.1) and sets up SideStore; Claude makes a minimal SwiftUI app in `ios/` and `scripts/build-ipa.sh`.
 
 ## Docket (queued, not scheduled)
 - **Custom book cover** (Louis will provide later): replace the plain raspberry cover page in the book view (`PageFace` cover in `src/components/book/BookView.tsx`) with an uploaded image or design.
