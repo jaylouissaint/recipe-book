@@ -70,10 +70,10 @@ export async function deleteRecipe(id: string): Promise<ActionResult> {
   }
 }
 
-// A one-time signed link the browser uploads one file to directly: a cover photo, or the
-// original photo or PDF of a recipe added from photos.
+// A one-time signed link the browser uploads one file to directly: a cover photo, the original
+// photo or PDF of a recipe added from photos, or the Pencil page.
 export async function fileUploadUrl(
-  bucket: "photos" | "originals",
+  bucket: "photos" | "originals" | "handwriting",
   recipeId: string,
   ext: string,
 ): Promise<ActionResult<{ path: string; token: string }>> {

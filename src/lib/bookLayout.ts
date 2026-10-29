@@ -17,6 +17,7 @@ export type Block =
   | { kind: "dirLine"; key: string; recipe: Recipe; sub: boolean; text: string }
   | { kind: "notesLabel"; key: string; recipe: Recipe }
   | { kind: "notes"; key: string; recipe: Recipe; text: string }
+  | { kind: "handwriting"; key: string; recipe: Recipe }
   | { kind: "gap"; key: string }
   | { kind: "contentsTitle"; key: string }
   | { kind: "contentsCategory"; key: string; slug: string }
@@ -34,6 +35,14 @@ const KEEP_WITH_NEXT = new Set<Block["kind"]>(["dirLabel", "notesLabel", "conten
 // On narrow pages ingredients are one column, one block per line, so a long list continues on the
 // next page; on wider pages they're one two-column block, like the book.
 export function recipeBlocks(r: Recipe, narrow = false, format: (i: Recipe["ingredientGroups"][number]["items"][number]) => string = (i) => i.item): Block[] {
+  // Written on the page with the Pencil and nothing on the lines: the handwritten page is the recipe.
+  if (r.handwritingPath?.endsWith(".png") && !r.ingredientGroups.length && !r.stepGroups.length) {
+    return [
+      { kind: "header", key: `${r.id}:header`, recipe: r },
+      { kind: "gap", key: `${r.id}:gap1` },
+      { kind: "handwriting", key: `${r.id}:handwriting`, recipe: r },
+    ];
+  }
   const ingredients: Block[] = narrow
     ? [
         { kind: "ingLabel", key: `${r.id}:ingLabel`, recipe: r },

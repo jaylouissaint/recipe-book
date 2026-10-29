@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CATEGORIES, TAGS, categoryBySlug } from "@/lib/book";
 import { type Block, splitColumns } from "@/lib/bookLayout";
 import { ingredientText } from "@/lib/format";
+import { publicFileUrl } from "@/lib/storage";
 import type { Recipe } from "@/lib/types";
 import { PlateSetting, RollingPin, WhiskAndSpoon } from "../Stickers";
 
@@ -179,6 +180,17 @@ export default function BookBlock({
         <p className="font-hand text-[1em] text-ink" style={{ lineHeight: "var(--line)" }}>
           {block.text}
         </p>
+      );
+    case "handwriting":
+      return (
+        // At most a page tall (--cap is the page's lines), so it always fits on a page.
+        // eslint-disable-next-line @next/next/no-img-element -- a Supabase public URL, shown as is
+        <img
+          src={publicFileUrl("handwriting", block.recipe.handwritingPath!)}
+          alt={`${block.recipe.title}, written by hand`}
+          className="block w-full object-contain object-left-top"
+          style={{ maxHeight: "calc(var(--line) * (var(--cap) - 1) - 4px)" }}
+        />
       );
     case "gap":
       return null;

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { type Block, pack, splitColumns } from "./bookLayout.ts";
+import { type Block, pack, recipeBlocks, splitColumns } from "./bookLayout.ts";
+import type { Recipe } from "./types";
 
 const b = (kind: Block["kind"], key: string) => ({ kind, key }) as Block;
 const linesOf = (sizes: Record<string, number>) => (x: Block) => sizes[x.key] ?? 1;
@@ -48,4 +49,11 @@ test("one long group is split across both columns", () => {
   const [left, right] = splitColumns([{ name: "stew", items: "abcdefghijkl".split("").map(item) }], (i) => i.item);
   assert.deepEqual(text(left), ["stew", "a", "b", "c", "d", "e", "f"]);
   assert.deepEqual(text(right), ["g", "h", "i", "j", "k", "l", "_"]);
+});
+
+test("a recipe written only on the Pencil page shows its handwritten page", () => {
+  const r = { id: "r", title: "soup", tags: [], ingredientGroups: [], stepGroups: [], handwritingPath: "r/page.png" } as unknown as Recipe;
+  assert.deepEqual(recipeBlocks(r).map((x) => x.kind), ["header", "gap", "handwriting"]);
+  const typed = { ...r, stepGroups: [{ title: "simmer", steps: [] }] } as Recipe;
+  assert.ok(!recipeBlocks(typed).some((x) => x.kind === "handwriting"));
 });

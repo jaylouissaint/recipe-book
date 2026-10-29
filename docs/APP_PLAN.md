@@ -1,6 +1,6 @@
 # Recipe Book iPad App — Build and Run Plan (SideStore)
 
-Status: Phase 1 done 2026-10-27; Phases 2 and 3 built 2026-10-28/29 (Simulator); Phase 0 blocked on SideStore; Phases 4–6 not started. Plan written 2026-10-24. This changes an earlier decision: there will be a native iPad app, installed with **SideStore** using a free Apple ID (no $99/yr developer account). The app is a full recipe book, not only a writing and scanning tool. It is refreshed automatically, so the iPad never needs to be plugged in after setup.
+Status: **Paused 2026-10-29** (Louis: the website on the iPad Home Screen covers it; Pencil page mode was built into the website instead). Phase 1 done 2026-10-27; Phases 2 and 3 and the flip-through book built 2026-10-28/29 (Simulator); Phase 0 blocked on SideStore; Phases 4–6 not started. Known bug: page mode didn't recognize writing beside the title. Plan written 2026-10-24. This changes an earlier decision: there will be a native iPad app, installed with **SideStore** using a free Apple ID (no $99/yr developer account). The app is a full recipe book, not only a writing and scanning tool. It is refreshed automatically, so the iPad never needs to be plugged in after setup.
 
 ## Decisions in this plan
 All in effect. The look and screens of both the app and the website follow `docs/DESIGN.md` (decided 2026-10-27, modeled on the Deglaze app).

@@ -23,6 +23,8 @@ function Stat({ label, value }: { label: string; value: string }) {
 // The reading view: the Deglaze recipe layout, with the recipe itself in handwriting on cream.
 export default function RecipeView({ recipe }: { recipe: Recipe }) {
   const category = categoryBySlug(recipe.category);
+  const handwrittenOnly =
+    Boolean(recipe.handwritingPath?.endsWith(".png")) && !recipe.ingredientGroups.length && !recipe.stepGroups.length;
   const tagLabels = TAGS.filter((t) => recipe.tags.includes(t.id)).map((t) => t.label);
   const favorite = recipe.tags.includes("family-favorite");
   const stats = [
@@ -135,42 +137,54 @@ export default function RecipeView({ recipe }: { recipe: Recipe }) {
         </ul>
       )}
 
-      <div className="mt-8 grid gap-x-12 gap-y-8 border-t border-divider pt-6 lg:grid-cols-[2fr_3fr]">
-        <section aria-labelledby="ingredients">
-          <h2 id="ingredients" className="text-2xl font-medium">
-            Ingredients
-          </h2>
-          <ScaledIngredients groups={recipe.ingredientGroups} />
+      {handwrittenOnly ? (
+        // Written on the page with the Pencil: the page itself is the recipe.
+        <section aria-label="Handwritten page" className="mt-8 border-t border-divider pt-6">
+          {/* eslint-disable-next-line @next/next/no-img-element -- a Supabase public URL, shown as is */}
+          <img
+            src={publicFileUrl("handwriting", recipe.handwritingPath!)}
+            alt={`${recipe.title}, written by hand`}
+            className="w-full max-w-3xl rounded-sm shadow-[0_2px_12px_rgba(0,0,0,0.12)]"
+          />
         </section>
+      ) : (
+        <div className="mt-8 grid gap-x-12 gap-y-8 border-t border-divider pt-6 lg:grid-cols-[2fr_3fr]">
+          <section aria-labelledby="ingredients">
+            <h2 id="ingredients" className="text-2xl font-medium">
+              Ingredients
+            </h2>
+            <ScaledIngredients groups={recipe.ingredientGroups} />
+          </section>
 
-        <section aria-labelledby="directions">
-          <h2 id="directions" className="text-2xl font-medium">
-            Directions
-          </h2>
-          <ol className="mt-4 space-y-5">
-            {recipe.stepGroups.map((g, i) => (
-              <li key={i} className="flex gap-4">
-                <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-semibold text-white">
-                  {i + 1}
-                </span>
-                <div>
-                  <p className="font-hand text-xl leading-8 text-ink">{g.title}</p>
-                  {g.steps.length > 0 && (
-                    <ul className="mt-1 space-y-1">
-                      {g.steps.map((s, j) => (
-                        <li key={j} className="-indent-4 pl-4 font-hand text-lg leading-7 text-ink/90">
-                          <span aria-hidden>– </span>
-                          {s}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ol>
-        </section>
-      </div>
+          <section aria-labelledby="directions">
+            <h2 id="directions" className="text-2xl font-medium">
+              Directions
+            </h2>
+            <ol className="mt-4 space-y-5">
+              {recipe.stepGroups.map((g, i) => (
+                <li key={i} className="flex gap-4">
+                  <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-semibold text-white">
+                    {i + 1}
+                  </span>
+                  <div>
+                    <p className="font-hand text-xl leading-8 text-ink">{g.title}</p>
+                    {g.steps.length > 0 && (
+                      <ul className="mt-1 space-y-1">
+                        {g.steps.map((s, j) => (
+                          <li key={j} className="-indent-4 pl-4 font-hand text-lg leading-7 text-ink/90">
+                            <span aria-hidden>– </span>
+                            {s}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </section>
+        </div>
+      )}
 
       {recipe.notes && (
         <section aria-labelledby="notes" className="mt-8 border-t border-divider pt-6">
@@ -181,7 +195,7 @@ export default function RecipeView({ recipe }: { recipe: Recipe }) {
         </section>
       )}
 
-      <KitchenButtons recipe={recipe} />
+      {!handwrittenOnly && <KitchenButtons recipe={recipe} />}
     </article>
     </ScaleProvider>
   );

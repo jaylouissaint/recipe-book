@@ -364,7 +364,7 @@ export default function BookView({ recipes: unordered }: { recipes: Recipe[] }) 
             <div
               ref={measureRef}
               className="paper-lines"
-              style={{ width: geo.contentW, fontSize: geo.line * 0.58, ["--line" as string]: `${geo.line}px` }}
+              style={{ width: geo.contentW, fontSize: geo.line * 0.58, ["--line" as string]: `${geo.line}px`, ["--cap" as string]: geo.capacity }}
             >
               {allBlocks.map((b) => (
                 <div key={b.key} data-block={b.key} className="flow-root">
@@ -445,6 +445,7 @@ function PageFace({
       style={{
         fontSize: geo.line * 0.58,
         ["--line" as string]: `${geo.line}px`,
+        ["--cap" as string]: geo.capacity,
         paddingTop: geo.line * TOP_LINES,
         paddingBottom: geo.line * BOTTOM_LINES,
         paddingLeft: padLeft,

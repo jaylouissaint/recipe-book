@@ -2,7 +2,7 @@ import { fileUploadUrl } from "@/app/actions";
 
 // Uploads a file straight to a storage bucket with a one-time signed link from save-recipe,
 // and returns the path to save on the recipe.
-export async function uploadFile(bucket: "photos" | "originals", recipeId: string, file: File): Promise<string> {
+export async function uploadFile(bucket: "photos" | "originals" | "handwriting", recipeId: string, file: File): Promise<string> {
   const ext = (file.name.split(".").pop() || file.type.split("/").pop() || "jpg").toLowerCase();
   const link = await fileUploadUrl(bucket, recipeId, ext === "jpeg" ? "jpg" : ext);
   if (!link.ok) throw new Error(link.error);
@@ -10,7 +10,7 @@ export async function uploadFile(bucket: "photos" | "originals", recipeId: strin
   const { error } = await supabase.storage.from(bucket).uploadToSignedUrl(link.path, link.token, file, {
     contentType: file.type || undefined,
   });
-  if (error) throw new Error(`The ${bucket === "photos" ? "photo" : "original"} didn't upload: ${error.message}`);
+  if (error) throw new Error(`The ${{ photos: "photo", originals: "original", handwriting: "handwritten page" }[bucket]} didn't upload: ${error.message}`);
   return link.path;
 }
 

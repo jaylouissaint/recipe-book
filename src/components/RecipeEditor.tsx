@@ -20,11 +20,14 @@ import type { Recipe } from "@/lib/types";
 import { uploadFile, uploadPhoto } from "@/lib/uploadPhoto";
 import { useUnlocked } from "./EditOnly";
 import { CameraIcon } from "./Icons";
+import PencilPage, { type Stroke, loadImage, pageImage } from "./PencilPage";
 import Spiral from "./Spiral";
 import { PlateSetting, RollingPin, WhiskAndSpoon } from "./Stickers";
 
 // The writing page (docs/DESIGN.md): the book page from the sweet chili chicken photo as a form.
 // Every ruled line is its own text field, so Scribble on an iPad fills one line at a time.
+// "Write on the page" instead takes Apple Pencil writing anywhere on a ruled page, kept as the
+// recipe's handwritten page (a picture; it isn't read into text).
 // A new recipe can start from a web import or a photo (`start`); either one is reviewed here.
 
 export type EditorStart = { kind: "web"; url: string; recipe: WebRecipe } | { kind: "photo"; file: File };
@@ -46,6 +49,7 @@ type Draft = {
   description: string;
   photoPath: string;
   remotePhoto: string; // a web import's photo, copied into the photos bucket on save
+  handwritingPath: string; // the saved handwritten page
 };
 
 function fromRecipe(r: Recipe | null): Draft {
@@ -67,6 +71,7 @@ function fromRecipe(r: Recipe | null): Draft {
     description: r?.description ?? "",
     photoPath: r?.photoPath ?? "",
     remotePhoto: "",
+    handwritingPath: r?.handwritingPath ?? "",
   };
 }
 
@@ -139,6 +144,12 @@ export default function RecipeEditor({ recipe, start }: { recipe: Recipe | null;
   const [error, setError] = useState("");
   const [saving, startSaving] = useTransition();
   const originalPath = useRef(""); // the photo's original, once uploaded (not again on a retry)
+  // Pencil writing not saved yet, kept beside the draft. A recipe written only on the page opens on the page.
+  const [ink, setInk] = useState<Stroke[]>([]);
+  const [mode, setMode] = useState<"lines" | "page">(() =>
+    recipe?.handwritingPath && !recipe.ingredientGroups.length && !recipe.stepGroups.length ? "page" : "lines",
+  );
+  const inkKey = `${draftKey}:ink`;
 
   // Restore an unsaved draft once, then keep the draft after every change (FR-WRITE-006).
   // Only a draft that differs from the saved recipe is kept.
@@ -153,10 +164,28 @@ export default function RecipeEditor({ recipe, start }: { recipe: Recipe | null;
         setDraft({ ...fromStart(start, recipe), ...JSON.parse(saved) });
         setRestored(true);
       }
+      const savedInk = localStorage.getItem(inkKey);
+      if (savedInk) {
+        setInk(JSON.parse(savedInk));
+        setMode("page");
+        setRestored(true);
+      }
     } catch {
       // storage unavailable or an unreadable draft: start from the recipe
     }
-  }, [draftKey, original, recipe, start]);
+  }, [draftKey, inkKey, original, recipe, start]);
+  useEffect(() => {
+    if (!loaded.current) return;
+    const t = setTimeout(() => {
+      try {
+        if (ink.length) localStorage.setItem(inkKey, JSON.stringify(ink));
+        else localStorage.removeItem(inkKey);
+      } catch {
+        // storage unavailable or full: the writing stays on the page until it's saved
+      }
+    }, 500);
+    return () => clearTimeout(t);
+  }, [ink, inkKey]);
   useEffect(() => {
     if (!loaded.current) return;
     const t = setTimeout(() => {
@@ -176,7 +205,9 @@ export default function RecipeEditor({ recipe, start }: { recipe: Recipe | null;
   function discardDraft() {
     try {
       localStorage.removeItem(draftKey);
+      localStorage.removeItem(inkKey);
     } catch {}
+    setInk([]);
     setDraft(fromStart(start, recipe));
     setRestored(false);
   }
@@ -291,6 +322,19 @@ export default function RecipeEditor({ recipe, start }: { recipe: Recipe | null;
           setPhoto(null);
           update({ photoPath, remotePhoto: "" });
         }
+        // The Pencil page, drawn over the saved one when editing.
+        let handwritingPath = draft.handwritingPath;
+        if (ink.length) {
+          const under = handwritingPath ? await loadImage(publicFileUrl("handwriting", handwritingPath)) : null;
+          const png = await pageImage(ink, under);
+          handwritingPath = await uploadFile("handwriting", id, new File([png], "page.png", { type: "image/png" }));
+          // uploaded: the writing is in the saved page now, so not again if the save below fails
+          setInk([]);
+          update({ handwritingPath });
+          try {
+            localStorage.removeItem(inkKey);
+          } catch {}
+        }
         if (start?.kind === "photo" && !originalPath.current) {
           originalPath.current = await uploadFile("originals", id, start.file);
         }
@@ -303,9 +347,12 @@ export default function RecipeEditor({ recipe, start }: { recipe: Recipe | null;
           category: draft.category,
           tags: draft.tags,
           notes: draft.notes.trim(),
-          source: recipe?.source ?? (start?.kind === "photo" ? "upload" : "typed"),
+          source:
+            handwritingPath && handwritingPath !== recipe?.handwritingPath
+              ? "pencil"
+              : (recipe?.source ?? (start?.kind === "photo" ? "upload" : "typed")),
           originalFilePath: originalPath.current || recipe?.originalFilePath,
-          handwritingPath: recipe?.handwritingPath,
+          handwritingPath: handwritingPath || undefined,
           author: draft.author,
           sourceName: draft.sourceName,
           sourceUrl: draft.sourceUrl,
@@ -324,6 +371,7 @@ export default function RecipeEditor({ recipe, start }: { recipe: Recipe | null;
         if (!result.ok) throw new Error(result.error);
         try {
           localStorage.removeItem(draftKey);
+          localStorage.removeItem(inkKey);
         } catch {}
         router.push(`/recipe/${result.slug}`);
         router.refresh();
@@ -350,7 +398,7 @@ export default function RecipeEditor({ recipe, start }: { recipe: Recipe | null;
   const directionRows: DirectionLine[] = [...draft.directions, { kind: "step", text: "" }];
 
   const page = (
-    <div className={start?.kind === "photo" ? "min-w-0" : "mx-auto max-w-4xl px-3 pt-4 pb-32 md:px-10"}>
+    <div className={start?.kind === "photo" ? "min-w-0" : "mx-auto max-w-4xl overflow-x-clip px-3 pt-4 pb-32 md:px-10"}>
       {!unlocked && (
         <p role="status" className="mb-4 rounded-2xl bg-field px-4 py-3 text-[15px]">
           Editing is locked on this device, so this recipe can&apos;t be saved yet.{" "}
@@ -374,6 +422,26 @@ export default function RecipeEditor({ recipe, start }: { recipe: Recipe | null;
           <PasteText onFill={fillFromText} />
         </details>
       )}
+
+      <div className="mb-4 flex w-fit rounded-full bg-field p-1 font-sans" role="radiogroup" aria-label="How to write">
+        {(
+          [
+            ["lines", "Write on the lines"],
+            ["page", "Write on the page"],
+          ] as const
+        ).map(([m, label]) => (
+          <button
+            key={m}
+            type="button"
+            role="radio"
+            aria-checked={mode === m}
+            onClick={() => setMode(m)}
+            className={`rounded-full px-4 py-2 text-[14px] font-semibold ${mode === m ? "bg-surface text-fg shadow-card" : "text-muted"}`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
       <form
         ref={formRef}
@@ -522,113 +590,131 @@ export default function RecipeEditor({ recipe, start }: { recipe: Recipe | null;
           )}
         </div>
 
-        {/* Ingredients */}
-        <section className="relative mt-6" aria-labelledby="ed-ingredients">
-          <div className="flex items-center gap-4">
-            <h2 id="ed-ingredients" className="label-caps">
-              Ingredients
-            </h2>
-            <RollingPin className="hidden h-5 w-28 md:block" />
-          </div>
-          <div className="gap-x-8 md:columns-2">
-            {draft.groups.map((g, gi) => {
-              const rows = [...g.lines, ""];
-              return (
-                <div key={gi} className="mb-4 break-inside-avoid">
-                  <input
-                    value={g.name}
-                    onChange={(e) =>
-                      setDraft((d) => ({
-                        ...d,
-                        groups: d.groups.map((x, i) => (i === gi ? { ...x, name: e.target.value } : x)),
-                      }))
-                    }
-                    placeholder={gi === 0 ? "section name (optional), e.g. marinade" : "section name, e.g. drizzle"}
-                    aria-label={`Section ${gi + 1} name`}
-                    className={`${LINE} text-right !text-lg opacity-90`}
-                  />
-                  {rows.map((line, li) => (
-                    <input
-                      key={li}
-                      data-line={`ing-${gi}-${li}`}
-                      value={line}
-                      onChange={(e) => setIngredient(gi, li, e.target.value)}
-                      onKeyDown={(e) => ingredientKey(e, gi, li)}
-                      placeholder={li === 0 && gi === 0 ? "1/3 c sweet chili sauce" : ""}
-                      aria-label={`Ingredient ${li + 1}${g.name ? ` in ${g.name}` : ""}`}
-                      autoComplete="off"
-                      className={LINE}
-                    />
-                  ))}
-                </div>
-              );
-            })}
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              update({ groups: [...draft.groups, { name: "", lines: [] }] });
-              focusLine(formRef.current, `ing-${draft.groups.length}-0`);
-            }}
-            className="font-hand text-lg text-ink/80 underline decoration-rule underline-offset-4"
-          >
-            + add a section
-          </button>
-        </section>
-
-        {/* Directions */}
-        <section className="relative mt-8" aria-labelledby="ed-directions">
-          <div className="flex items-end justify-between">
-            <div className="flex items-end gap-6">
-              <h2 id="ed-directions" className="label-caps">
-                Directions
+        {mode === "page" ? (
+          <section className="mt-6" aria-label="Handwritten page">
+            <p className="mb-3 font-sans text-[14px] text-muted">
+              Write the ingredients and steps anywhere with the Apple Pencil; fingers scroll. The page is saved as the
+              recipe&apos;s handwritten page. Groceries, Start Cooking and search use the lines, so add them on the
+              lines if you want those.
+            </p>
+            <PencilPage
+              strokes={ink}
+              onChange={setInk}
+              background={draft.handwritingPath ? publicFileUrl("handwriting", draft.handwritingPath) : ""}
+              onClearBackground={() => update({ handwritingPath: "" })}
+            />
+          </section>
+        ) : (
+          <>
+          {/* Ingredients */}
+          <section className="relative mt-6" aria-labelledby="ed-ingredients">
+            <div className="flex items-center gap-4">
+              <h2 id="ed-ingredients" className="label-caps">
+                Ingredients
               </h2>
-              <WhiskAndSpoon className="hidden h-16 w-20 -translate-y-1 md:block" />
+              <RollingPin className="hidden h-5 w-28 md:block" />
             </div>
-            <PlateSetting className="hidden h-12 w-24 md:block" />
-          </div>
-          <p className="mt-1 font-sans text-[13px] text-label">
-            Start a line with “-” (or tap ▷) for a sub-step. Tab and Shift+Tab work on a keyboard.
-          </p>
-          <ol className="mt-1">
-            {directionRows.map((line, li) => (
-              <li key={li} className={`flex items-center ${line.kind === "sub" ? "pl-8 md:pl-14" : ""}`}>
-                <button
-                  type="button"
-                  onClick={() => li < draft.directions.length && toggleKind(li)}
-                  aria-label={line.kind === "step" ? "Make this a sub-step" : "Make this a step"}
-                  className="w-7 shrink-0 text-left font-hand text-lg text-ink/70"
-                >
-                  {line.kind === "step" ? "▷" : "–"}
-                </button>
-                <input
-                  data-line={`dir-${li}`}
-                  value={line.text}
-                  onChange={(e) => setDirection(li, e.target.value)}
-                  onKeyDown={(e) => directionKey(e, li)}
-                  placeholder={li === 0 ? "marinate chicken at least 30 min" : ""}
-                  aria-label={`${line.kind === "step" ? "Step" : "Sub-step"} ${li + 1}`}
-                  autoComplete="off"
-                  className={LINE}
-                />
-              </li>
-            ))}
-          </ol>
-        </section>
+            <div className="gap-x-8 md:columns-2">
+              {draft.groups.map((g, gi) => {
+                const rows = [...g.lines, ""];
+                return (
+                  <div key={gi} className="mb-4 break-inside-avoid">
+                    <input
+                      value={g.name}
+                      onChange={(e) =>
+                        setDraft((d) => ({
+                          ...d,
+                          groups: d.groups.map((x, i) => (i === gi ? { ...x, name: e.target.value } : x)),
+                        }))
+                      }
+                      placeholder={gi === 0 ? "section name (optional), e.g. marinade" : "section name, e.g. drizzle"}
+                      aria-label={`Section ${gi + 1} name`}
+                      className={`${LINE} text-right !text-lg opacity-90`}
+                    />
+                    {rows.map((line, li) => (
+                      <input
+                        key={li}
+                        data-line={`ing-${gi}-${li}`}
+                        value={line}
+                        onChange={(e) => setIngredient(gi, li, e.target.value)}
+                        onKeyDown={(e) => ingredientKey(e, gi, li)}
+                        placeholder={li === 0 && gi === 0 ? "1/3 c sweet chili sauce" : ""}
+                        aria-label={`Ingredient ${li + 1}${g.name ? ` in ${g.name}` : ""}`}
+                        autoComplete="off"
+                        className={LINE}
+                      />
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                update({ groups: [...draft.groups, { name: "", lines: [] }] });
+                focusLine(formRef.current, `ing-${draft.groups.length}-0`);
+              }}
+              className="font-hand text-lg text-ink/80 underline decoration-rule underline-offset-4"
+            >
+              + add a section
+            </button>
+          </section>
 
-        {/* Notes and details */}
-        <section className="mt-8" aria-labelledby="ed-notes">
-          <h2 id="ed-notes" className="label-caps">
-            Notes
-          </h2>
-          <textarea
-            value={draft.notes}
-            onChange={(e) => update({ notes: e.target.value })}
-            rows={3}
-            aria-label="Notes"
-            className="paper-lines block w-full resize-y bg-transparent font-hand text-xl text-ink outline-none [--line:3rem]"
-          />
-        </section>
+          {/* Directions */}
+          <section className="relative mt-8" aria-labelledby="ed-directions">
+            <div className="flex items-end justify-between">
+              <div className="flex items-end gap-6">
+                <h2 id="ed-directions" className="label-caps">
+                  Directions
+                </h2>
+                <WhiskAndSpoon className="hidden h-16 w-20 -translate-y-1 md:block" />
+              </div>
+              <PlateSetting className="hidden h-12 w-24 md:block" />
+            </div>
+            <p className="mt-1 font-sans text-[13px] text-label">
+              Start a line with “-” (or tap ▷) for a sub-step. Tab and Shift+Tab work on a keyboard.
+            </p>
+            <ol className="mt-1">
+              {directionRows.map((line, li) => (
+                <li key={li} className={`flex items-center ${line.kind === "sub" ? "pl-8 md:pl-14" : ""}`}>
+                  <button
+                    type="button"
+                    onClick={() => li < draft.directions.length && toggleKind(li)}
+                    aria-label={line.kind === "step" ? "Make this a sub-step" : "Make this a step"}
+                    className="w-7 shrink-0 text-left font-hand text-lg text-ink/70"
+                  >
+                    {line.kind === "step" ? "▷" : "–"}
+                  </button>
+                  <input
+                    data-line={`dir-${li}`}
+                    value={line.text}
+                    onChange={(e) => setDirection(li, e.target.value)}
+                    onKeyDown={(e) => directionKey(e, li)}
+                    placeholder={li === 0 ? "marinate chicken at least 30 min" : ""}
+                    aria-label={`${line.kind === "step" ? "Step" : "Sub-step"} ${li + 1}`}
+                    autoComplete="off"
+                    className={LINE}
+                  />
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          {/* Notes and details */}
+          <section className="mt-8" aria-labelledby="ed-notes">
+            <h2 id="ed-notes" className="label-caps">
+              Notes
+            </h2>
+            <textarea
+              value={draft.notes}
+              onChange={(e) => update({ notes: e.target.value })}
+              rows={3}
+              aria-label="Notes"
+              className="paper-lines block w-full resize-y bg-transparent font-hand text-xl text-ink outline-none [--line:3rem]"
+            />
+          </section>
+          </>
+        )}
 
         <details className="mt-6 font-sans" open={Boolean(draft.author || draft.sourceName || draft.description)}>
           <summary className="cursor-pointer text-[14px] font-semibold text-label">More details: by, from, description</summary>
