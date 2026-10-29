@@ -63,10 +63,21 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         TARGETED_DEVICE_FAMILY: "2"
         SWIFT_VERSION: "5.0"
+  RamiyasRecipesUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [RamiyasRecipesUITests]
+    dependencies:
+      - target: RamiyasRecipes
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        TARGETED_DEVICE_FAMILY: "2"
+        SWIFT_VERSION: "5.0"
 schemes:
   RamiyasRecipes:
     build:
       targets:
         RamiyasRecipes: all
     test:
-      targets: [RamiyasRecipesTests]
+      targets: [RamiyasRecipesTests, RamiyasRecipesUITests]
