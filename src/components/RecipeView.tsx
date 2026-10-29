@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { TAGS, categoryBySlug } from "@/lib/book";
 import { ingredientText, siteName } from "@/lib/format";
+import { publicFileUrl } from "@/lib/storage";
 import type { Recipe } from "@/lib/types";
 import CoverPhoto from "./CoverPhoto";
 import EditOnly from "./EditOnly";
@@ -44,6 +45,16 @@ export default function RecipeView({ recipe }: { recipe: Recipe }) {
               <Link href={`/book#${recipe.slug}`} className="block px-4 py-3 text-[15px] hover:bg-field">
                 Open in the book
               </Link>
+              {recipe.originalFilePath && (
+                <a
+                  href={publicFileUrl("originals", recipe.originalFilePath)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block px-4 py-3 text-[15px] hover:bg-field"
+                >
+                  View the original
+                </a>
+              )}
               <EditOnly>
                 <Link href={`/recipe/${recipe.slug}/edit`} className="block px-4 py-3 text-[15px] hover:bg-field">
                   Edit recipe

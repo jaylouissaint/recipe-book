@@ -84,11 +84,11 @@ Two columns on iPad, three on desktop.
 
 Scribble works on both the website (Safari on iPad) and the app. The app adds **page mode**: write anywhere with the Apple Pencil, keep the drawing as the handwritten page, and get the recognized text to review. A photo button adds the hero photo. The bottom bar has Cancel and Save.
 
-**Save from the web.** Paste a link, and the site or app reads the page's published recipe data: title, photo, author, site, servings, times, ingredients and steps. The result opens in the writing page for review. If the page has no recipe data, the writing page opens with just the link and title filled in.
+**Save from the web.** Paste a link, and the site or app reads the page's published recipe data: title, photo, author, site, servings, times, ingredients and steps. The result opens in the writing page for review. If the page has no recipe data, the writing page opens with just the link and title filled in, plus the Paste text box. Some sites refuse to be read by other sites; then the writing page opens with the link and the Paste text box, to copy the recipe in from the page. Only public web addresses work, and the photo is copied in when the recipe is saved.
 
 **Add from photos.**
 - **App:** scan with the document scanner or pick photos/PDFs. On-device text recognition and the paste rules fill the writing page, with the original beside it.
-- **Website:** upload the photo or PDF. It shows beside the writing page, which has a "Paste text" box for iPad Live Text, plus manual entry.
+- **Website:** upload the photo or PDF. It shows beside the writing page (above it on narrow screens), with a "Paste text" box for iPad Live Text, plus manual entry. "Paste a recipe's text" is also on Enter your own.
 - **Both:** the original is kept as the original card.
 
 **Start Cooking.** Full screen, one step at a time in large handwriting, with the relevant ingredients shown above the step. Tap or swipe for the next step; a step can be checked off. The screen stays awake.

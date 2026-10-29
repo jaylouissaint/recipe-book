@@ -1,6 +1,6 @@
 # Handoff: Recipe Book
 
-Status as of 2026-10-27, for picking up the work in a new Claude Code session.
+Status as of 2026-10-28, for picking up the work in a new Claude Code session.
 
 ## What this is
 A personal recipe book styled after Louis's handwritten spiral recipe book (reference photo: `docs/reference/recipe-book-page.jpg`). It is a **website**, live now, plus a planned **native iPad app** that shares the same Supabase database.
@@ -78,7 +78,7 @@ Run each migration only once. A second run stops with an error like "column auth
   - Website write path: `src/lib/write.ts` (httpOnly `rb_write_key` cookie + readable `rb_unlocked` flag), server actions in `src/app/actions.ts`, `EditOnly`/`useUnlocked`, Settings → Unlock editing.
   - Writing page `RecipeEditor` at `/new` and `/recipe/[slug]/edit`: one field per ruled line, section names, ▷ / – directions (leading "-" or tap the marker; Tab/Shift+Tab), editable stat box, tag circles, category tabs, photo upload (signed URL, supabase-js loaded on demand), drafts in localStorage, Delete.
   - Parser `src/lib/parse.ts` with `npm test` (node:test) against `shared/fixtures/ingredient-lines.json` (shared with the future Swift tests).
-  - Recipe view shows photo, by/from, description, "Check this import"; Library cards show author and times cooked; green + and Add sheet (web/photo imports say "soon").
+  - Recipe view shows photo, by/from, description, "Check this import"; Library cards show author and times cooked; green + and Add sheet.
   - Cover photo: set when writing a recipe (Add a photo), or later straight from the recipe view (`CoverPhoto`: "Add a cover photo" / "Change cover" on unlocked devices; uploads, then re-saves the recipe with `photoPath`, keeping the "Check this import" flag). Shared upload code in `src/lib/uploadPhoto.ts`.
   - Not yet tested against the live database (saving, photo upload): do that after the migration and redeploy.
   - `src/lib/recipes.ts` selects `*`, so the site works before and after migration 001.
@@ -86,9 +86,19 @@ Run each migration only once. A second run stops with an error like "column auth
 
 - **Book view (2026-10-28, built, not yet deployed):** `/book` with the Shelf | Book `ViewToggle` on Home; `src/components/book/BookView.tsx` (measures every block in a hidden copy styled like a page, packs fixed-size pages with `pack()` in `src/lib/bookLayout.ts`, single page or two-page spread, WAAPI page-turn, swipe/arrows/buttons, category tabs, contents, `#slug` deep links) and `BookBlocks.tsx` (em/`--line` sized blocks). Long single ingredient groups now split across both columns. The spiral is a repeating background, so the rings always reach the bottom (writing page too). Removed: `/recipe/[slug]/book`, `RecipePage`, `StatBox`, `TagRow`, `SideTabs`. Tests: `src/lib/bookLayout.test.mts`. Checked in headless Chrome at desktop, iPad portrait and phone with test recipes (a long stew and a short cake, added only in a build copy): no clipped blocks on any page.
 
+- **R3, bringing recipes in (2026-10-28, built, not yet deployed; no migration or function redeploy needed):**
+  - **Save from the web** (`/new/web`, also `/new/web?url=…`): server action `importFromWeb` in `src/app/actions.ts` checks the write key (unlocked devices only), fetches the page with `src/lib/safeFetch.ts` and reads its schema.org JSON-LD with `recipeFromHtml` in `src/lib/schemaRecipe.ts` (`@graph`, HowToSection/HowToStep, ISO times, entities, yield, category and tag guesses), falling back to og: meta tags. The result opens in the writing page. The site's photo is copied into the photos bucket only on Save (`copyWebPhoto`).
+  - **Address guard:** `safeFetch` allows only http/https on ports 80/443, resolves the host and refuses private, loopback, link-local and metadata addresses at every redirect (max 5), with a 12 s timeout and size caps (5 MB pages, 10 MB photos). It identifies itself honestly as RamiyasRecipes (no browser disguise). Sites that refuse it (Allrecipes and Simply Recipes answered 403 in testing; BBC Good Food worked) get "paste it in instead": the writing page opens with the link and the Paste text box.
+  - **Add from photos** (`/new/photo`): pick a photo or PDF (up to 20 MB). It sits beside the writing page (sticky on wide screens, above it on narrow ones) with a **Paste text** box for Live Text. On Save the file uploads to the `originals` bucket as the recipe's original (`source: "upload"`). The recipe menu gains "View the original", and thumbnails fall back to an original JPG/PNG when there's no cover photo.
+  - **Paste parser** `parseRecipeText` in `src/lib/pasteText.ts`: headings, the book page's stat box and tag lines, "recipe:" titles that wrap, section names (colon, "For the …", ALL CAPS, or a short line on its own before amounts), ▷/numbered steps with "-" sub-steps and wrapped lines joined. Shared fixtures in `shared/fixtures/pasted-recipes.json` (the first one is a guess at Live Text's output for the sweet chili chicken photo; replace it with real Live Text output when Louis has it). "Paste a recipe's text" is also on Enter your own.
+  - Imports save with `imported: true` ("Check this import") until edited and saved again.
+  - Also fixed: "1 ½ cups" now reads as 1 ½ (added to the shared ingredient fixtures); the writing page's category tabs no longer make phones scroll sideways.
+  - Tested in a build copy with headless Chrome: the guard refusals, a BBC Good Food import (16 ingredients, 11 steps, stats, photo), the blocked-site fallback, and the photo flow with the pasted sweet chili chicken text (title, stats, 2 sections with 14 ingredients, 4 steps with sub-steps). **Saving an import was not tested against the live database**; check that on localhost.
+
 ## Next
-1. **Website R3** (PLAN.md build order): Save from the web (schema.org import), Add from photos. Then R4 (import), R4 (groceries, cooking, search), R5 (polish).
-2. **iPad app Phase 0** can run in parallel: Louis installs Xcode (not installed yet; this Mac is an M4 on macOS 15.6.1) and sets up SideStore; Claude makes a minimal SwiftUI app in `ios/` and `scripts/build-ipa.sh`.
+1. **Check R3 on localhost**, then commit and push: save one web import (its photo should copy) and one photo import (the original should open from the recipe menu).
+2. **Website R4**: Groceries, Start Cooking, serving scaler, search. Then R5 (polish).
+3. **iPad app Phase 0** can run in parallel: Louis installs Xcode (not installed yet; this Mac is an M4 on macOS 15.6.1) and sets up SideStore; Claude makes a minimal SwiftUI app in `ios/` and `scripts/build-ipa.sh`.
 
 ## Docket (queued, not scheduled)
 - **Custom book cover** (Louis will provide later): replace the plain raspberry cover page in the book view (`PageFace` cover in `src/components/book/BookView.tsx`) with an uploaded image or design.

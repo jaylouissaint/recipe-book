@@ -1,0 +1,91 @@
+[
+  {
+    "name": "the book page, as Live Text reads the sweet chili chicken photo",
+    "text": "recipe: sweet chili chicken with\ncoconut lime drizzle\n*\nSERVINGS PREP TIME COOK TIME\n4 45 min 15 min\no QUICK & EASY o SLOW COOKER o ONE POT/PAN o KID CHEF FRIENDLY o EVERYDAY\no MAKE AHEAD o PRESSURE COOKER o AIR FRYER X FAMILY FAVORITE o SPECIAL OCCASION\no VEG o VEGAN o GLUTEN FREE o DAIRY FREE o NUT FREE o KOSHER\nINGREDIENTS\nmarinade\n2 lbs chicken thighs\n1/3c sweet chili sauce\n2 TB soy sauce\n1 TB sesame oil\n2 garlic cloves (minced)\n1tsp grated fresh ginger\n1 TB lime juice\n\ncoconut lime drizzle\n1/2 c canned coconut milk\n2 TB mayo\n1 TB lime juice\n1 tsp lime zest\n1 TB sriracha\npinch of salt\n\n2c cooked rice\nDIRECTIONS\n▷marinate chicken at least 30 min\n▷ make coconut lime drizzle\n- whisk together coconut milk, mayo, lime juice,\nlime zest, sriracha, and a pinch of salt\n▷cook chicken\n- heat grill pan over medium high heat\n-lightly oil the surface\n- grill marinated chicken 5-7 min per side\n-let rest 5 min before slicing\n▷ assemble the bowls\n- top rice with chicken\n- drizzle with coconut lime drizzle\n- garnish with lime wedges",
+    "expected": {
+      "title": "sweet chili chicken with coconut lime drizzle",
+      "servings": 4,
+      "prepMin": 45,
+      "cookMin": 15,
+      "ingredientGroups": [
+        { "name": "marinade", "items": [
+          { "quantity": "2", "unit": "lbs", "item": "chicken thighs" },
+          { "quantity": "1/3", "unit": "c", "item": "sweet chili sauce" },
+          { "quantity": "2", "unit": "TB", "item": "soy sauce" },
+          { "quantity": "1", "unit": "TB", "item": "sesame oil" },
+          { "quantity": "2", "unit": "", "item": "garlic cloves (minced)" },
+          { "quantity": "1", "unit": "tsp", "item": "grated fresh ginger" },
+          { "quantity": "1", "unit": "TB", "item": "lime juice" }
+        ] },
+        { "name": "coconut lime drizzle", "items": [
+          { "quantity": "1/2", "unit": "c", "item": "canned coconut milk" },
+          { "quantity": "2", "unit": "TB", "item": "mayo" },
+          { "quantity": "1", "unit": "TB", "item": "lime juice" },
+          { "quantity": "1", "unit": "tsp", "item": "lime zest" },
+          { "quantity": "1", "unit": "TB", "item": "sriracha" },
+          { "quantity": "", "unit": "", "item": "pinch of salt" },
+          { "quantity": "2", "unit": "c", "item": "cooked rice" }
+        ] }
+      ],
+      "stepGroups": [
+        { "title": "marinate chicken at least 30 min", "steps": [] },
+        { "title": "make coconut lime drizzle", "steps": ["whisk together coconut milk, mayo, lime juice, lime zest, sriracha, and a pinch of salt"] },
+        { "title": "cook chicken", "steps": ["heat grill pan over medium high heat", "lightly oil the surface", "grill marinated chicken 5-7 min per side", "let rest 5 min before slicing"] },
+        { "title": "assemble the bowls", "steps": ["top rice with chicken", "drizzle with coconut lime drizzle", "garnish with lime wedges"] }
+      ],
+      "notes": ""
+    }
+  },
+  {
+    "name": "copied from a recipe website: headings, sections with colons, numbered steps",
+    "text": "Lemon Garlic Pasta\nPrep Time: 10 minutes\nCook Time: 1 hr 5 mins\nServings: 6\n\nIngredients\nFor the pasta:\n• 1 lb spaghetti\n• 2 tablespoons olive oil\nFor the sauce:\n• 4 cloves garlic, minced\n• ½ cup grated parmesan\n• salt and pepper to taste\n\nInstructions\n1. Boil the pasta in salted water.\n2. Warm the oil and garlic in a pan,\nthen toss in the pasta.\n3. Stir in the parmesan.\n\nNotes\nKeeps 3 days in the fridge.",
+    "expected": {
+      "title": "Lemon Garlic Pasta",
+      "servings": 6,
+      "prepMin": 10,
+      "cookMin": 65,
+      "ingredientGroups": [
+        { "name": "pasta", "items": [
+          { "quantity": "1", "unit": "lb", "item": "spaghetti" },
+          { "quantity": "2", "unit": "tablespoons", "item": "olive oil" }
+        ] },
+        { "name": "sauce", "items": [
+          { "quantity": "4", "unit": "cloves", "item": "garlic, minced" },
+          { "quantity": "½", "unit": "cup", "item": "grated parmesan" },
+          { "quantity": "", "unit": "", "item": "salt and pepper to taste" }
+        ] }
+      ],
+      "stepGroups": [
+        { "title": "Boil the pasta in salted water.", "steps": [] },
+        { "title": "Warm the oil and garlic in a pan, then toss in the pasta.", "steps": [] },
+        { "title": "Stir in the parmesan.", "steps": [] }
+      ],
+      "notes": "Keeps 3 days in the fridge."
+    }
+  },
+  {
+    "name": "no headings: amounts are ingredients, the rest are steps",
+    "text": "Grandma's Biscuits\n2 c flour\n1 TB baking powder\n1/2 tsp salt\n6 TB cold butter\n3/4 c milk\nMix the dry ingredients.\nCut in the butter until crumbly.\nStir in the milk and bake at 450 for 12 minutes.",
+    "expected": {
+      "title": "Grandma's Biscuits",
+      "servings": null,
+      "prepMin": null,
+      "cookMin": null,
+      "ingredientGroups": [
+        { "name": "", "items": [
+          { "quantity": "2", "unit": "c", "item": "flour" },
+          { "quantity": "1", "unit": "TB", "item": "baking powder" },
+          { "quantity": "1/2", "unit": "tsp", "item": "salt" },
+          { "quantity": "6", "unit": "TB", "item": "cold butter" },
+          { "quantity": "3/4", "unit": "c", "item": "milk" }
+        ] }
+      ],
+      "stepGroups": [
+        { "title": "Mix the dry ingredients.", "steps": [] },
+        { "title": "Cut in the butter until crumbly.", "steps": [] },
+        { "title": "Stir in the milk and bake at 450 for 12 minutes.", "steps": [] }
+      ],
+      "notes": ""
+    }
+  }
+]

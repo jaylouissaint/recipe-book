@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { deleteRecipe, saveRecipe } from "@/app/actions";
+import { copyWebPhoto, deleteRecipe, saveRecipe } from "@/app/actions";
 import { CATEGORIES, TAGS } from "@/lib/book";
 import {
   type DirectionLine,
@@ -13,9 +13,11 @@ import {
   readDirectionLine,
   stepGroupsToLines,
 } from "@/lib/parse";
+import { parseRecipeText } from "@/lib/pasteText";
+import type { WebRecipe } from "@/lib/schemaRecipe";
 import { publicFileUrl } from "@/lib/storage";
 import type { Recipe } from "@/lib/types";
-import { uploadPhoto } from "@/lib/uploadPhoto";
+import { uploadFile, uploadPhoto } from "@/lib/uploadPhoto";
 import { useUnlocked } from "./EditOnly";
 import { CameraIcon } from "./Icons";
 import Spiral from "./Spiral";
@@ -23,6 +25,9 @@ import { PlateSetting, RollingPin, WhiskAndSpoon } from "./Stickers";
 
 // The writing page (docs/DESIGN.md): the book page from the sweet chili chicken photo as a form.
 // Every ruled line is its own text field, so Scribble on an iPad fills one line at a time.
+// A new recipe can start from a web import or a photo (`start`); either one is reviewed here.
+
+export type EditorStart = { kind: "web"; url: string; recipe: WebRecipe } | { kind: "photo"; file: File };
 
 type Group = { name: string; lines: string[] };
 type Draft = {
@@ -40,6 +45,7 @@ type Draft = {
   sourceUrl: string;
   description: string;
   photoPath: string;
+  remotePhoto: string; // a web import's photo, copied into the photos bucket on save
 };
 
 function fromRecipe(r: Recipe | null): Draft {
@@ -60,8 +66,41 @@ function fromRecipe(r: Recipe | null): Draft {
     sourceUrl: r?.sourceUrl ?? "",
     description: r?.description ?? "",
     photoPath: r?.photoPath ?? "",
+    remotePhoto: "",
   };
 }
+
+function fromStart(start: EditorStart | undefined, recipe: Recipe | null): Draft {
+  if (start?.kind !== "web") return fromRecipe(recipe);
+  const w = start.recipe;
+  return {
+    ...fromRecipe(null),
+    title: w.title,
+    servings: w.servings?.toString() ?? "",
+    prepMin: w.prepMin?.toString() ?? "",
+    cookMin: w.cookMin?.toString() ?? "",
+    category: w.category,
+    tags: w.tags,
+    groups: w.ingredientGroups.length
+      ? w.ingredientGroups.map((g) => ({ name: g.name, lines: g.items.map(ingredientLine) }))
+      : [{ name: "", lines: [] }],
+    directions: stepGroupsToLines(w.stepGroups),
+    author: w.author,
+    sourceName: w.sourceName,
+    sourceUrl: start.url,
+    description: w.description,
+    remotePhoto: w.imageUrl,
+  };
+}
+
+function draftKeyFor(recipe: Recipe | null, start: EditorStart | undefined) {
+  if (recipe) return `rb-draft:${recipe.id}`;
+  if (start?.kind === "web") return `rb-draft:web:${start.url}`;
+  if (start?.kind === "photo") return `rb-draft:photo:${start.file.name}:${start.file.size}`;
+  return "rb-draft:new";
+}
+
+const hasContent = (d: Draft) => d.groups.some((g) => g.lines.some((l) => l.trim())) || d.directions.some((l) => l.text.trim());
 
 // crypto.randomUUID only exists on https and localhost; the iPad on the home network uses http.
 function newId(): string {
@@ -88,21 +127,22 @@ function focusLine(form: HTMLFormElement | null, id: string) {
   requestAnimationFrame(() => form?.querySelector<HTMLInputElement>(`[data-line="${id}"]`)?.focus());
 }
 
-export default function RecipeEditor({ recipe }: { recipe: Recipe | null }) {
+export default function RecipeEditor({ recipe, start }: { recipe: Recipe | null; start?: EditorStart }) {
   const router = useRouter();
   const unlocked = useUnlocked();
   const formRef = useRef<HTMLFormElement>(null);
   const [id] = useState(() => recipe?.id ?? newId());
-  const draftKey = `rb-draft:${recipe?.id ?? "new"}`;
-  const [draft, setDraft] = useState<Draft>(() => fromRecipe(recipe));
+  const draftKey = draftKeyFor(recipe, start);
+  const [draft, setDraft] = useState<Draft>(() => fromStart(start, recipe));
   const [restored, setRestored] = useState(false);
   const [photo, setPhoto] = useState<{ file: File; preview: string } | null>(null);
   const [error, setError] = useState("");
   const [saving, startSaving] = useTransition();
+  const originalPath = useRef(""); // the photo's original, once uploaded (not again on a retry)
 
   // Restore an unsaved draft once, then keep the draft after every change (FR-WRITE-006).
   // Only a draft that differs from the saved recipe is kept.
-  const [original] = useState(() => JSON.stringify(fromRecipe(recipe)));
+  const [original] = useState(() => JSON.stringify(fromStart(start, recipe)));
   const loaded = useRef(false);
   useEffect(() => {
     if (loaded.current) return;
@@ -110,13 +150,13 @@ export default function RecipeEditor({ recipe }: { recipe: Recipe | null }) {
     try {
       const saved = localStorage.getItem(draftKey);
       if (saved && saved !== original) {
-        setDraft({ ...fromRecipe(recipe), ...JSON.parse(saved) });
+        setDraft({ ...fromStart(start, recipe), ...JSON.parse(saved) });
         setRestored(true);
       }
     } catch {
       // storage unavailable or an unreadable draft: start from the recipe
     }
-  }, [draftKey, original, recipe]);
+  }, [draftKey, original, recipe, start]);
   useEffect(() => {
     if (!loaded.current) return;
     const t = setTimeout(() => {
@@ -137,8 +177,30 @@ export default function RecipeEditor({ recipe }: { recipe: Recipe | null }) {
     try {
       localStorage.removeItem(draftKey);
     } catch {}
-    setDraft(fromRecipe(recipe));
+    setDraft(fromStart(start, recipe));
     setRestored(false);
+  }
+
+  // ---- pasted text (Live Text from the photo, or copied from anywhere)
+  function fillFromText(text: string): string {
+    const p = parseRecipeText(text);
+    const found = p.ingredientGroups.length + p.stepGroups.length;
+    if (!found && !p.title) return "No recipe found in that text.";
+    if (hasContent(draft) && !confirm("Replace the ingredients and directions on the page with the pasted text?")) return "";
+    setDraft((d) => ({
+      ...d,
+      title: p.title || d.title,
+      servings: p.servings?.toString() ?? d.servings,
+      prepMin: p.prepMin?.toString() ?? d.prepMin,
+      cookMin: p.cookMin?.toString() ?? d.cookMin,
+      groups: p.ingredientGroups.length
+        ? p.ingredientGroups.map((g) => ({ name: g.name, lines: g.items.map(ingredientLine) }))
+        : d.groups,
+      directions: p.stepGroups.length ? stepGroupsToLines(p.stepGroups) : d.directions,
+      notes: [d.notes, p.notes].filter(Boolean).join("\n"),
+    }));
+    const items = p.ingredientGroups.reduce((n, g) => n + g.items.length, 0);
+    return `Filled in ${items} ingredient${items === 1 ? "" : "s"} and ${p.stepGroups.length} step${p.stepGroups.length === 1 ? "" : "s"}. Check each line against the original.`;
   }
 
   // ---- ingredients
@@ -218,7 +280,20 @@ export default function RecipeEditor({ recipe }: { recipe: Recipe | null }) {
         const servings = readNumber("Servings", draft.servings);
         const prepMin = readNumber("Prep time", draft.prepMin);
         const cookMin = readNumber("Cook time", draft.cookMin);
-        const photoPath = photo ? await uploadPhoto(id, photo.file) : draft.photoPath;
+        let photoPath = photo ? await uploadPhoto(id, photo.file) : draft.photoPath;
+        if (!photoPath && draft.remotePhoto) {
+          const copied = await copyWebPhoto(id, draft.remotePhoto);
+          if (!copied.ok) throw new Error(copied.error);
+          photoPath = copied.path;
+        }
+        if (photoPath !== draft.photoPath) {
+          // uploaded: don't upload it again if the save below fails and is tried again
+          setPhoto(null);
+          update({ photoPath, remotePhoto: "" });
+        }
+        if (start?.kind === "photo" && !originalPath.current) {
+          originalPath.current = await uploadFile("originals", id, start.file);
+        }
         const result = await saveRecipe({
           id,
           title: draft.title.trim(),
@@ -228,15 +303,16 @@ export default function RecipeEditor({ recipe }: { recipe: Recipe | null }) {
           category: draft.category,
           tags: draft.tags,
           notes: draft.notes.trim(),
-          source: recipe?.source ?? "typed",
-          originalFilePath: recipe?.originalFilePath,
+          source: recipe?.source ?? (start?.kind === "photo" ? "upload" : "typed"),
+          originalFilePath: originalPath.current || recipe?.originalFilePath,
           handwritingPath: recipe?.handwritingPath,
           author: draft.author,
           sourceName: draft.sourceName,
           sourceUrl: draft.sourceUrl,
           description: draft.description.trim(),
           photoPath: photoPath || null,
-          imported: false,
+          // Imports show "Check this import" until they're edited and saved again.
+          imported: Boolean(start),
           ingredientGroups: draft.groups
             .map((g) => ({
               name: g.name.trim(),
@@ -270,11 +346,11 @@ export default function RecipeEditor({ recipe }: { recipe: Recipe | null }) {
     });
   }
 
-  const photoUrl = photo?.preview ?? (draft.photoPath ? publicFileUrl("photos", draft.photoPath) : null);
+  const photoUrl = photo?.preview ?? (draft.photoPath ? publicFileUrl("photos", draft.photoPath) : draft.remotePhoto || null);
   const directionRows: DirectionLine[] = [...draft.directions, { kind: "step", text: "" }];
 
-  return (
-    <div className="mx-auto max-w-4xl px-3 pt-4 pb-32 md:px-10">
+  const page = (
+    <div className={start?.kind === "photo" ? "min-w-0" : "mx-auto max-w-4xl px-3 pt-4 pb-32 md:px-10"}>
       {!unlocked && (
         <p role="status" className="mb-4 rounded-2xl bg-field px-4 py-3 text-[15px]">
           Editing is locked on this device, so this recipe can&apos;t be saved yet.{" "}
@@ -291,6 +367,13 @@ export default function RecipeEditor({ recipe }: { recipe: Recipe | null }) {
           </button>
         </p>
       )}
+      {start?.kind === "web" && <WebNote start={start} onFill={fillFromText} />}
+      {!recipe && !start && (
+        <details className="mb-4 rounded-2xl bg-field px-4 py-3 font-sans">
+          <summary className="cursor-pointer text-[15px] font-semibold text-accent">Paste a recipe&apos;s text</summary>
+          <PasteText onFill={fillFromText} />
+        </details>
+      )}
 
       <form
         ref={formRef}
@@ -303,7 +386,7 @@ export default function RecipeEditor({ recipe }: { recipe: Recipe | null }) {
         <Spiral className="top-6 bottom-6 -left-5 hidden md:block" />
 
         {/* Category: the book's colored side tabs */}
-        <fieldset className="mb-4 md:absolute md:top-24 md:-right-9 md:mb-0">
+        <fieldset className="mb-4 min-w-0 md:absolute md:top-24 md:-right-9 md:mb-0">
           <legend className="sr-only">Category</legend>
           <div className="flex gap-1 overflow-x-auto md:flex-col md:gap-2 md:overflow-visible">
             {CATEGORIES.map((c) => {
@@ -418,7 +501,7 @@ export default function RecipeEditor({ recipe }: { recipe: Recipe | null }) {
         <div className="mt-4 flex items-center gap-4">
           {photoUrl && (
             // eslint-disable-next-line @next/next/no-img-element -- local previews and Supabase URLs, shown as is
-            <img src={photoUrl} alt="" className="size-20 rounded-2xl object-cover shadow-card" />
+            <img src={photoUrl} alt="" referrerPolicy="no-referrer" className="size-20 rounded-2xl object-cover shadow-card" />
           )}
           <label className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-surface px-4 py-2 font-sans text-[14px] font-semibold text-accent shadow-card has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent">
             <CameraIcon className="size-5" />
@@ -430,7 +513,7 @@ export default function RecipeEditor({ recipe }: { recipe: Recipe | null }) {
               type="button"
               onClick={() => {
                 setPhoto(null);
-                update({ photoPath: "" });
+                update({ photoPath: "", remotePhoto: "" });
               }}
               className="font-sans text-[14px] text-muted underline underline-offset-4"
             >
@@ -610,5 +693,122 @@ export default function RecipeEditor({ recipe }: { recipe: Recipe | null }) {
         </div>
       </form>
     </div>
+  );
+
+  if (start?.kind !== "photo") return page;
+  return (
+    <div className="mx-auto grid max-w-7xl gap-6 px-3 pt-4 pb-32 md:px-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-10">
+      <OriginalPanel file={start.file} onFill={fillFromText} />
+      {page}
+    </div>
+  );
+}
+
+// "Paste text": a recipe's text in, the page filled in by the paste rules (src/lib/pasteText.ts).
+function PasteText({ onFill, hint }: { onFill: (text: string) => string; hint?: string }) {
+  const [text, setText] = useState("");
+  const [status, setStatus] = useState("");
+  return (
+    <div className="mt-3 font-sans">
+      {hint && <p className="mb-2 text-[14px] text-muted">{hint}</p>}
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        rows={6}
+        aria-label="Recipe text"
+        placeholder={"recipe title\n\nIngredients\n2 lbs chicken thighs\n…\n\nDirections\n▷ marinate chicken\n- at least 30 min"}
+        className="block w-full rounded-2xl border border-divider bg-surface px-4 py-3 text-[15px] outline-none focus:border-accent"
+      />
+      <div className="mt-2 flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          disabled={!text.trim()}
+          onClick={() => setStatus(onFill(text))}
+          className="rounded-full bg-accent px-5 py-2.5 text-[15px] font-semibold text-white disabled:opacity-50"
+        >
+          Fill in the page
+        </button>
+        {status && (
+          <p role="status" className="text-[14px] text-muted">
+            {status}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function WebNote({ start, onFill }: { start: Extract<EditorStart, { kind: "web" }>; onFill: (text: string) => string }) {
+  const site = start.recipe.sourceName || start.url;
+  if (start.recipe.found) {
+    return (
+      <p role="status" className="mb-4 rounded-2xl bg-field px-4 py-3 font-sans text-[15px]">
+        Read from {site}. Check each line against{" "}
+        <a href={start.url} target="_blank" rel="noreferrer" className="font-semibold text-accent underline underline-offset-4">
+          the original
+        </a>{" "}
+        before saving.
+      </p>
+    );
+  }
+  return (
+    <div className="mb-4 rounded-2xl bg-field px-4 py-3 font-sans text-[15px]">
+      <p>
+        {start.recipe.title
+          ? `${site} doesn't publish its recipe in a form the site can read, so only the title and photo are filled in.`
+          : `${site} couldn't be read.`}{" "}
+        Copy the recipe from{" "}
+        <a href={start.url} target="_blank" rel="noreferrer" className="font-semibold text-accent underline underline-offset-4">
+          the page
+        </a>{" "}
+        and paste it here, or write it in.
+      </p>
+      <PasteText onFill={onFill} />
+    </div>
+  );
+}
+
+// The photo or PDF beside the writing page, with the Paste text box under it.
+function OriginalPanel({ file, onFill }: { file: File; onFill: (text: string) => string }) {
+  const [url, setUrl] = useState("");
+  useEffect(() => {
+    const u = URL.createObjectURL(file);
+    setUrl(u);
+    return () => URL.revokeObjectURL(u);
+  }, [file]);
+  const pdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name);
+  return (
+    <aside className="font-sans lg:sticky lg:top-4 lg:max-h-[calc(100dvh-2rem)] lg:self-start lg:overflow-y-auto">
+      <div className="overflow-hidden rounded-2xl bg-surface shadow-card">
+        {url &&
+          (pdf ? (
+            <iframe src={url} title="The original" className="h-[40vh] w-full lg:h-[60dvh]" />
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element -- a local file, shown as is
+            <img src={url} alt="The original recipe" className="max-h-[40vh] w-full object-contain lg:max-h-[60dvh]" />
+          ))}
+      </div>
+      <p className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[13px] text-muted">
+        <span className="truncate">{file.name}, saved with the recipe as the original</span>
+        {url && (
+          <a href={url} target="_blank" rel="noreferrer" className="font-semibold text-accent underline underline-offset-4">
+            Open full size
+          </a>
+        )}
+      </p>
+      <section aria-labelledby="paste-heading" className="mt-4 rounded-2xl bg-field px-4 py-3">
+        <h2 id="paste-heading" className="text-[15px] font-semibold">
+          Paste text
+        </h2>
+        <PasteText
+          onFill={onFill}
+          hint={
+            pdf
+              ? "Select the recipe's text in the PDF, copy it, and paste it here."
+              : "On an iPad or iPhone: touch and hold the text in the photo, tap Select All, then Copy, and paste it here. Or write it in yourself."
+          }
+        />
+      </section>
+    </aside>
   );
 }

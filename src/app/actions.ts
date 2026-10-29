@@ -2,6 +2,8 @@
 
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
+import { FetchError, decodeText, safeFetch } from "@/lib/safeFetch";
+import { type WebRecipe, recipeFromHtml } from "@/lib/schemaRecipe";
 import { FLAG_COOKIE, KEY_COOKIE, WriteError, callSaveRecipe } from "@/lib/write";
 
 export type ActionResult<T = object> = ({ ok: true } & T) | { ok: false; error: string };
@@ -67,20 +69,67 @@ export async function deleteRecipe(id: string): Promise<ActionResult> {
   }
 }
 
-// A one-time signed link the browser uploads one photo to directly.
-export async function photoUploadUrl(
+// A one-time signed link the browser uploads one file to directly: a cover photo, or the
+// original photo or PDF of a recipe added from photos.
+export async function fileUploadUrl(
+  bucket: "photos" | "originals",
   recipeId: string,
   ext: string,
 ): Promise<ActionResult<{ path: string; token: string }>> {
   try {
     const { path, token } = await callSaveRecipe<{ path: string; token: string }>({
       action: "upload-url",
-      bucket: "photos",
+      bucket,
       recipeId,
       ext,
     });
     return { ok: true, path, token };
   } catch (e) {
+    return failure(e);
+  }
+}
+
+// Save from the web: reads the recipe a site publishes for search engines (schema.org).
+// Unlocked devices only, so the website can't be used to fetch pages for anyone else.
+export async function importFromWeb(
+  link: string,
+): Promise<ActionResult<{ recipe: WebRecipe; url: string }> & { url?: string }> {
+  const url = /^[a-z][a-z0-9+.-]*:/i.test(link.trim()) ? link.trim() : `https://${link.trim()}`;
+  try {
+    await callSaveRecipe({ action: "check" });
+    const page = await safeFetch(url, { accept: "text/html,application/xhtml+xml", maxBytes: 5_000_000 });
+    if (!/html|xml|^$/i.test(page.contentType)) return { ok: false, error: "That link isn't a web page." };
+    return { ok: true, recipe: recipeFromHtml(decodeText(page.body, page.contentType), page.url), url: page.url };
+  } catch (e) {
+    // The page couldn't be read, but the link is fine: the recipe can still be pasted in.
+    if (e instanceof FetchError) return { ok: false, error: e.message, url: e.reached ? url : undefined };
+    return failure(e);
+  }
+}
+
+const PHOTO_TYPES: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
+
+// Copies an imported recipe's photo from the website into the photos bucket, when it's saved.
+export async function copyWebPhoto(recipeId: string, imageUrl: string): Promise<ActionResult<{ path: string }>> {
+  try {
+    const image = await safeFetch(imageUrl, { accept: "image/jpeg,image/png,image/webp", maxBytes: 10_000_000 });
+    const type = image.contentType.split(";")[0].trim().toLowerCase();
+    const ext = PHOTO_TYPES[type];
+    if (!ext) return { ok: false, error: "The website's photo is in a format that can't be saved. Remove it or add your own." };
+    const { path, token } = await callSaveRecipe<{ path: string; token: string }>({
+      action: "upload-url",
+      bucket: "photos",
+      recipeId,
+      ext,
+    });
+    const { supabase } = await import("@/lib/supabase");
+    const { error } = await supabase.storage
+      .from("photos")
+      .uploadToSignedUrl(path, token, new Blob([image.body as BlobPart], { type }), { contentType: type });
+    if (error) return { ok: false, error: `The website's photo didn't save: ${error.message}` };
+    return { ok: true, path };
+  } catch (e) {
+    if (e instanceof FetchError) return { ok: false, error: `The website's photo couldn't be copied. ${e.message}` };
     return failure(e);
   }
 }

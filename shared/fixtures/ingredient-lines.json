@@ -12,6 +12,7 @@
   { "line": "1 1/2 cups flour", "quantity": "1 1/2", "unit": "cups", "item": "flour" },
   { "line": "½ tsp ground turmeric", "quantity": "½", "unit": "tsp", "item": "ground turmeric" },
   { "line": "1½ c milk", "quantity": "1½", "unit": "c", "item": "milk" },
+  { "line": "1 ½ cups rice", "quantity": "1 ½", "unit": "cups", "item": "rice" },
   { "line": "2-3 limes", "quantity": "2-3", "unit": "", "item": "limes" },
   { "line": "1.5 lb salmon", "quantity": "1.5", "unit": "lb", "item": "salmon" },
   { "line": "3 eggs", "quantity": "3", "unit": "", "item": "eggs" },

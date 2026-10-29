@@ -13,8 +13,8 @@ const UNITS = new Set([
   "clove", "cloves", "pinch", "dash", "can", "cans", "stick", "sticks", "pkg", "slice", "slices",
 ]);
 
-// 2 | 1/3 | 1 1/2 | ½ | 1½ | 1-2 | 1.5
-const QTY = String.raw`(?:\d+(?:[.,]\d+)?(?:\s*-\s*\d+(?:[.,]\d+)?)?(?:\s+\d+\/\d+)?|\d+\/\d+|\d*\s?[½⅓⅔¼¾⅛])`;
+// 2 | 1/3 | 1 1/2 | ½ | 1½ | 1 ½ | 1-2 | 1.5
+const QTY = String.raw`(?:\d+(?:[.,]\d+)?(?:\s*-\s*\d+(?:[.,]\d+)?)?(?:\s+\d+\/\d+|\s?[½⅓⅔¼¾⅛])?|\d+\/\d+|[½⅓⅔¼¾⅛])`;
 const LINE = new RegExp(String.raw`^(${QTY})\s*([A-Za-z]+)?\.?(?:\s+|$)(.*)$`);
 
 // "1/3 c sweet chili sauce" -> { quantity: "1/3", unit: "c", item: "sweet chili sauce" }.

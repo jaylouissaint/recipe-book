@@ -8,7 +8,8 @@ import { CameraIcon, LinkIcon, PlusIcon } from "./Icons";
 // The floating green + and its Add sheet (docs/DESIGN.md). Only on unlocked devices.
 export default function AddButton() {
   const dialog = useRef<HTMLDialogElement>(null);
-  const soon = "flex w-full items-center gap-4 px-6 py-5 text-left text-[17px] text-muted";
+  const row = "flex items-center gap-4 px-6 py-5 text-[17px] hover:bg-field";
+  const close = () => dialog.current?.close();
 
   return (
     <EditOnly>
@@ -29,25 +30,19 @@ export default function AddButton() {
         <div className="mx-auto mt-3 h-1 w-10 rounded-full bg-divider" />
         <ul className="divide-y divide-divider pb-[env(safe-area-inset-bottom)]">
           <li>
-            <span className={soon}>
+            <Link href="/new/web" onClick={close} className={row}>
               <LinkIcon />
               Save a recipe from the web
-              <span className="ml-auto text-[13px]">soon</span>
-            </span>
+            </Link>
           </li>
           <li>
-            <span className={soon}>
+            <Link href="/new/photo" onClick={close} className={row}>
               <CameraIcon />
               Add from recipe photos
-              <span className="ml-auto text-[13px]">soon</span>
-            </span>
+            </Link>
           </li>
           <li>
-            <Link
-              href="/new"
-              onClick={() => dialog.current?.close()}
-              className="flex items-center gap-4 px-6 py-5 text-[17px] hover:bg-field"
-            >
+            <Link href="/new" onClick={close} className={row}>
               <PlusIcon className="size-6 rounded-full border border-current p-0.5" />
               Enter your own recipe
             </Link>

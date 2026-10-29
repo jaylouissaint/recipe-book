@@ -1,17 +1,22 @@
-import { photoUploadUrl } from "@/app/actions";
+import { fileUploadUrl } from "@/app/actions";
 
-// Uploads a recipe's cover photo straight to the "photos" bucket with a one-time signed link
-// from save-recipe, and returns the path to save on the recipe.
-export async function uploadPhoto(recipeId: string, file: File): Promise<string> {
+// Uploads a file straight to a storage bucket with a one-time signed link from save-recipe,
+// and returns the path to save on the recipe.
+export async function uploadFile(bucket: "photos" | "originals", recipeId: string, file: File): Promise<string> {
   const ext = (file.name.split(".").pop() || file.type.split("/").pop() || "jpg").toLowerCase();
-  const link = await photoUploadUrl(recipeId, ext === "jpeg" ? "jpg" : ext);
+  const link = await fileUploadUrl(bucket, recipeId, ext === "jpeg" ? "jpg" : ext);
   if (!link.ok) throw new Error(link.error);
   const { supabase } = await import("@/lib/supabase"); // only needed for uploads
-  const { error } = await supabase.storage.from("photos").uploadToSignedUrl(link.path, link.token, file, {
+  const { error } = await supabase.storage.from(bucket).uploadToSignedUrl(link.path, link.token, file, {
     contentType: file.type || undefined,
   });
-  if (error) throw new Error(`The photo didn't upload: ${error.message}`);
+  if (error) throw new Error(`The ${bucket === "photos" ? "photo" : "original"} didn't upload: ${error.message}`);
   return link.path;
+}
+
+// The recipe's cover photo.
+export function uploadPhoto(recipeId: string, file: File): Promise<string> {
+  return uploadFile("photos", recipeId, file);
 }
 
 // The whole recipe as save_recipe expects it (a save replaces the recipe and all its parts).
