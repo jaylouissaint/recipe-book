@@ -154,7 +154,7 @@ The same "write it" page with the keyboard, on any device.
 3. ✅ **R1 – New look and navigation** (built 2026-10-28, not yet deployed) (DESIGN.md): light-only tokens, Instrument Serif / Figtree / Patrick Hand, sidebar and tab bar, Home book shelf, Library ("My Recipes") cards with search pill, Recipe view in handwriting on cream
 4. ✅ **R2 – Editing on the website** (built 2026-10-28; needs migration 001 and a function redeploy before it works live): migration 001 (author, source, photo, description, times cooked, imported flag, grocery items), unlock with the write key (httpOnly cookie), server-side save through `save-recipe`, the **writing page** ("Enter your own" and Edit) with one field per ruled line, recipe photo upload
 5. ✅ **R3 – Bringing recipes in** (built 2026-10-28): Save from the web (schema.org recipe data, no AI), Add from photos (upload, original beside the writing page, Paste text box with the paste parser); parser tests with shared fixtures
-6. **R4 – In the kitchen:** Groceries (one list, optional group by recipe), Start Cooking, serving scaler, search and tag filters
+6. ✅ **R4 – In the kitchen** (built 2026-10-28; search was already done in R1, on the page, which is plenty for a family-sized book): Groceries (one list, optional group by recipe), Start Cooking, serving scaler, search and tag filters
 7. **R5 – Polish:** Home Screen install, offline cache, print
 
 ---

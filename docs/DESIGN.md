@@ -91,9 +91,11 @@ Scribble works on both the website (Safari on iPad) and the app. The app adds **
 - **Website:** upload the photo or PDF. It shows beside the writing page (above it on narrow screens), with a "Paste text" box for iPad Live Text, plus manual entry. "Paste a recipe's text" is also on Enter your own.
 - **Both:** the original is kept as the original card.
 
-**Start Cooking.** Full screen, one step at a time in large handwriting, with the relevant ingredients shown above the step. Tap or swipe for the next step; a step can be checked off. The screen stays awake.
+**Start Cooking.** Full screen. It opens on "Gather your ingredients" (a checklist at the current serving size), then shows one step at a time in large handwriting, with the ingredients that step uses above it: a step that names a section ("make coconut lime drizzle") gets that whole section, and other ingredients show when one of their main words is in the step. Next and Back buttons, swipe, or the arrow keys; sub-steps can be checked off. The screen stays awake. The last page, "enjoy!", adds one to times cooked.
 
-**Groceries.** Serif title, with "Clear checked" and "Clear all" in green. One list of white rounded rows: the item in handwriting, a checkbox, and the recipe's small thumbnail. An optional "Group by recipe" switch. + adds an item by hand. "Add to Groceries" on a recipe adds its ingredients at the current serving size.
+**Groceries.** Serif title, with "Clear checked" and "Clear all" in green. One list of white rounded rows: the item in handwriting, a checkbox, and the recipe's small thumbnail; checked items move to the bottom. An optional "Group by recipe" switch (remembered per browser). The "Add an item" field adds one item by hand. "Add to Groceries" on a recipe opens a sheet of its ingredients at the current serving size, all ticked, to untick what you already have. Locked browsers see the list read-only.
+
+**Serving scaler.** − and + on the Servings box (or ×½ to ×4 for recipes without a serving count) rescale the ingredients with kitchen fractions (⅓ c × 1½ = ½ c), and Add to Groceries and Start Cooking use the scaled amounts.
 
 **Settings.** On the website: unlock editing (enter the write key once per device). In the app: the write key, sync status and last refresh.
 

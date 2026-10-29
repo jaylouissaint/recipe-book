@@ -106,9 +106,15 @@ Run each migration only once. A second run stops with an error like "column auth
 
 - **App Phase 2, reading the book (2026-10-28, built, Simulator only):** Home shelf, Library (search and filters), category pages, recipe view, book page, Settings (write key in the Keychain, sync status), Groceries placeholder; syncs from the live database and keeps recipes and photos on the device. Checked in the iPad Simulator in portrait with the 3 live recipes; 6 Swift tests pass. Landscape and true airplane mode still to check (the Simulator shares the Mac's connection).
 
+- **R4, in the kitchen (2026-10-28, built, not yet deployed; no migration or function redeploy needed, migration 001 and save-recipe v2 already have the grocery tables and actions):**
+  - **Serving scaler:** `src/components/kitchen/Scale.tsx` (`ScaleProvider` around the recipe view, `ServingsStat`, `ScaledIngredients`); the maths in `src/lib/scale.ts` (reads "1 1/2", "½", "2-3"; writes kitchen fractions down to 1/8, including 1/6).
+  - **Groceries:** `/groceries` (dynamic) with `src/components/kitchen/GroceryList.tsx`; read with `listGroceries()` in `src/lib/groceries.ts`; writes through new server actions `addGroceries`, `checkGrocery`, `clearGroceries` (changes show at once and roll back if a save fails). "Add to Groceries" on a recipe is a sheet in `KitchenButtons.tsx`.
+  - **Start Cooking:** `/recipe/[slug]/cook?scale=…` with `CookMode.tsx` (gather page, steps, swipe/arrows, Wake Lock); step ingredients from `ingredientsForStep()` in `src/lib/cook.ts`. The end page, and "Mark as cooked" in the recipe menu, call the new `recordCooked` action. The recipe view shows "cooked N times".
+  - Tests: `scale.test.mts`, `cook.test.mts` (27 in all). Checked in headless Chrome at desktop and phone size with only the unlocked-display cookie (no write key, so nothing was written live): scaling, the sheet, cooking steps, the end page, the groceries page and the "locked" messages. **Adding, checking and clearing groceries and recording a cook were not tried against the live database**; check them on localhost.
+
 ## Next
 1. **App on the iPad**, waiting on SideStore's -80045 sign-in fix (Louis gets GitHub emails for SideStore releases and PR #1683). Then: install `build/ios/RamiyasRecipes.ipa` (`npm run ios:ipa`) through SideStore, set up the two refresh automations (APP_PLAN.md Phase 0), and check the app in airplane mode.
-2. **Website R4**: Groceries, Start Cooking, serving scaler, search. Then R5 (polish).
+2. **Check R4 on localhost**, then commit and push. Then **website R5** (Home Screen install, offline, print).
 3. **App Phase 3**: writing recipes by hand (Scribble lines and PencilKit page mode). Later: the flip-through book in the app.
 
 ## Docket (queued, not scheduled)

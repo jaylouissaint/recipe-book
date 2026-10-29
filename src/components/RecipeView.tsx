@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { TAGS, categoryBySlug } from "@/lib/book";
-import { ingredientText, siteName } from "@/lib/format";
+import { siteName } from "@/lib/format";
 import { publicFileUrl } from "@/lib/storage";
 import type { Recipe } from "@/lib/types";
 import CoverPhoto from "./CoverPhoto";
 import EditOnly from "./EditOnly";
 import { BackIcon, MenuIcon } from "./Icons";
+import KitchenButtons, { MarkCooked } from "./kitchen/KitchenButtons";
+import { ScaledIngredients, ScaleProvider, ServingsStat } from "./kitchen/Scale";
 import ShareButton from "./ShareButton";
 import SourceLine from "./SourceLine";
 
@@ -24,12 +26,12 @@ export default function RecipeView({ recipe }: { recipe: Recipe }) {
   const tagLabels = TAGS.filter((t) => recipe.tags.includes(t.id)).map((t) => t.label);
   const favorite = recipe.tags.includes("family-favorite");
   const stats = [
-    recipe.servings != null && { label: "Servings", value: String(recipe.servings) },
     recipe.prepMin != null && { label: "Prep", value: `${recipe.prepMin} min` },
     recipe.cookMin != null && { label: "Cook", value: `${recipe.cookMin} min` },
   ].filter((s): s is { label: string; value: string } => Boolean(s));
 
   return (
+    <ScaleProvider base={recipe.servings}>
     <article className="mx-auto max-w-5xl px-4 pb-32 md:px-8">
       <header className="no-print sticky top-0 z-10 -mx-4 flex items-center justify-between bg-page/90 px-2 py-2 backdrop-blur md:-mx-8 md:px-6">
         <Link href="/library" aria-label="Back to library" className="rounded-full p-2 hover:bg-field">
@@ -59,6 +61,7 @@ export default function RecipeView({ recipe }: { recipe: Recipe }) {
                 <Link href={`/recipe/${recipe.slug}/edit`} className="block px-4 py-3 text-[15px] hover:bg-field">
                   Edit recipe
                 </Link>
+                <MarkCooked id={recipe.id} />
               </EditOnly>
             </div>
           </details>
@@ -96,17 +99,21 @@ export default function RecipeView({ recipe }: { recipe: Recipe }) {
             in {category.name}
           </Link>
         )}
+        {recipe.timesCooked > 0 && (
+          <span className="text-[15px] text-muted">
+            cooked {recipe.timesCooked} {recipe.timesCooked === 1 ? "time" : "times"}
+          </span>
+        )}
       </div>
 
       {recipe.description && <p className="mt-4 max-w-2xl font-hand text-xl leading-8 text-ink">{recipe.description}</p>}
 
-      {stats.length > 0 && (
-        <div className="mt-5 flex max-w-md gap-3">
-          {stats.map((s) => (
-            <Stat key={s.label} {...s} />
-          ))}
-        </div>
-      )}
+      <div className="mt-5 flex max-w-md gap-3">
+        <ServingsStat />
+        {stats.map((s) => (
+          <Stat key={s.label} {...s} />
+        ))}
+      </div>
 
       {tagLabels.length > 0 && (
         <ul className="mt-4 flex flex-wrap gap-2" aria-label="Tags">
@@ -123,18 +130,7 @@ export default function RecipeView({ recipe }: { recipe: Recipe }) {
           <h2 id="ingredients" className="text-2xl font-medium">
             Ingredients
           </h2>
-          {recipe.ingredientGroups.map((g, i) => (
-            <div key={i} className="mt-4">
-              {g.name && <h3 className="mb-1 text-[12px] font-semibold tracking-widest text-muted uppercase">{g.name}</h3>}
-              <ul className="divide-y divide-divider">
-                {g.items.map((item, j) => (
-                  <li key={j} className="py-2 font-hand text-xl text-ink">
-                    {ingredientText(item)}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <ScaledIngredients groups={recipe.ingredientGroups} />
         </section>
 
         <section aria-labelledby="directions">
@@ -175,27 +171,8 @@ export default function RecipeView({ recipe }: { recipe: Recipe }) {
         </section>
       )}
 
-      {/* Groceries and cooking arrive in website step R4. */}
-      <div className="no-print fixed inset-x-0 bottom-0 z-10 border-t border-divider bg-surface/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur lg:left-60">
-        <div className="mx-auto flex max-w-xl gap-3">
-          <button
-            type="button"
-            disabled
-            title="Coming soon"
-            className="h-[52px] flex-1 rounded-full border border-fg/30 text-[16px] font-semibold text-accent disabled:opacity-50"
-          >
-            Add to Groceries
-          </button>
-          <button
-            type="button"
-            disabled
-            title="Coming soon"
-            className="h-[52px] flex-1 rounded-full bg-accent text-[16px] font-semibold text-white disabled:opacity-50"
-          >
-            Start Cooking
-          </button>
-        </div>
-      </div>
+      <KitchenButtons recipe={recipe} />
     </article>
+    </ScaleProvider>
   );
 }

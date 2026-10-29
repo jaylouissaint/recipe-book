@@ -2,6 +2,7 @@
 
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
+import type { GroceryItem } from "@/lib/groceries";
 import { FetchError, decodeText, safeFetch } from "@/lib/safeFetch";
 import { type WebRecipe, recipeFromHtml } from "@/lib/schemaRecipe";
 import { FLAG_COOKIE, KEY_COOKIE, WriteError, callSaveRecipe } from "@/lib/write";
@@ -130,6 +131,59 @@ export async function copyWebPhoto(recipeId: string, imageUrl: string): Promise<
     return { ok: true, path };
   } catch (e) {
     if (e instanceof FetchError) return { ok: false, error: `The website's photo couldn't be copied. ${e.message}` };
+    return failure(e);
+  }
+}
+
+// ---- in the kitchen (website step R4)
+
+// "Start Cooking" reached the end, or "Mark as cooked" in the recipe menu.
+export async function recordCooked(id: string): Promise<ActionResult<{ timesCooked: number }>> {
+  try {
+    const { timesCooked } = await callSaveRecipe<{ timesCooked: number }>({ action: "cooked", id });
+    refreshPages();
+    return { ok: true, timesCooked };
+  } catch (e) {
+    return failure(e);
+  }
+}
+
+type GroceryRow = { id: string; text: string; checked: boolean };
+
+// Adds lines to the end of the list; `recipeId` links them to the recipe they came from.
+export async function addGroceries(
+  items: string[],
+  recipeId?: string,
+): Promise<ActionResult<{ items: Pick<GroceryItem, "id" | "text" | "checked">[] }>> {
+  try {
+    const { items: added } = await callSaveRecipe<{ items: GroceryRow[] }>({
+      action: "groceries-add",
+      items,
+      recipeId: recipeId ?? null,
+    });
+    revalidatePath("/groceries");
+    return { ok: true, items: added.map(({ id, text, checked }) => ({ id, text, checked })) };
+  } catch (e) {
+    return failure(e);
+  }
+}
+
+export async function checkGrocery(id: string, checked: boolean): Promise<ActionResult> {
+  try {
+    await callSaveRecipe({ action: "grocery-check", id, checked });
+    return { ok: true };
+  } catch (e) {
+    return failure(e);
+  }
+}
+
+// onlyChecked: "Clear checked"; otherwise "Clear all".
+export async function clearGroceries(onlyChecked: boolean): Promise<ActionResult<{ removed: number }>> {
+  try {
+    const { removed } = await callSaveRecipe<{ removed: number }>({ action: "groceries-clear", onlyChecked });
+    revalidatePath("/groceries");
+    return { ok: true, removed };
+  } catch (e) {
     return failure(e);
   }
 }
