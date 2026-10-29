@@ -4,8 +4,16 @@ import SwiftUI
 // (the website's RecipeView). Ingredients and directions sit side by side when there's room.
 struct RecipeView: View {
     let recipe: Recipe
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var context
+    @AppStorage("editing.unlocked") private var unlocked = false
     @State private var showBookPage = false
     @State private var showOriginal = false
+    @State private var showHandwriting = false
+    @State private var showBook = false
+    @State private var editing = false
+    @State private var confirmDelete = false
+    @State private var deleteError = ""
 
     var body: some View {
         ScrollView {
@@ -78,9 +86,18 @@ struct RecipeView: View {
             ToolbarItemGroup(placement: .topBarTrailing) {
                 ShareLink(item: Supabase.website.appending(path: "recipe/\(recipe.slug)"), subject: Text(recipe.title))
                 Menu {
+                    Button { showBook = true } label: { Label("Open in the book", systemImage: "book") }
                     Button { showBookPage = true } label: { Label("View the book page", systemImage: "book.pages") }
+                    if recipe.handwritingPage != nil {
+                        Button { showHandwriting = true } label: { Label("View handwritten page", systemImage: "pencil.and.scribble") }
+                    }
                     if recipe.originalFilePath != nil {
                         Button { showOriginal = true } label: { Label("View the original", systemImage: "photo") }
+                    }
+                    if unlocked {
+                        Divider()
+                        Button { editing = true } label: { Label("Edit recipe", systemImage: "square.and.pencil") }
+                        Button(role: .destructive) { confirmDelete = true } label: { Label("Delete recipe", systemImage: "trash") }
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
@@ -94,6 +111,32 @@ struct RecipeView: View {
         .onAppear { if UserDefaults.standard.bool(forKey: "debugBookPage") { showBookPage = true } }
         #endif
         .sheet(isPresented: $showOriginal) { OriginalView(recipe: recipe) }
+        .sheet(isPresented: $showHandwriting) {
+            if let page = recipe.handwritingPage { PictureView(title: "Handwritten page", picture: page) }
+        }
+        .fullScreenCover(isPresented: $editing) { WritingView(recipe: recipe) }
+        .fullScreenCover(isPresented: $showBook) { BookCover(startAt: recipe.id) }
+        .confirmationDialog("Delete “\(recipe.title)”?", isPresented: $confirmDelete, titleVisibility: .visible) {
+            Button("Delete", role: .destructive) { Task { await delete() } }
+        } message: {
+            Text("It disappears everywhere, on the website too.")
+        }
+        .alert("The recipe wasn’t deleted", isPresented: Binding(get: { !deleteError.isEmpty }, set: { if !$0 { deleteError = "" } })) {
+            Button("OK") {}
+        } message: {
+            Text(deleteError)
+        }
+    }
+
+    private func delete() async {
+        do {
+            try await Writer.delete(id: recipe.id)
+            dismiss()
+            context.delete(recipe)
+            try? context.save()
+        } catch {
+            deleteError = error.localizedDescription
+        }
     }
 
     @ViewBuilder private var byline: some View {
@@ -224,10 +267,7 @@ struct OriginalView: View {
                         }
                     }
                 } else if let path = recipe.originalFilePath {
-                    ScrollView([.horizontal, .vertical]) {
-                        StoredImage(picture: Picture(bucket: "originals", path: path)) { ProgressView() }
-                            .scaledToFit()
-                    }
+                    PictureScroll(picture: Picture(bucket: "originals", path: path))
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -235,6 +275,50 @@ struct OriginalView: View {
             .navigationTitle("The original")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { Button("Done") { dismiss() } }
+        }
+    }
+}
+
+// One stored picture on its own, such as the handwritten page.
+struct PictureView: View {
+    let title: String
+    let picture: Picture
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            PictureScroll(picture: picture)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.page)
+                .navigationTitle(title)
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar { Button("Done") { dismiss() } }
+        }
+    }
+}
+
+private struct PictureScroll: View {
+    let picture: Picture
+    var body: some View {
+        ScrollView([.horizontal, .vertical]) {
+            StoredImage(picture: picture) { ProgressView() }
+                .scaledToFit()
+        }
+    }
+}
+
+// "Open in the book": the flip-through book at this recipe, full screen.
+private struct BookCover: View {
+    let startAt: String
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            BookScreen(startAt: startAt)
+                .padding(.horizontal, 24)
+                .background(Color.page)
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar { Button("Done") { dismiss() } }
         }
     }
 }

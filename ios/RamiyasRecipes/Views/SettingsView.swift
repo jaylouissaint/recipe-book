@@ -38,7 +38,7 @@ struct SettingsView: View {
                 }
                 .padding(.top, 12)
             } footer: {
-                Text("Paste your write key once. It’s kept in this iPad’s Keychain and only sent to the recipe book when saving. Writing recipes in the app comes in a later update.")
+                Text("Paste your write key once. It’s kept in this iPad’s Keychain and only sent to the recipe book when saving.")
             }
 
             Section("Sync") {

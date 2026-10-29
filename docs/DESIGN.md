@@ -50,7 +50,7 @@ The book-page tokens (ruled lines `#DDD8DC`, label gray `#8C8C8C`, mauve `#9A859
 - **Long recipes:** a recipe that doesn't fit continues on the next page, which starts "recipe: … (continued)". No page is ever longer than the screen.
 - **Layout:** an open two-page spread with the spiral down the middle on landscape screens (iPad landscape, desktop); one page with the spiral on its left edge on phones and portrait.
 - **What's in it:** the cover (plain raspberry with "Ramiya's Recipes" for now; a custom cover comes later), then contents with page numbers, then recipes grouped by category in tab order.
-- **Getting around:** turn pages by swiping, with the arrow keys, or with the ‹ › buttons, with a page-turn animation (none with Reduce Motion). The colored category tabs on the outer edge jump to that section; contents entries jump to their recipe.
+- **Getting around:** turn pages by swiping, with the arrow keys, or with the ‹ › buttons, with a page-turn animation (none with Reduce Motion). In the app the pages turn with the iPad's page curl. The colored category tabs on the outer edge jump to that section; contents entries jump to their recipe.
 - **Links:** each recipe's first page has "open recipe →". The recipe view's menu has "Open in the book" (`/book#slug`).
 
 **Library ("My Recipes").** Serif title, a search pill ("Search your library") and a filter button (categories and tags). Below them, a list of white rounded cards. Each card has:
@@ -82,7 +82,7 @@ Two columns on iPad, three on desktop.
 - one field per ruled line, in handwriting and plum ink
 - spiral and stickers on wide screens
 
-Scribble works on both the website (Safari on iPad) and the app. The app adds **page mode**: write anywhere with the Apple Pencil, keep the drawing as the handwritten page, and get the recognized text to review. A photo button adds the hero photo. The bottom bar has Cancel and Save.
+Scribble works on both the website (Safari on iPad) and the app. The app adds **page mode** ("Write on the lines" | "Write on the page" at the top): write anywhere with the Apple Pencil on a ruled page with printed areas for the title, ingredients (two columns), directions and notes. "Read my writing" fills the lines from the recognized text to review (indented lines are sub-steps; a skipped line starts a new section). The drawing is kept as the handwritten page, shown from "View handwritten page" and as the thumbnail when there's no photo. A photo button adds the hero photo. The bottom bar has Cancel and Save.
 
 **Save from the web.** Paste a link, and the site or app reads the page's published recipe data: title, photo, author, site, servings, times, ingredients and steps. The result opens in the writing page for review. If the page has no recipe data, the writing page opens with just the link and title filled in, plus the Paste text box. Some sites refuse to be read by other sites; then the writing page opens with the link and the Paste text box, to copy the recipe in from the page. Only public web addresses work, and the photo is copied in when the recipe is saved.
 

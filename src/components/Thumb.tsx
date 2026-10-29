@@ -1,15 +1,21 @@
 import { publicFileUrl } from "@/lib/storage";
 import type { Recipe } from "@/lib/types";
 
-// Recipe picture: the photo, else the original card's photo, else a cream card with faint ruled
-// lines and the title's first letter in handwriting.
+// Recipe picture: the photo, else the handwritten page (from the iPad app), else the original
+// card's photo, else a cream card with faint ruled lines and the title's first letter in handwriting.
 export default function Thumb({ recipe, className = "" }: { recipe: Recipe; className?: string }) {
   const original = recipe.originalFilePath && /\.(jpe?g|png)$/i.test(recipe.originalFilePath) ? recipe.originalFilePath : "";
-  if (recipe.photoPath || original) {
+  const handwriting = recipe.handwritingPath?.endsWith(".png") ? recipe.handwritingPath : "";
+  const src = recipe.photoPath
+    ? publicFileUrl("photos", recipe.photoPath)
+    : handwriting
+      ? publicFileUrl("handwriting", handwriting)
+      : original && publicFileUrl("originals", original);
+  if (src) {
     return (
       // eslint-disable-next-line @next/next/no-img-element -- Supabase public URLs, shown as is
       <img
-        src={recipe.photoPath ? publicFileUrl("photos", recipe.photoPath) : publicFileUrl("originals", original)}
+        src={src}
         alt=""
         loading="lazy"
         className={`rounded-2xl bg-field object-cover ${className}`}

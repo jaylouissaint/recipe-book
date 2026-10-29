@@ -1,6 +1,6 @@
 # Recipe Book iPad App — Build and Run Plan (SideStore)
 
-Status: Phase 1 done 2026-10-27 (see below); Phases 0 and 2–6 not started. Plan written 2026-10-24. This changes an earlier decision: there will be a native iPad app, installed with **SideStore** using a free Apple ID (no $99/yr developer account). The app is a full recipe book, not only a writing and scanning tool. It is refreshed automatically, so the iPad never needs to be plugged in after setup.
+Status: Phase 1 done 2026-10-27; Phases 2 and 3 built 2026-10-28/29 (Simulator); Phase 0 blocked on SideStore; Phases 4–6 not started. Plan written 2026-10-24. This changes an earlier decision: there will be a native iPad app, installed with **SideStore** using a free Apple ID (no $99/yr developer account). The app is a full recipe book, not only a writing and scanning tool. It is refreshed automatically, so the iPad never needs to be plugged in after setup.
 
 ## Decisions in this plan
 All in effect. The look and screens of both the app and the website follow `docs/DESIGN.md` (decided 2026-10-27, modeled on the Deglaze app).
@@ -58,7 +58,7 @@ Built as described below, except that the website doesn't need the service role 
 **Done when:** the website shows the recipe from the database; a save with the anon key is rejected; a save with the write key works.
 
 ## Phase 2 — App: reading the book ✅ built 2026-10-28 (Simulator; not on the iPad yet)
-Built as described below, in `ios/RamiyasRecipes/` (App, Model, Data, Views; fonts in `Fonts/`, the website's stickers as SVGs and a placeholder icon in `Assets.xcassets`). SwiftData keeps each recipe with its ingredient groups and steps as Codable arrays. `Sync` downloads rows with `updated_at` newer than the last one seen and removes deleted ones, and pictures are saved in Application Support. Settings checks the write key with save-recipe's `check` action and keeps it in the Keychain. The recipe menu has "View the book page" (the book-page layout, one scrolling page per recipe) and "View the original". Not yet: the flip-through book (the website's `/book`), and Add / Groceries / Start Cooking (later phases). Tests: `npm run ios:test` (formatting, column split, decoding).
+Built as described below, in `ios/RamiyasRecipes/` (App, Model, Data, Views; fonts in `Fonts/`, the website's stickers as SVGs and a placeholder icon in `Assets.xcassets`). SwiftData keeps each recipe with its ingredient groups and steps as Codable arrays. `Sync` downloads rows with `updated_at` newer than the last one seen and removes deleted ones, and pictures are saved in Application Support. Settings checks the write key with save-recipe's `check` action and keeps it in the Keychain. The recipe menu has "View the book page" (the book-page layout, one scrolling page per recipe) and "View the original". The flip-through book (the website's `/book`) was added 2026-10-29: Home's Shelf | Book switch and "Open in the book" (`Model/BookLayout.swift`, `Views/BookView.swift`, with the iPad's page curl). Not yet: Groceries / Start Cooking (Phase 5). Tests: `npm run ios:test` (formatting, column split, decoding).
 
 - SwiftUI app for iPad (portrait and landscape, Split View and Slide Over).
 - Design from `docs/DESIGN.md`: light only, Deglaze green accent, Instrument Serif / Figtree / Patrick Hand bundled (all free Google Fonts, OFL licensed).
@@ -68,7 +68,9 @@ Built as described below, in `ios/RamiyasRecipes/` (App, Model, Data, Views; fon
 
 **Done when:** the app's screens match the website's (after website step R1), and every recipe opens in airplane mode.
 
-## Phase 3 — App: writing recipes by hand
+## Phase 3 — App: writing recipes by hand ✅ built 2026-10-29 (Simulator; not on the iPad yet)
+Built as described below, in `Views/WritingView.swift`, `Views/PencilPage.swift`, `Model/Parse.swift`, `Model/Draft.swift` and `Data/Writer.swift`. Page mode is a fixed ruled page with printed areas (title, two ingredient columns, directions, notes); recognized lines are sorted by area, so no headings need writing. The drawing is saved as a PNG in the `handwriting` bucket (the strokes stay on the iPad only until saved). Edit and Delete are in the recipe menu. Still to check: saving live, and real Pencil writing on the iPad (the "done when" below).
+
 The **writing page** looks like the book page from the photo (DESIGN.md). Two ways to write on it:
 - **Write on the lines (Scribble):** each ruled line is a native text field; Scribble turns writing into text as you go (the old "write it" page, now native).
 - **Write on the page (PencilKit):** write freely anywhere with the Apple Pencil. The drawing is kept as the recipe's **handwritten page**, and Apple's on-device Vision text recognition turns it into text, which you then check line by line. Nothing leaves the iPad.

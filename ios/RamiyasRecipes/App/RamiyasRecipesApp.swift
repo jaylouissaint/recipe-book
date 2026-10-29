@@ -2,6 +2,7 @@ import SwiftData
 import SwiftUI
 
 // The iPad app (docs/APP_PLAN.md). Phase 2: reading the book, offline, matching the website.
+// Phase 3: writing recipes (WritingView). The flip-through book: BookScreen.
 @main
 struct RamiyasRecipesApp: App {
     @State private var sync = Sync()
@@ -25,6 +26,9 @@ struct RootView: View {
     @Environment(\.scenePhase) private var phase
     @State private var tab = 0
     @State private var homePath = NavigationPath()
+    #if DEBUG
+    @State private var debugWriting: DebugWrite?
+    #endif
 
     var body: some View {
         tabs
@@ -37,11 +41,15 @@ struct RootView: View {
             .onChange(of: phase) { _, now in
                 if now == .active { Task { await sync.run(context) } }
             }
+            #if DEBUG
+            .fullScreenCover(item: $debugWriting) { WritingView(recipe: $0.recipe) }
+            #endif
     }
 
     #if DEBUG
     // For screenshots from the command line: `-debugTab 1`, `-debugRecipe <slug>`,
-    // `-debugBookPage YES` (launch arguments land in UserDefaults).
+    // `-debugBookPage YES`, `-debugWrite new` or `-debugWrite <slug>` with `-debugWriteMode page`
+    // (launch arguments land in UserDefaults).
     private func openForScreenshots() {
         let defaults = UserDefaults.standard
         tab = defaults.integer(forKey: "debugTab")
@@ -50,6 +58,15 @@ struct RootView: View {
             tab = 0
             homePath.append(recipe)
         }
+        if let write = defaults.string(forKey: "debugWrite") {
+            let recipe = try? context.fetch(FetchDescriptor<Recipe>(predicate: #Predicate { $0.slug == write })).first
+            debugWriting = DebugWrite(recipe: recipe)
+        }
+    }
+
+    private struct DebugWrite: Identifiable {
+        let recipe: Recipe?
+        var id: String { recipe?.id ?? "new" }
     }
     #endif
 

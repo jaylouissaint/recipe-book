@@ -19,8 +19,8 @@ targets:
       path: RamiyasRecipes/Info.plist
       properties:
         CFBundleDisplayName: Ramiya's Recipes
-        CFBundleShortVersionString: "0.2.0"
-        CFBundleVersion: "2"
+        CFBundleShortVersionString: "0.3.0"
+        CFBundleVersion: "3"
         UILaunchScreen:
           UIColorName: ""
         UISupportedInterfaceOrientations~ipad:
@@ -51,7 +51,11 @@ targets:
   RamiyasRecipesTests:
     type: bundle.unit-test
     platform: iOS
-    sources: [RamiyasRecipesTests]
+    sources:
+      - RamiyasRecipesTests
+      # The parsing cases the website's tests also run
+      - path: ../shared/fixtures
+        buildPhase: resources
     dependencies:
       - target: RamiyasRecipes
     settings:

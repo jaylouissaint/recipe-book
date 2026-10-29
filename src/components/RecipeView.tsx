@@ -47,6 +47,16 @@ export default function RecipeView({ recipe }: { recipe: Recipe }) {
               <Link href={`/book#${recipe.slug}`} className="block px-4 py-3 text-[15px] hover:bg-field">
                 Open in the book
               </Link>
+              {recipe.handwritingPath?.endsWith(".png") && (
+                <a
+                  href={publicFileUrl("handwriting", recipe.handwritingPath)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block px-4 py-3 text-[15px] hover:bg-field"
+                >
+                  View handwritten page
+                </a>
+              )}
               {recipe.originalFilePath && (
                 <a
                   href={publicFileUrl("originals", recipe.originalFilePath)}

@@ -1,20 +1,27 @@
 import SwiftUI
 import UIKit
 
-// A picture from a storage bucket: the recipe photo, or the original card when it's a photo.
+// A picture from a storage bucket: the recipe photo, the handwritten page, or the original card.
 struct Picture: Hashable {
     let bucket: String
     let path: String
 }
 
 extension Recipe {
-    // The photo, else the original card's photo (as the website's Thumb does).
+    // The photo, else the handwritten page, else the original card's photo (as the website's Thumb does).
     var picture: Picture? {
         if let p = photoPath, !p.isEmpty { return Picture(bucket: "photos", path: p) }
+        if let h = handwritingPage { return h }
         if let o = originalFilePath, o.range(of: #"\.(jpe?g|png|heic)$"#, options: [.regularExpression, .caseInsensitive]) != nil {
             return Picture(bucket: "originals", path: o)
         }
         return nil
+    }
+
+    // The Apple Pencil page, as a picture (the drawing itself isn't kept online).
+    var handwritingPage: Picture? {
+        guard let h = handwritingPath, h.lowercased().hasSuffix(".png") else { return nil }
+        return Picture(bucket: "handwriting", path: h)
     }
 }
 
@@ -50,6 +57,14 @@ actor ImageStore {
         try? data.write(to: url, options: .atomic)
         memory[p] = image
         return image
+    }
+
+    // A picture this iPad just uploaded, kept so it shows without downloading it again.
+    func store(_ data: Data, for p: Picture) {
+        let url = file(p)
+        try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try? data.write(to: url, options: .atomic)
+        memory[p] = UIImage(data: data)
     }
 
     private func download(_ url: URL) async -> (Data, URLResponse)? {

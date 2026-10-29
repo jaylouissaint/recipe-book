@@ -196,7 +196,7 @@ struct BookPage: View {
 }
 
 // The book's tag checkbox: a thin circle, crossed through in ink when checked.
-private struct TagCircle: View {
+struct TagCircle: View {
     let on: Bool
     var body: some View {
         Canvas { ctx, size in

@@ -1,17 +1,48 @@
 import SwiftData
 import SwiftUI
 
-// Home: the book shelf (category tabs, Family Favorites, Recently added).
+// Home: the book shelf (category tabs, Family Favorites, Recently added), or the whole book to
+// flip through (Shelf | Book, remembered).
 struct HomeView: View {
     @Environment(Sync.self) private var sync
     @Environment(\.modelContext) private var context
     @Query(sort: \Recipe.title) private var recipes: [Recipe]
+    @AppStorage("home.mode") private var mode = "shelf"
 
     var body: some View {
+        Group {
+            if mode == "book" && !recipes.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    titleRow
+                    BookScreen()
+                }
+                .padding(.horizontal, 32)
+                .padding(.top, 32)
+            } else {
+                shelf
+            }
+        }
+        .background(Color.page)
+        .toolbar(.hidden, for: .navigationBar)
+    }
+
+    private var titleRow: some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text("Ramiya’s Recipes").font(.serif(52)).foregroundStyle(Color.fg)
+            Spacer()
+            Picker("Show", selection: $mode) {
+                Text("Shelf").tag("shelf")
+                Text("Book").tag("book")
+            }
+            .pickerStyle(.segmented)
+            .frame(width: 180)
+        }
+    }
+
+    private var shelf: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 40) {
-                Text("Ramiya’s Recipes").font(.serif(52)).foregroundStyle(Color.fg)
-                    .padding(.bottom, -16)
+                titleRow.padding(.bottom, -16)
                 ShelfTabs(recipes: recipes)
                 if recipes.isEmpty {
                     EmptyBook()
@@ -24,9 +55,7 @@ struct HomeView: View {
             .frame(maxWidth: 1040, alignment: .leading)
             .frame(maxWidth: .infinity)
         }
-        .background(Color.page)
         .refreshable { await sync.run(context) }
-        .toolbar(.hidden, for: .navigationBar)
         .overlay(alignment: .bottomTrailing) { AddButton() }
     }
 }
@@ -55,10 +84,12 @@ struct EmptyBook: View {
 }
 
 // The floating green + and its Add sheet. Only once a write key is saved in Settings.
-// Adding recipes in the app arrives in Phase 3 (writing) and Phase 4 (scanning).
+// Scanning and importing arrive in Phase 4.
 struct AddButton: View {
     @AppStorage("editing.unlocked") private var unlocked = false
     @State private var showing = false
+    @State private var writeNext = false
+    @State private var writing = false
 
     var body: some View {
         if unlocked {
@@ -72,17 +103,33 @@ struct AddButton: View {
             }
             .accessibilityLabel("Add a recipe")
             .padding(32)
-            .sheet(isPresented: $showing) { AddSheet() }
+            .sheet(isPresented: $showing, onDismiss: {
+                if writeNext { writeNext = false; writing = true }
+            }) {
+                AddSheet { writeNext = true; showing = false }
+            }
+            .fullScreenCover(isPresented: $writing) { WritingView(recipe: nil) }
         }
     }
 }
 
 struct AddSheet: View {
+    let write: () -> Void
+
     var body: some View {
         List {
             row("Save a recipe from the web", "link")
             row("Add from recipe photos", "camera")
-            row("Enter your own recipe", "plus.circle")
+            Button(action: write) {
+                HStack(spacing: 16) {
+                    Image(systemName: "plus.circle").frame(width: 28)
+                    Text("Enter your own recipe").font(.ui(17))
+                    Spacer()
+                    Image(systemName: "chevron.right").font(.system(size: 14, weight: .semibold)).foregroundStyle(Color.muted)
+                }
+                .foregroundStyle(Color.fg)
+                .padding(.vertical, 10)
+            }
         }
         .listStyle(.plain)
         .presentationDetents([.height(260)])
