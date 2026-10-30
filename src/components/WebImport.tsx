@@ -8,10 +8,12 @@ import type { WebRecipe } from "@/lib/schemaRecipe";
 import { useUnlocked } from "./EditOnly";
 import { LinkIcon } from "./Icons";
 import RecipeEditor, { type EditorStart } from "./RecipeEditor";
+import { useBook } from "./BookContext";
 
 // Save from the web: paste a link, then review the recipe on the writing page.
 export default function WebImport({ initialUrl }: { initialUrl: string }) {
   const unlocked = useUnlocked();
+  const { id: book, path } = useBook();
   const [link, setLink] = useState(initialUrl);
   const [error, setError] = useState<{ message: string; url?: string } | null>(null);
   const [start, setStart] = useState<Extract<EditorStart, { kind: "web" }> | null>(null);
@@ -20,7 +22,7 @@ export default function WebImport({ initialUrl }: { initialUrl: string }) {
   function read(url: string) {
     setError(null);
     startReading(async () => {
-      const result = await importFromWeb(url);
+      const result = await importFromWeb(book, url);
       if (result.ok) setStart({ kind: "web", url: result.url, recipe: result.recipe });
       else setError({ message: result.error, url: result.url });
     });
@@ -51,6 +53,7 @@ export default function WebImport({ initialUrl }: { initialUrl: string }) {
     if (auto.current || !initialUrl || !unlocked) return;
     auto.current = true;
     read(initialUrl);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reads the starting link once, when unlocked
   }, [initialUrl, unlocked]);
 
   if (start) return <RecipeEditor key={start.url} recipe={null} start={start} />;
@@ -65,7 +68,7 @@ export default function WebImport({ initialUrl }: { initialUrl: string }) {
       {!unlocked && (
         <p role="status" className="mt-6 rounded-2xl bg-field px-4 py-3 text-[15px]">
           Editing is locked on this device.{" "}
-          <Link href="/settings" className="font-semibold text-accent underline underline-offset-4">
+          <Link href={path("/settings")} className="font-semibold text-accent underline underline-offset-4">
             Unlock in Settings
           </Link>
         </p>

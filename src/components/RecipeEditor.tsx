@@ -23,6 +23,8 @@ import { CameraIcon } from "./Icons";
 import PencilPage, { type Stroke, loadImage, pageImage } from "./PencilPage";
 import Spiral from "./Spiral";
 import { PlateSetting, RollingPin, WhiskAndSpoon } from "./Stickers";
+import type { BookId } from "@/lib/books";
+import { useBook } from "./BookContext";
 
 // The writing page (docs/DESIGN.md): the book page from the sweet chili chicken photo as a form.
 // Every ruled line is its own text field, so Scribble on an iPad fills one line at a time.
@@ -98,11 +100,13 @@ function fromStart(start: EditorStart | undefined, recipe: Recipe | null): Draft
   };
 }
 
-function draftKeyFor(recipe: Recipe | null, start: EditorStart | undefined) {
+// New recipes keep a draft per book (Ramiya's under the original names).
+function draftKeyFor(recipe: Recipe | null, start: EditorStart | undefined, book: BookId) {
   if (recipe) return `rb-draft:${recipe.id}`;
-  if (start?.kind === "web") return `rb-draft:web:${start.url}`;
-  if (start?.kind === "photo") return `rb-draft:photo:${start.file.name}:${start.file.size}`;
-  return "rb-draft:new";
+  const b = book === "ramiya" ? "" : `${book}:`;
+  if (start?.kind === "web") return `rb-draft:${b}web:${start.url}`;
+  if (start?.kind === "photo") return `rb-draft:${b}photo:${start.file.name}:${start.file.size}`;
+  return `rb-draft:${b}new`;
 }
 
 const hasContent = (d: Draft) => d.groups.some((g) => g.lines.some((l) => l.trim())) || d.directions.some((l) => l.text.trim());
@@ -148,9 +152,10 @@ export default function RecipeEditor({
 }) {
   const router = useRouter();
   const unlocked = useUnlocked();
+  const { id: book, path } = useBook();
   const formRef = useRef<HTMLFormElement>(null);
   const [id] = useState(() => recipe?.id ?? newId());
-  const draftKey = draftKeyFor(recipe, start);
+  const draftKey = draftKeyFor(recipe, start, book);
   const [draft, setDraft] = useState<Draft>(() => fromStart(start, recipe));
   const [restored, setRestored] = useState(false);
   const [photo, setPhoto] = useState<{ file: File; preview: string } | null>(null);
@@ -324,9 +329,9 @@ export default function RecipeEditor({
         const servings = readNumber("Servings", draft.servings);
         const prepMin = readNumber("Prep time", draft.prepMin);
         const cookMin = readNumber("Cook time", draft.cookMin);
-        let photoPath = photo ? await uploadPhoto(id, photo.file) : draft.photoPath;
+        let photoPath = photo ? await uploadPhoto(book, id, photo.file) : draft.photoPath;
         if (!photoPath && draft.remotePhoto) {
-          const copied = await copyWebPhoto(id, draft.remotePhoto);
+          const copied = await copyWebPhoto(book, id, draft.remotePhoto);
           if (!copied.ok) throw new Error(copied.error);
           photoPath = copied.path;
         }
@@ -340,7 +345,7 @@ export default function RecipeEditor({
         if (ink.length) {
           const under = handwritingPath ? await loadImage(publicFileUrl("handwriting", handwritingPath)) : null;
           const png = await pageImage(ink, under);
-          handwritingPath = await uploadFile("handwriting", id, new File([png], "page.png", { type: "image/png" }));
+          handwritingPath = await uploadFile(book, "handwriting", id, new File([png], "page.png", { type: "image/png" }));
           // uploaded: the writing is in the saved page now, so not again if the save below fails
           setInk([]);
           update({ handwritingPath });
@@ -349,9 +354,9 @@ export default function RecipeEditor({
           } catch {}
         }
         if (start?.kind === "photo" && !originalPath.current) {
-          originalPath.current = await uploadFile("originals", id, start.file);
+          originalPath.current = await uploadFile(book, "originals", id, start.file);
         }
-        const result = await saveRecipe({
+        const result = await saveRecipe(book, {
           id,
           title: draft.title.trim(),
           servings: servings === 0 ? null : servings,
@@ -386,7 +391,7 @@ export default function RecipeEditor({
           localStorage.removeItem(draftKey);
           localStorage.removeItem(inkKey);
         } catch {}
-        router.push(`/recipe/${result.slug}`);
+        router.push(path(`/recipe/${result.slug}`));
         router.refresh();
       } catch (e) {
         setError(e instanceof Error ? e.message : "Saving failed");
@@ -397,12 +402,12 @@ export default function RecipeEditor({
   function remove() {
     if (!recipe || !confirm(`Delete “${recipe.title}”? It disappears everywhere.`)) return;
     startSaving(async () => {
-      const result = await deleteRecipe(recipe.id);
+      const result = await deleteRecipe(book, recipe.id);
       if (!result.ok) return setError(result.error);
       try {
         localStorage.removeItem(draftKey);
       } catch {}
-      router.push("/library");
+      router.push(path("/library"));
       router.refresh();
     });
   }
@@ -423,7 +428,7 @@ export default function RecipeEditor({
       {!unlocked && (
         <p role="status" className="mb-4 rounded-2xl bg-field px-4 py-3 text-[15px]">
           Editing is locked on this device, so this recipe can&apos;t be saved yet.{" "}
-          <Link href="/settings" className="font-semibold text-accent underline underline-offset-4">
+          <Link href={path("/settings")} className="font-semibold text-accent underline underline-offset-4">
             Unlock in Settings
           </Link>
         </p>
@@ -788,7 +793,7 @@ export default function RecipeEditor({
                 // Opened straight onto this page (as the Home Screen app can be), there's nothing
                 // to go back to: go to the recipe, or the Library for a new one.
                 if (window.history.length > 1) router.back();
-                else router.push(recipe ? `/recipe/${recipe.slug}` : "/library");
+                else router.push(path(recipe ? `/recipe/${recipe.slug}` : "/library"));
               }}
               className="h-[52px] flex-1 rounded-full border border-fg/30 text-[16px] font-semibold text-fg"
             >

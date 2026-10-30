@@ -32,6 +32,8 @@ Migrations live in `supabase/migrations/` and are run by hand, once each, in ord
 
 **After migration 002 (2026-10-29), also redeploy the save function:** `npm run deploy:functions`. Then Home's "This week" shows the days instead of "needs a one-time database update", and Table Editor lists **meal_plan**.
 
+**Migration 004 (two books), in this order:** (1) run `004_books.sql` in the SQL Editor (safe before anything else: the deployed site and save function keep working and everything stays Ramiya's); (2) `npm run setup:jay-key` (makes Jay's key, shows it once for the password manager, sets `WRITE_KEY_JAY` and redeploys save-recipe); (3) commit and push the website. Then in Settings switch to Jay and unlock with Jay's key. Supabase → Table Editor → recipes shows a **book** column.
+
 **After migration 003 (live updates):** nothing to redeploy. Supabase → **Database → Publications → supabase_realtime** lists recipes, grocery_items and meal_plan. Then a change on one device shows on another open one within a second or two.
 
 **How to tell it worked (migration 001)**
@@ -45,7 +47,9 @@ Run each migration only once. A second run stops with an error like "column auth
 **Migration history**
 - 000_initial_schema: run 2026-10-24.
 - 001_redesign_fields_and_groceries: run 2026-10-28 (save-recipe redeployed as version 2 the same day).
-- 003_live_updates: written 2026-10-29, **not run yet** (adds three tables to Realtime).
+- 003_live_updates: written 2026-10-29 (adds three tables to Realtime); check it was run.
+- 004_books: run 2026-10-30, with `WRITE_KEY_JAY` set and save-recipe redeployed; both books in use.
+- 005_last_cooked: written 2026-10-30, **not run yet** (when each recipe was last cooked; nothing to redeploy).
 - 002_meal_plan: run 2026-10-29, with save-recipe redeployed (gains `plan-add` and `plan-remove`). Checked: the table reads with the public key, and Home's week is in use.
 
 ## Decisions (don't reopen these)
@@ -142,18 +146,26 @@ Run each migration only once. A second run stops with an error like "column auth
   - **Docs refreshed:** specifications v2.0 (website only), PLAN.md, DESIGN.md, README.md, this file.
   - 32 tests pass; lint and types clean; no errors or sideways scroll in WebKit (iPad portrait and landscape).
 
+- **Two books: "Who's using this" (2026-10-30, built, not yet deployed; needs migration 004, Jay's key and a function redeploy):**
+  - **Books** (`src/lib/books.ts`): Ramiya's at the site's own addresses, Jay's under `/jay` (Jay's Recipes). Every page lives once in `src/app/b/[book]/` (built for both books, so every page stays cached), and `src/middleware.ts` maps `/library` → `/b/ramiya/library` and `/jay/library` → `/b/jay/library`. Links use `useBook().path()` (client, `src/components/BookContext.tsx`) or `bookPath()` (server).
+  - **Data:** migration `004_books.sql` (+ rollback; tested in PGlite) adds `book` to recipes, grocery_items and meal_plan (existing rows are Ramiya's); `save_recipe`, `add_groceries`, `clear_groceries` and `plan_add` take the book, defaulting to Ramiya's, so the deployed site keeps working until the new one is live. Reads filter by book. Slugs stay unique across both books (a second "banana bread" gets a short code).
+  - **A write key per book:** save-recipe holds `WRITE_KEY` (Ramiya's) and `WRITE_KEY_JAY` (`npm run setup:jay-key`), works out the book from the key, puts new rows in it, and refuses changes to the other book's recipes, grocery items and meals ("That belongs to the other book."). The website keeps one key cookie per book (`rb_write_key`, `rb_write_key_jay`, with `rb_unlocked` / `rb_unlocked_jay`); every server action takes the book.
+  - **Settings:** "Who's using this: Ramiya | Jay" (`BookSwitch`; remembered with the `rb_book` cookie, so the front page `/` opens Jay's book on that device) and an Unlock line per book (`UnlockForm book=…`; a key for the other book says so).
+  - **Home Screen:** each book has its own manifest (`public/manifest.webmanifest`, `public/jay/manifest.webmanifest`), name and icon (Jay's: the geometric blue jay, `public/jay-icon.svg`, `jay-apple-icon.png`), so each of you can add your own shortcut. Icons moved from `src/app/` to `public/`.
+  - Each book keeps its own "pick up where you left off" and new-recipe drafts in the browser (Ramiya's under the original names, so nothing saved is lost).
+
+- **"Haven't made in a while" and copying between books (2026-10-30, built, not yet deployed; migration 005 for dates):**
+  - **Haven't made in a while** on Home (`src/lib/lately.ts`, tested): favorites and recipes cooked before, not made in the last 3 weeks and not planned from today on, longest ago first, up to 8, as small cards ("last made 5 weeks ago", "made a while ago" for recipes cooked before dates were kept, "not made yet" for a favorite never cooked). Migration `005_last_cooked.sql` (+ rollback; tested in PGlite) adds `last_cooked_at`, set by `record_cooked` (Start Cooking's end, Mark as cooked). The site works before 005 too (no dates yet).
+  - **Copy to the other book** (`CopyToBook` in the recipe menu, server action `copyRecipe`): shown only when the other book is unlocked on this device, because the copy is saved with that book's key. The copy is its own recipe (new id; photo, handwritten page and original shared in storage), starting with no times cooked and no favorite star. `recipePayload` moved to `src/lib/payload.ts`.
+  - Checked in WebKit: the Home section with live data, the copy item hidden while the other book is locked and shown once unlocked, and a copy without the real key refused. 35 tests pass. **Not tried live:** a real copy (needs both keys on one device).
+
 ## Next
-1. **Run migration 003** (`supabase/migrations/003_live_updates.sql`, steps above), then commit and push. After the deploy: open a recipe or two and the grocery list, turn on airplane mode, check they still open and check something off; turn it back off and see the check-off saved; with the site open on two devices, check something off on one.
-2. **Try on the iPad:** pasting the banana bread card's Live Text into Add from photos (it should sort into 10 ingredients and 5 steps), Pencil page mode, the favorite stars, Type the lines, the Home Screen icon (re-add the shortcut).
-3. **Re-add the Home Screen shortcut** after the deploy (delete the old one, Share → Add to Home Screen): it should open full screen. Unlock editing once inside it (Settings). Then **the print check** (R5).
+1. **Run migration 005** (`supabase/migrations/005_last_cooked.sql`; nothing to redeploy), then commit and push. With both keys unlocked on one device, try "Copy to Jay's Recipes" from a recipe's menu.
 
 ## Docket (queued, not scheduled)
-- **A second book: "Who's using this" (Louis, 2026-10-30):** Louis wants his own book ("Jay's Recipes") alongside Ramiya's. Two ways:
-  - **Book switcher (smaller; try first):** Settings gets "Who's using this: Ramiya / Jay". A migration adds a `book` column (default `ramiya`) to recipes, grocery_items and meal_plan; every read filters by it; saves send it; the title, Home Screen name and book cover follow it. Each book gets its own addresses (e.g. `/jay/…`) so pages can stay cached (the choice can't come from a cookie without making every page slow). Still no login: both books stay readable by anyone with the link. **Preferred (Louis, 2026-10-30): a write key per person.** The save function holds one key per book (e.g. secrets `WRITE_KEY_RAMIYA` and `WRITE_KEY_JAY`), works out the book from the key, and only allows changes to that book; the database's save, grocery and meal functions check the book on every change. Settings says which book a key unlocks, and a shared device can hold both. Rotating one person's key leaves the other's devices alone. (Login would still add private books and signing one device out remotely.)
-  - **Login (bigger):** Supabase Auth (email link or passkey), recipes owned by a person (`owner_id`), database rules so each person changes only their own, optional sharing. **The write key would no longer be needed:** it only stands in for "this is the owner". With login, each request carries the signed-in person's session, which the database checks itself, per person, and which can be signed out on one device without changing a key everywhere. Reading would then be private unless shared.
 - **Custom book cover** (optional): the cover is now the Home Screen icon's wooden spoon and whisk on ruled paper (`SpoonAndWhisk` in `Stickers.tsx`, used by the `PageFace` cover in `src/components/book/BookView.tsx`). Swap it for an uploaded image or design if Louis wants one later.
-- **Write key → your own passphrase** (queued 2026-10-28): rerun `npm run setup:supabase` and paste a passphrase of 4–5 random words instead of pressing Enter; then unlock each browser again. No code change. Bigger alternatives if ever wanted: a separate simple website password with the long key kept on the server (new code plus a rate limit), or login (below), which replaces the key.
-- Login (Supabase Auth, `owner_id`, owner-only RLS, `shared` flag for family). Replaces the write key.
+- **Decided 2026-10-30:** no login: the two write keys stay (one per book). No print check (Louis isn't interested in printing; the print rules from R1 stay as they are).
+- **Write keys → your own passphrases** (queued 2026-10-28): rerun `npm run setup:supabase` (Ramiya's key) or `npm run setup:jay-key` (Jay's) and paste a passphrase of 4–5 random words instead of pressing Enter; then unlock that book again on each device. No code change. Bigger alternatives if ever wanted: a separate simple website password with the long key kept on the server (new code plus a rate limit), or login (below), which replaces the key.
 - Custom handwriting font (Louis making it; steps in PLAN.md "Your own handwriting font"); Next.js 16 upgrade.
 
 ## Documentation: match the Financial Planner project

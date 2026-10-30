@@ -2,7 +2,11 @@ import Link from "next/link";
 import AddButton from "@/components/AddButton";
 import PickUp from "@/components/home/PickUp";
 import WeekPlan from "@/components/home/WeekPlan";
+import Thumb from "@/components/Thumb";
+import { BOOKS, bookPath } from "@/lib/books";
+import { bookParam } from "@/lib/bookParam";
 import { listGroceries } from "@/lib/groceries";
+import { notMadeLately } from "@/lib/lately";
 import { listMeals } from "@/lib/plan";
 import { listRecipes } from "@/lib/recipes";
 import type { Recipe } from "@/lib/types";
@@ -18,18 +22,42 @@ export const revalidate = 60;
 const handwrittenOnly = (r: Recipe) =>
   Boolean(r.handwritingPath?.endsWith(".png")) && !r.ingredientGroups.length && !r.stepGroups.length;
 
-export default async function Home() {
-  const [recipes, meals, groceries] = await Promise.all([listRecipes(), listMeals(), listGroceries()]);
+export default async function Home({ params }: { params: Promise<{ book: string }> }) {
+  const book = await bookParam(params);
+  const [recipes, meals, groceries] = await Promise.all([listRecipes(book), listMeals(book), listGroceries(book)]);
   const toBuy = groceries.filter((g) => !g.checked);
   const toFinish = recipes.filter(handwrittenOnly);
+  // Recipes already planned from today on aren't suggested again.
+  const today = new Date().toISOString().slice(0, 10);
+  const planned = new Set((meals ?? []).filter((m) => m.day >= today && m.recipeId).map((m) => m.recipeId!));
+  const lately = notMadeLately(recipes, planned);
 
   return (
     <main className="mx-auto max-w-5xl space-y-8 px-4 py-8 md:px-8 md:py-12">
-      <h1 className="font-serif text-[2.6rem] leading-none md:text-5xl">{"Ramiya’s Recipes"}</h1>
+      <h1 className="font-serif text-[2.6rem] leading-none md:text-5xl">{BOOKS[book].name}</h1>
 
       <PickUp recipes={recipes.map((r) => ({ slug: r.slug, title: r.title }))} />
 
       <WeekPlan meals={meals} recipes={recipes} />
+
+      {lately.length > 0 && (
+        <section aria-labelledby="lately">
+          <h2 id="lately" className="mb-3 text-2xl font-medium">
+            Haven’t made in a while
+          </h2>
+          <ul className="-mx-4 flex snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-3 md:-mx-8 md:scroll-px-8 md:px-8">
+            {lately.map(({ recipe, label }) => (
+              <li key={recipe.id} className="w-40 shrink-0 snap-start">
+                <Link href={bookPath(book, `/recipe/${recipe.slug}`)} className="block rounded-[20px] bg-surface p-2 shadow-card">
+                  <Thumb recipe={recipe} className="aspect-square w-full" />
+                  <p className="mt-2 line-clamp-2 px-1 font-hand text-lg leading-6 text-ink">{recipe.title}</p>
+                  <p className="px-1 pb-1 text-[12px] text-muted">{label}</p>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2">
         <section aria-labelledby="glance" className="rounded-[20px] bg-surface p-5 shadow-card">
@@ -37,7 +65,7 @@ export default async function Home() {
             <h2 id="glance" className="text-2xl font-medium">
               Groceries
             </h2>
-            <Link href="/groceries" className="text-[15px] font-semibold text-accent">
+            <Link href={bookPath(book, "/groceries")} className="text-[15px] font-semibold text-accent">
               Open the list
             </Link>
           </div>
@@ -75,10 +103,10 @@ export default async function Home() {
             <ul className="mt-2 divide-y divide-divider">
               {toFinish.map((r) => (
                 <li key={r.id} className="flex items-center justify-between gap-3 py-2">
-                  <Link href={`/recipe/${r.slug}`} className="min-w-0 truncate font-hand text-xl text-ink hover:underline">
+                  <Link href={bookPath(book, `/recipe/${r.slug}`)} className="min-w-0 truncate font-hand text-xl text-ink hover:underline">
                     {r.title}
                   </Link>
-                  <Link href={`/recipe/${r.slug}/edit?lines=1`} className="shrink-0 text-[14px] font-semibold text-accent">
+                  <Link href={bookPath(book, `/recipe/${r.slug}/edit?lines=1`)} className="shrink-0 text-[14px] font-semibold text-accent">
                     Type the lines
                   </Link>
                 </li>

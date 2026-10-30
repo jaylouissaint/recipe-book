@@ -3,6 +3,7 @@ import { TAGS, categoryBySlug } from "@/lib/book";
 import { siteName } from "@/lib/format";
 import { publicFileUrl } from "@/lib/storage";
 import type { Recipe } from "@/lib/types";
+import CopyToBook from "./CopyToBook";
 import CoverPhoto from "./CoverPhoto";
 import EditOnly from "./EditOnly";
 import { BackIcon, MenuIcon } from "./Icons";
@@ -11,6 +12,7 @@ import { ScaledIngredients, ScaleProvider, ServingsStat } from "./kitchen/Scale"
 import RememberRecipe from "./RememberRecipe";
 import ShareButton from "./ShareButton";
 import SourceLine from "./SourceLine";
+import { type BookId, bookPath } from "@/lib/books";
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
@@ -22,7 +24,8 @@ function Stat({ label, value }: { label: string; value: string }) {
 }
 
 // The reading view: the Deglaze recipe layout, with the recipe itself in handwriting on cream.
-export default function RecipeView({ recipe }: { recipe: Recipe }) {
+export default function RecipeView({ recipe, book }: { recipe: Recipe; book: BookId }) {
+  const path = (p: string) => bookPath(book, p);
   const category = categoryBySlug(recipe.category);
   const handwrittenOnly =
     Boolean(recipe.handwritingPath?.endsWith(".png")) && !recipe.ingredientGroups.length && !recipe.stepGroups.length;
@@ -36,7 +39,7 @@ export default function RecipeView({ recipe }: { recipe: Recipe }) {
     <ScaleProvider base={recipe.servings}>
     <article className="mx-auto max-w-5xl px-4 pb-32 md:px-8">
       <header className="no-print sticky top-0 z-10 -mx-4 flex items-center justify-between bg-page px-2 py-2 md:-mx-8 md:px-6 md:py-3.5 navside:md:py-2">
-        <Link href="/library" aria-label="Back to library" className="rounded-full p-2 hover:bg-field">
+        <Link href={path("/library")} aria-label="Back to library" className="rounded-full p-2 hover:bg-field">
           <BackIcon />
         </Link>
         <div className="flex items-center">
@@ -46,7 +49,7 @@ export default function RecipeView({ recipe }: { recipe: Recipe }) {
               <MenuIcon />
             </summary>
             <div className="absolute right-0 z-20 mt-1 w-56 overflow-hidden rounded-2xl bg-surface py-1 shadow-card">
-              <Link href={`/book#${recipe.slug}`} className="block px-4 py-3 text-[15px] hover:bg-field">
+              <Link href={path(`/book#${recipe.slug}`)} className="block px-4 py-3 text-[15px] hover:bg-field">
                 Open in the book
               </Link>
               {recipe.handwritingPath?.endsWith(".png") && (
@@ -70,11 +73,12 @@ export default function RecipeView({ recipe }: { recipe: Recipe }) {
                 </a>
               )}
               <EditOnly>
-                <Link href={`/recipe/${recipe.slug}/edit`} className="block px-4 py-3 text-[15px] hover:bg-field">
+                <Link href={path(`/recipe/${recipe.slug}/edit`)} className="block px-4 py-3 text-[15px] hover:bg-field">
                   Edit recipe
                 </Link>
                 <MarkCooked id={recipe.id} />
               </EditOnly>
+              <CopyToBook recipeId={recipe.id} />
             </div>
           </details>
         </div>
@@ -102,7 +106,7 @@ export default function RecipeView({ recipe }: { recipe: Recipe }) {
           <SourceLine recipe={recipe} className="!text-[15px]" />
         )}
         {category && (
-          <Link href={`/library?category=${category.slug}`} className="text-[15px] text-muted underline underline-offset-4">
+          <Link href={path(`/library?category=${category.slug}`)} className="text-[15px] text-muted underline underline-offset-4">
             in {category.name}
           </Link>
         )}
@@ -190,7 +194,7 @@ export default function RecipeView({ recipe }: { recipe: Recipe }) {
         </section>
       )}
 
-      {handwrittenOnly ? <TypeTheLines slug={recipe.slug} /> : <KitchenButtons recipe={recipe} />}
+      {handwrittenOnly ? <TypeTheLines href={path(`/recipe/${recipe.slug}/edit?lines=1`)} /> : <KitchenButtons recipe={recipe} />}
       <RememberRecipe slug={recipe.slug} title={recipe.title} />
     </article>
     </ScaleProvider>
@@ -199,14 +203,14 @@ export default function RecipeView({ recipe }: { recipe: Recipe }) {
 
 // In place of Add to Groceries and Start Cooking on a recipe written only on the Pencil page:
 // those need typed lines, so offer to type them (beside the handwritten page).
-function TypeTheLines({ slug }: { slug: string }) {
+function TypeTheLines({ href }: { href: string }) {
   return (
     <div className="no-print fixed inset-x-0 bottom-0 z-10 border-t border-divider bg-surface/95 px-4 navside:md:left-60 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur">
       <div className="mx-auto flex max-w-xl flex-wrap items-center gap-x-4 gap-y-2">
         <p className="min-w-0 flex-1 text-[14px] text-muted">Type the lines to scale it, add it to Groceries and use Start Cooking.</p>
         <EditOnly>
           <Link
-            href={`/recipe/${slug}/edit?lines=1`}
+            href={href}
             className="flex h-[48px] items-center justify-center rounded-full bg-accent px-6 text-[16px] font-semibold text-white"
           >
             Type the lines

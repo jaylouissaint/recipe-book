@@ -1,12 +1,18 @@
 import "server-only";
 import { cookies } from "next/headers";
+import type { BookId } from "./books";
 
-// The website's write path (docs/DESIGN.md "Behavior notes"): the write key lives in an
-// httpOnly cookie set by Unlock editing, and only this server code sends it to save-recipe.
-export const KEY_COOKIE = "rb_write_key";
-// Readable by page scripts, but only says "this browser is unlocked", so editing buttons can show
-// on static pages. It is not a secret and grants nothing by itself.
-export const FLAG_COOKIE = "rb_unlocked";
+// The website's write path (docs/DESIGN.md "Behavior notes"): each book's write key lives in an
+// httpOnly cookie set by Unlock editing, and only this server code sends it to save-recipe, which
+// only lets a key change its own book.
+export function keyCookie(book: BookId) {
+  return book === "ramiya" ? "rb_write_key" : `rb_write_key_${book}`;
+}
+// Readable by page scripts, but only says "this browser is unlocked for this book", so editing
+// buttons can show on static pages. It is not a secret and grants nothing by itself.
+export function flagCookie(book: BookId) {
+  return book === "ramiya" ? "rb_unlocked" : `rb_unlocked_${book}`;
+}
 
 const FUNCTION_URL = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/save-recipe`;
 
@@ -19,8 +25,12 @@ export class WriteError extends Error {
   }
 }
 
-export async function callSaveRecipe<T = Record<string, unknown>>(body: Record<string, unknown>, key?: string): Promise<T> {
-  const writeKey = key ?? (await cookies()).get(KEY_COOKIE)?.value;
+// `who` is the book whose unlocked key to send, or a key to check.
+export async function callSaveRecipe<T = Record<string, unknown>>(
+  body: Record<string, unknown>,
+  who: { book: BookId } | { key: string },
+): Promise<T> {
+  const writeKey = "key" in who ? who.key : (await cookies()).get(keyCookie(who.book))?.value;
   if (!writeKey) throw new WriteError("Editing is locked on this device. Unlock it in Settings.", 401);
   const res = await fetch(FUNCTION_URL, {
     method: "POST",

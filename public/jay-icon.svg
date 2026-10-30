@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" fill="#fbf8f2"/>
+  <!-- body -->
+  <path d="M26 96 C24 74 34 62 50 60 C66 60 76 72 80 96 Z" fill="#3a6db4"/>
+  <path d="M30 96 C32 82 38 76 46 74 L44 96 Z" fill="#24508f"/>
+  <g stroke="#1c1b19" stroke-width="2.2"><line x1="33" y1="88" x2="43" y2="86"/><line x1="35" y1="81" x2="44" y2="80"/></g>
+  <!-- crest and head -->
+  <path d="M33 44 L22 10 L56 30 Z" fill="#3a6db4"/>
+  <path d="M30 34 L24 16 L44 28 Z" fill="#6f9bd6"/>
+  <circle cx="52" cy="48" r="22" fill="#3a6db4"/>
+  <!-- white face and throat -->
+  <path d="M50 46 C58 38 74 42 74 54 C74 64 64 70 54 68 C46 66 44 52 50 46 Z" fill="#ffffff"/>
+  <!-- black necklace -->
+  <path d="M42 58 C50 74 70 74 78 58" fill="none" stroke="#1c1b19" stroke-width="3.4" stroke-linecap="round"/>
+  <!-- eye line and eye -->
+  <path d="M56 45 L74 49" stroke="#1c1b19" stroke-width="2.4" stroke-linecap="round"/>
+  <circle cx="62" cy="47" r="3.2" fill="#1c1b19"/>
+  <circle cx="63" cy="46" r="0.9" fill="#fff"/>
+  <!-- beak -->
+  <path d="M73 47 L90 51 L73 55 Z" fill="#1c1b19"/>
+</svg>

@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "setup:supabase": "bash scripts/setup-supabase.sh",
+    "setup:jay-key": "bash scripts/setup-jay-key.sh",
     "deploy:functions": "supabase functions deploy save-recipe --no-verify-jwt",
     "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test src/lib/*.test.mts",
     "check:setup": "bash scripts/check-setup.sh"

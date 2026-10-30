@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { CATEGORIES, TAGS, isFavorite, categoryBySlug } from "@/lib/book";
 import { type Block, splitColumns } from "@/lib/bookLayout";
@@ -5,6 +7,7 @@ import { ingredientText } from "@/lib/format";
 import { publicFileUrl } from "@/lib/storage";
 import type { Recipe } from "@/lib/types";
 import { PlateSetting, RollingPin, WhiskAndSpoon } from "../Stickers";
+import { useBook } from "../BookContext";
 
 // One block of a book page. Sizes are in em (the page sets font-size from its line height) and
 // var(--line), so a page looks the same at any size. Blocks that hide the page's rules are opaque.
@@ -216,8 +219,9 @@ export default function BookBlock({
 
 // "open the recipe" link at the foot of a recipe's first page.
 export function OpenRecipeLink({ recipe }: { recipe: Recipe }) {
+  const { path } = useBook();
   return (
-    <Link href={`/recipe/${recipe.slug}`} className={`text-[0.45em] ${LABEL} !text-accent hover:underline`}>
+    <Link href={path(`/recipe/${recipe.slug}`)} className={`text-[0.45em] ${LABEL} !text-accent hover:underline`}>
       open recipe →
     </Link>
   );

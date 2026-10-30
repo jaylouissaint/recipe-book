@@ -60,6 +60,15 @@ FUNCTIONAL = [
           "reproduce the Apple Pencil, Scribble or the on-screen keyboard, so those need the owner's check."),
 
     ("h1", "2. Users, access and navigation"),
+    ("req", "FR-BOOKS-001", "Two books: Who's using this",
+     "Ramiya's Recipes and Jay's Recipes are two books in one site, each with its own recipes, grocery list "
+     "and week. Ramiya's is at the site's own addresses, Jay's under /jay. Settings has “Who's using this: "
+     "Ramiya | Jay”, which switches the device to that book and remembers it (the front page opens it). Each "
+     "book has its own write key, and a key only changes its own book; Settings has an Unlock line per book. "
+     "Each book can have its own Home Screen shortcut, name and icon.",
+     "With only Ramiya's key a device can't change anything in Jay's book (refused by the server); with both "
+     "keys it can change either; a Jay shortcut opens Jay's book.",
+     "Built 2026-10-30 (migration 004 and save-recipe tested in PGlite); not yet deployed"),
     ("req", "FR-ACCESS-001", "Anyone can read; only unlocked devices can change anything",
      "There is no login (queued, FR-AUTH-001). Anyone with the link can read every recipe, the week's meals "
      "and the grocery list. Saving, deleting, uploading, favorites, meals and grocery changes need the write "
@@ -154,6 +163,20 @@ FUNCTIONAL = [
      "ingredients add nothing.",
      "Two planned recipes give a sheet with two sections; adding puts each line on the list linked to its recipe.",
      LIVE_OWNER),
+    ("req", "FR-HOME-007", "Haven't made in a while",
+     "Favorites and recipes cooked before that haven't been made in the last 3 weeks and aren't planned from "
+     "today on, longest ago first, up to 8, as small cards with “last made 5 weeks ago”, “made a while ago” "
+     "(cooked before dates were kept) or “not made yet” (a favorite never cooked). The date is kept when Start "
+     "Cooking reaches the end or Mark as cooked is tapped.",
+     "A recipe cooked 5 weeks ago shows “last made 5 weeks ago”; one cooked last week doesn't show.",
+     "Built 2026-10-30 (migration 005 to run); checked in WebKit"),
+    ("req", "FR-BOOKS-002", "Copy a recipe to the other book",
+     "“Copy to Jay's Recipes” (or Ramiya's) in the recipe menu, shown only when the other book is unlocked on "
+     "the device. The copy is a separate recipe in the other book with the same ingredients, steps, notes, "
+     "photo and handwritten page, starting with no times cooked and no favorite star.",
+     "Copying from Ramiya's book with both keys unlocked gives the recipe in Jay's Library; editing one leaves "
+     "the other unchanged; without Jay's key the item isn't shown.",
+     "Built 2026-10-30; a real copy not tried yet"),
     ("req", "FR-HOME-005", "Groceries at a glance",
      "How many items are left to buy, and the whole unchecked list in a box that scrolls inside the card, with "
      "Open the list.",
@@ -400,9 +423,13 @@ FUNCTIONAL = [
           "finish); category and Favorites filters on the Library; Type the lines for handwritten-only recipes; "
           "book cover as the icon. Built, not yet deployed: paste rules for handwritten cards, offline, live "
           "updates (migration 003), the full-screen Home Screen app. Safari on iPad made the primary browser."),
-    ("p", "Queued (not scheduled): a second book for the owner's partner (“Who's using this”: Ramiya / Jay in "
-          "Settings, each book with its own recipes, groceries and week; or via sign-in); sign-in (FR-AUTH-001, "
-          "Supabase Auth replacing the write key) and family sharing (FR-AUTH-002); the owner's own handwriting font; the write key as a passphrase; Next.js 16."),
+    ("p", "Change log, 2026-10-30: two books (FR-BOOKS-001, migration 004) with a write key each; Home and "
+          "Groceries cached again; the menu as a top capsule or a sidebar; “Haven't made in a while” "
+          "(FR-HOME-007, migration 005) and copying a recipe to the other book (FR-BOOKS-002) built. Owner "
+          "decisions: no sign-in (the two write keys stay, so FR-AUTH-001/002 are dropped), and printing is not "
+          "being pursued."),
+    ("p", "Queued (not scheduled): the owner's own handwriting font; the write keys as passphrases; Next.js 16; "
+          "optionally a custom book cover."),
 
     ("h1", "Appendix A. Worked examples"),
     ("table", [2304, 6912], [

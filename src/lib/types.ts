@@ -36,5 +36,6 @@ export type Recipe = {
   photoPath?: string; // in the "photos" storage bucket
   description?: string;
   timesCooked: number;
+  lastCookedAt?: string; // when Start Cooking last reached the end or Mark as cooked was tapped (migration 005)
   imported: boolean; // shows "Check this import" until edited and saved
 };

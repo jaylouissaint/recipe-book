@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Figtree, Instrument_Serif, Montserrat, Patrick_Hand, Zilla_Slab } from "next/font/google";
-import AppNav from "@/components/AppNav";
 import LiveUpdates from "@/components/LiveUpdates";
 import Offline from "@/components/Offline";
 import "./globals.css";
@@ -37,12 +36,9 @@ const zilla = Zilla_Slab({
   subsets: ["latin"],
 });
 
+// Each book's name, Home Screen name, manifest and icons are set by src/app/b/[book]/layout.tsx.
 export const metadata: Metadata = {
-  title: { default: "Ramiya’s Recipes", template: "%s · Ramiya’s Recipes" },
   description: "Our family recipes, written by hand.",
-  // The Home Screen name (without it the iPad takes the page's title, which on a recipe page is
-  // "<recipe> · Ramiya’s Recipes"), opening full screen, with the normal status bar above the page.
-  appleWebApp: { title: "Ramiya’s Recipes", capable: true, statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {
@@ -70,11 +66,7 @@ export default function RootLayout({
       >
         <Offline />
         <LiveUpdates />
-        <div className="navside:md:flex">
-          <AppNav />
-          {/* Room for the bottom tab bar on phones, and for the top capsule from iPad up */}
-          <div className="min-w-0 flex-1 pb-24 md:pt-14 md:pb-0 navside:md:pt-0">{children}</div>
-        </div>
+        {children}
       </body>
     </html>
   );

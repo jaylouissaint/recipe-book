@@ -7,11 +7,13 @@ import { FAVORITE, isFavorite } from "@/lib/book";
 import type { Recipe } from "@/lib/types";
 import { recipePayload } from "@/lib/uploadPhoto";
 import { useUnlocked } from "./EditOnly";
+import { useBook } from "./BookContext";
 
 // The favorite star in the corner of a Library card. Tapping it on an unlocked device adds the
 // recipe to Favorites on Home (or takes it off); locked devices just see the favorites' stars.
 export default function FavoriteStar({ recipe }: { recipe: Recipe }) {
   const unlocked = useUnlocked();
+  const { id: book } = useBook();
   const router = useRouter();
   const [on, setOn] = useState(isFavorite(recipe));
   const [error, setError] = useState("");
@@ -38,7 +40,7 @@ export default function FavoriteStar({ recipe }: { recipe: Recipe }) {
     setError("");
     startSaving(async () => {
       const others = recipe.tags.filter((t) => t !== FAVORITE);
-      const result = await saveRecipe({ ...recipePayload(recipe), tags: next ? [...others, FAVORITE] : others });
+      const result = await saveRecipe(book, { ...recipePayload(recipe), tags: next ? [...others, FAVORITE] : others });
       if (!result.ok) {
         setOn(!next);
         setError(result.error);

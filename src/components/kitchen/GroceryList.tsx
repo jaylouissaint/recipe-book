@@ -9,6 +9,7 @@ import { publicFileUrl } from "@/lib/storage";
 import { useUnlocked } from "../EditOnly";
 import { CartIcon } from "../Icons";
 import { useOnline } from "../Offline";
+import { useBook } from "../BookContext";
 
 // Check-offs that couldn't be saved yet (no signal in the store), by item id. Kept in this browser
 // and sent when the connection is back; until then the list shows them as checked.
@@ -38,6 +39,7 @@ const OFFLINE = "You’re offline. Adding and clearing work again when you’re 
 export default function GroceryList({ initial }: { initial: GroceryItem[] }) {
   const router = useRouter();
   const unlocked = useUnlocked();
+  const { id: book, path } = useBook();
   const [items, setItems] = useState(initial);
   const [grouped, setGrouped] = useState(false);
   const [text, setText] = useState("");
@@ -68,7 +70,7 @@ export default function GroceryList({ initial }: { initial: GroceryItem[] }) {
     (async () => {
       for (const id of ids) {
         try {
-          const r = await checkGrocery(id, pending[id]);
+          const r = await checkGrocery(book, id, pending[id]);
           if (!r.ok) setError(r.error);
         } catch {
           return; // still no connection: try again next time
@@ -79,7 +81,7 @@ export default function GroceryList({ initial }: { initial: GroceryItem[] }) {
         setWaiting(Object.keys(left).length);
       }
     })();
-  }, [online, unlocked]);
+  }, [online, unlocked, book]);
   useEffect(() => {
     try {
       setGrouped(localStorage.getItem("rb-groceries-grouped") === "1");
@@ -98,7 +100,7 @@ export default function GroceryList({ initial }: { initial: GroceryItem[] }) {
     const checked = !item.checked;
     setItems((list) => list.map((i) => (i.id === item.id ? { ...i, checked } : i)));
     if (!navigator.onLine) return remember(item.id, checked);
-    checkGrocery(item.id, checked).then(
+    checkGrocery(book, item.id, checked).then(
       (r) => {
         if (r.ok) return;
         setItems((list) => list.map((i) => (i.id === item.id ? { ...i, checked: item.checked } : i)));
@@ -115,7 +117,7 @@ export default function GroceryList({ initial }: { initial: GroceryItem[] }) {
     setError("");
     if (!navigator.onLine) return setError(OFFLINE);
     startBusy(async () => {
-      const r = await addGroceries(lines).catch(() => ({ ok: false as const, error: OFFLINE }));
+      const r = await addGroceries(book, lines).catch(() => ({ ok: false as const, error: OFFLINE }));
       if (!r.ok) return setError(r.error);
       setItems((list) => [...list, ...r.items.map((i) => ({ ...i, recipe: null }))]);
       setText("");
@@ -127,7 +129,7 @@ export default function GroceryList({ initial }: { initial: GroceryItem[] }) {
     setError("");
     if (!navigator.onLine) return setError(OFFLINE);
     startBusy(async () => {
-      const r = await clearGroceries(onlyChecked).catch(() => ({ ok: false as const, error: OFFLINE }));
+      const r = await clearGroceries(book, onlyChecked).catch(() => ({ ok: false as const, error: OFFLINE }));
       if (!r.ok) return setError(r.error);
       setItems((list) => (onlyChecked ? list.filter((i) => !i.checked) : []));
       router.refresh();
@@ -158,7 +160,7 @@ export default function GroceryList({ initial }: { initial: GroceryItem[] }) {
       {!unlocked && (
         <p className="mb-4 rounded-2xl bg-field px-4 py-3 text-[15px]">
           This is the list read-only.{" "}
-          <Link href="/settings" className="font-semibold text-accent underline underline-offset-4">
+          <Link href={path("/settings")} className="font-semibold text-accent underline underline-offset-4">
             Unlock in Settings
           </Link>{" "}
           to check things off and add to it.
@@ -219,7 +221,7 @@ export default function GroceryList({ initial }: { initial: GroceryItem[] }) {
             <section key={s.key} className="mb-6" aria-label={s.title || "Grocery list"}>
               {grouped && (
                 <h2 className="mb-2 text-[12px] font-semibold tracking-widest text-muted uppercase">
-                  {s.slug ? <Link href={`/recipe/${s.slug}`} className="hover:underline">{s.title}</Link> : s.title}
+                  {s.slug ? <Link href={path(`/recipe/${s.slug}`)} className="hover:underline">{s.title}</Link> : s.title}
                 </h2>
               )}
               <ul className="space-y-2">
@@ -238,6 +240,7 @@ export default function GroceryList({ initial }: { initial: GroceryItem[] }) {
 }
 
 function Row({ item, onToggle, canCheck, showRecipe }: { item: GroceryItem; onToggle: () => void; canCheck: boolean; showRecipe: boolean }) {
+  const { path } = useBook();
   return (
     <div className={`flex items-center gap-3 rounded-[20px] bg-surface py-2 pr-2 pl-4 shadow-card ${item.checked ? "opacity-60" : ""}`}>
       <label className={`flex min-h-12 flex-1 items-center gap-3 ${canCheck ? "cursor-pointer" : ""}`}>
@@ -245,7 +248,7 @@ function Row({ item, onToggle, canCheck, showRecipe }: { item: GroceryItem; onTo
         <span className={`font-hand text-xl text-ink ${item.checked ? "line-through decoration-ink/50" : ""}`}>{item.text}</span>
       </label>
       {showRecipe && item.recipe && (
-        <Link href={`/recipe/${item.recipe.slug}`} title={item.recipe.title} aria-label={`From ${item.recipe.title}`} className="shrink-0">
+        <Link href={path(`/recipe/${item.recipe.slug}`)} title={item.recipe.title} aria-label={`From ${item.recipe.title}`} className="shrink-0">
           {item.recipe.photoPath ? (
             // eslint-disable-next-line @next/next/no-img-element -- Supabase public URLs, shown as is
             <img src={publicFileUrl("photos", item.recipe.photoPath)} alt="" className="size-10 rounded-xl object-cover" />

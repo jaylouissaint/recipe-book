@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { fromPath } from "@/lib/books";
+import { useBook } from "./BookContext";
 import { BookIcon, CartIcon, GearIcon, HomeIcon, SidebarIcon } from "./Icons";
 
 const ITEMS = [
@@ -24,13 +26,16 @@ function setSide(side: boolean) {
 }
 
 export default function AppNav() {
-  const pathname = usePathname();
+  const book = useBook();
+  // The address within the book ("/jay/library" -> "/library"), to know which tab is current.
+  const pathname = fromPath(usePathname()).path;
   const onRecipe = pathname.startsWith("/recipe/") || pathname === "/new";
   // The tapped tab lights up at once, before its page has loaded.
   const [tapped, setTapped] = useState<string | null>(null);
   useEffect(() => setTapped(null), [pathname]);
   const isActive = (item: (typeof ITEMS)[number]) => (tapped ? item.href === tapped : item.match(pathname));
   const tap = (href: string) => () => setTapped(href);
+  const link = (href: string) => book.path(href);
 
   return (
     <nav aria-label="Main" className="no-print">
@@ -52,7 +57,7 @@ export default function AppNav() {
               return (
                 <li key={item.href}>
                   <Link
-                    href={item.href}
+                    href={link(item.href)}
                     onClick={tap(item.href)}
                     aria-current={active ? "page" : undefined}
                     className={`block rounded-full px-5 py-2 text-[15px] ${
@@ -71,8 +76,8 @@ export default function AppNav() {
       {/* Sidebar */}
       <div className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-1 border-r border-divider bg-surface px-4 pt-[max(2rem,env(safe-area-inset-top))] pb-8 navside:md:flex">
         <div className="mb-8 flex items-center justify-between gap-2 px-3">
-          <Link href="/" onClick={tap("/")} className="font-serif text-3xl leading-none">
-            {"Ramiya’s Recipes"}
+          <Link href={link("/")} onClick={tap("/")} className="font-serif text-3xl leading-none">
+            {book.name}
           </Link>
           <button
             type="button"
@@ -89,7 +94,7 @@ export default function AppNav() {
           return (
             <Link
               key={item.href}
-              href={item.href}
+              href={link(item.href)}
               onClick={tap(item.href)}
               aria-current={active ? "page" : undefined}
               className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] ${
@@ -115,7 +120,7 @@ export default function AppNav() {
             return (
               <li key={item.href}>
                 <Link
-                  href={item.href}
+                  href={link(item.href)}
                   onClick={tap(item.href)}
                   aria-current={active ? "page" : undefined}
                   className={`flex flex-col items-center gap-0.5 px-4 pt-2 pb-1.5 text-[11px] ${

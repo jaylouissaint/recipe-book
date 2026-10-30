@@ -47,6 +47,7 @@ The book-page tokens (ruled lines `#DDD8DC`, label gray `#8C8C8C`, mauve `#9A859
 - **Pick up where you left off:** "Continue cooking" (where Start Cooking was left in this browser, in the last day: "step 2 of 4", opening Start Cooking there at the same serving size), else "Last opened", plus a **Surprise me** button that opens a random recipe.
 - **This week:** today and the next 6 days as a strip of day cards. Each day holds recipes (with how many they should serve) or a plain note ("leftovers"); "+ Add" picks a recipe (search, servings − +) or writes a note, × removes. **Add the week to Groceries** opens the grocery sheet with every planned recipe at its planned servings, one section each, all ticked. Stored in the database (`meal_plan`), so every device sees the same week.
 - **Groceries at a glance:** how many items are left to buy, the first few, and "Open the list".
+- **Haven't made in a while:** favorites and recipes cooked before that haven't been made in 3 weeks (and aren't planned), longest ago first, as small cards with "last made 5 weeks ago" or "not made yet".
 - **To finish:** recipes written only on the Pencil page, with "Type the lines" (they can't be scaled, added to Groceries or cooked with Start Cooking until they have typed lines).
 
 **Book view (`/book`, the List | Book toggle on the Library, moved from Home 2026-10-29).** The whole recipe book to flip through like the spiral book:
@@ -68,7 +69,7 @@ The book-page tokens (ruled lines `#DDD8DC`, label gray `#8C8C8C`, mauve `#9A859
 Two columns on iPad, three on desktop.
 
 **Recipe view.**
-- **Top bar:** back, share, menu (Edit, View handwritten page / View original card, Delete).
+- **Top bar:** back, share, menu (Open in the book, View handwritten page / View original card, Edit, Mark as cooked, Delete, and **Copy to Jay's Recipes** / Ramiya's when the other book is unlocked on this device: a separate copy in the other book).
 - **Hero:** the photo in a rounded container, shown whole at its own shape (never cropped), up to about two-thirds of the screen tall.
 - **Title:** large, in handwriting.
 - **Check this import note:** a muted pill, only on recipes imported from a link or photo until the first edit.
@@ -101,7 +102,7 @@ Scribble works on the iPad in Safari: write with the Apple Pencil on any line an
 
 **Serving scaler.** − and + on the Servings box (or ×½ to ×4 for recipes without a serving count) rescale the ingredients with kitchen fractions (⅓ c × 1½ = ½ c), and Add to Groceries and Start Cooking use the scaled amounts.
 
-**Settings.** Unlock editing (enter the write key once per device).
+**Settings.** **Who's using this: Ramiya | Jay** switches the device to that book (Ramiya's Recipes or Jay's Recipes), each with its own recipes, groceries and week, and remembers it. **Editing** has a line per book: unlock it with that book's write key (a key only changes its own book), or lock it. Each book can have its own Home Screen shortcut, name and icon (Jay's: a blue jay).
 
 **Home Screen app.** Added to the Home Screen, the site opens full screen like an app, with the whisk-and-spoon icon and the name "Ramiya’s Recipes": no Safari address bar or buttons. The tabs, back buttons and × get around; the writing page's Cancel goes back, or to the recipe or Library. It keeps its own storage apart from Safari, so editing is unlocked once inside it. Links to other websites open separately.
 

@@ -5,10 +5,12 @@ import { useState } from "react";
 import { useUnlocked } from "./EditOnly";
 import { CameraIcon } from "./Icons";
 import RecipeEditor from "./RecipeEditor";
+import { useBook } from "./BookContext";
 
 // Add from photos: choose the photo or PDF, then write the recipe in beside it (or paste its text).
 export default function PhotoImport() {
   const unlocked = useUnlocked();
+  const { path } = useBook();
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState("");
 
@@ -34,7 +36,7 @@ export default function PhotoImport() {
       {!unlocked && (
         <p role="status" className="mt-6 rounded-2xl bg-field px-4 py-3 text-[15px]">
           Editing is locked on this device.{" "}
-          <Link href="/settings" className="font-semibold text-accent underline underline-offset-4">
+          <Link href={path("/settings")} className="font-semibold text-accent underline underline-offset-4">
             Unlock in Settings
           </Link>
         </p>

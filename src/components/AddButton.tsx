@@ -4,9 +4,11 @@ import Link from "next/link";
 import { useRef } from "react";
 import EditOnly from "./EditOnly";
 import { CameraIcon, LinkIcon, PlusIcon } from "./Icons";
+import { useBook } from "./BookContext";
 
 // The floating green + and its Add sheet (docs/DESIGN.md). Only on unlocked devices.
 export default function AddButton() {
+  const { path } = useBook();
   const dialog = useRef<HTMLDialogElement>(null);
   const row = "flex items-center gap-4 px-6 py-5 text-[17px] hover:bg-field";
   const close = () => dialog.current?.close();
@@ -30,19 +32,19 @@ export default function AddButton() {
         <div className="mx-auto mt-3 h-1 w-10 rounded-full bg-divider" />
         <ul className="divide-y divide-divider pb-[env(safe-area-inset-bottom)]">
           <li>
-            <Link href="/new/web" onClick={close} className={row}>
+            <Link href={path("/new/web")} onClick={close} className={row}>
               <LinkIcon />
               Save a recipe from the web
             </Link>
           </li>
           <li>
-            <Link href="/new/photo" onClick={close} className={row}>
+            <Link href={path("/new/photo")} onClick={close} className={row}>
               <CameraIcon />
               Add from recipe photos
             </Link>
           </li>
           <li>
-            <Link href="/new" onClick={close} className={row}>
+            <Link href={path("/new")} onClick={close} className={row}>
               <PlusIcon className="size-6 rounded-full border border-current p-0.5" />
               Enter your own recipe
             </Link>

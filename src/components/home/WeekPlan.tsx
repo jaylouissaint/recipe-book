@@ -8,6 +8,7 @@ import type { Recipe } from "@/lib/types";
 import { useUnlocked } from "../EditOnly";
 import GrocerySheet, { type GrocerySection } from "../kitchen/GrocerySheet";
 import Thumb from "../Thumb";
+import { useBook } from "../BookContext";
 
 // This week's meals (docs/DESIGN.md "Home"): today and the next 6 days, each with recipes or a
 // plain note ("leftovers"). "Add the week to Groceries" opens the grocery sheet with every planned
@@ -33,6 +34,7 @@ function factorFor(meal: Meal, recipe: Recipe) {
 
 export default function WeekPlan({ meals: initial, recipes }: { meals: Meal[] | null; recipes: Recipe[] }) {
   const unlocked = useUnlocked();
+  const { id: book, path } = useBook();
   const [meals, setMeals] = useState(initial ?? []);
   const [days, setDays] = useState<string[]>([]);
   const [adding, setAdding] = useState<string | null>(null); // the day being added to
@@ -77,7 +79,7 @@ export default function WeekPlan({ meals: initial, recipes }: { meals: Meal[] | 
   async function remove(meal: Meal) {
     setError("");
     setMeals((list) => list.filter((m) => m.id !== meal.id));
-    const r = await removeMeal(meal.id);
+    const r = await removeMeal(book, meal.id);
     if (!r.ok) {
       setMeals((list) => [...list, meal]);
       setError(r.error);
@@ -120,7 +122,7 @@ export default function WeekPlan({ meals: initial, recipes }: { meals: Meal[] | 
                   return (
                     <li key={m.id} className="flex items-center gap-2">
                       {r ? (
-                        <Link href={`/recipe/${r.slug}`} className="flex min-w-0 flex-1 items-center gap-2">
+                        <Link href={path(`/recipe/${r.slug}`)} className="flex min-w-0 flex-1 items-center gap-2">
                           <Thumb recipe={r} className="size-10 shrink-0" />
                           <span className="min-w-0">
                             <span className="block truncate font-hand text-lg leading-6 text-ink">{r.title}</span>
@@ -191,6 +193,7 @@ export default function WeekPlan({ meals: initial, recipes }: { meals: Meal[] | 
 // Pick a recipe (and how many it should serve) or write a note, for one day.
 function AddMeal({ day, label, recipes, onAdded }: { day: string; label: string; recipes: Recipe[]; onAdded: (meal: Meal) => void }) {
   const [query, setQuery] = useState("");
+  const { id: book } = useBook();
   const [picked, setPicked] = useState<Recipe | null>(null);
   const [servings, setServings] = useState<number | null>(null);
   const [note, setNote] = useState("");
@@ -203,7 +206,7 @@ function AddMeal({ day, label, recipes, onAdded }: { day: string; label: string;
   function save(meal: { recipeId?: string; note?: string; servings?: number }) {
     setError("");
     startSaving(async () => {
-      const r = await addMeal({ day, ...meal });
+      const r = await addMeal(book, { day, ...meal });
       if (r.ok) onAdded(r.meal);
       else setError(r.error);
     });

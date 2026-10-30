@@ -10,6 +10,7 @@ import { scaleIngredient } from "@/lib/scale";
 import type { Ingredient, Recipe } from "@/lib/types";
 import { setCooking } from "@/lib/remember";
 import { useUnlocked } from "../EditOnly";
+import { useBook } from "../BookContext";
 
 // Start Cooking (docs/DESIGN.md): full screen, one step at a time in large handwriting, with the
 // ingredients the step uses above it. Tap, swipe or use the arrow keys; sub-steps can be checked
@@ -20,13 +21,14 @@ type Page = { kind: "gather" } | { kind: "step"; index: number } | { kind: "done
 export default function CookMode({ recipe, factor, start = 0 }: { recipe: Recipe; factor: number; start?: number }) {
   const router = useRouter();
   const unlocked = useUnlocked();
+  const { id: book, path } = useBook();
   const pages: Page[] = [{ kind: "gather" }, ...recipe.stepGroups.map((_, index) => ({ kind: "step" as const, index })), { kind: "done" }];
   const [at, setAt] = useState(() => Math.max(0, Math.min(start, recipe.stepGroups.length)));
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const [cooked, setCooked] = useState("");
   const recorded = useRef(false);
   const awake = useWakeLock();
-  const recipeHref = `/recipe/${recipe.slug}`;
+  const recipeHref = path(`/recipe/${recipe.slug}`);
   const page = pages[at];
   const steps = recipe.stepGroups.length;
 
@@ -46,18 +48,18 @@ export default function CookMode({ recipe, factor, start = 0 }: { recipe: Recipe
 
   // Home offers to continue from here; finishing clears it.
   useEffect(() => {
-    if (at === pages.length - 1) return setCooking(null);
-    setCooking({ slug: recipe.slug, title: recipe.title, page: at, steps: pages.length - 2, scale: factor, at: Date.now() });
-  }, [at, pages.length, recipe.slug, recipe.title, factor]);
+    if (at === pages.length - 1) return setCooking(book, null);
+    setCooking(book, { slug: recipe.slug, title: recipe.title, page: at, steps: pages.length - 2, scale: factor, at: Date.now() });
+  }, [at, pages.length, recipe.slug, recipe.title, factor, book]);
 
   // Reaching the end counts as cooking it once.
   useEffect(() => {
     if (page.kind !== "done" || recorded.current || !unlocked) return;
     recorded.current = true;
-    recordCooked(recipe.id).then((r) =>
+    recordCooked(book, recipe.id).then((r) =>
       setCooked(r.ok ? `That’s ${r.timesCooked} time${r.timesCooked === 1 ? "" : "s"} you’ve made this.` : ""),
     );
-  }, [page.kind, unlocked, recipe.id]);
+  }, [page.kind, unlocked, recipe.id, book]);
 
   const toggle = (key: string) =>
     setChecked((s) => {

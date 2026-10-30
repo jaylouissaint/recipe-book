@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import type { BookId } from "./books";
 import type { Recipe } from "./types";
 
 // One query fetches a recipe with its groups, ingredients and steps. "*" rather than a column
@@ -29,6 +30,7 @@ type Row = {
   photo_path?: string | null;
   description?: string | null;
   times_cooked?: number;
+  last_cooked_at?: string | null;
   imported?: boolean;
   ingredient_groups: {
     name: string;
@@ -61,6 +63,7 @@ function toRecipe(row: Row): Recipe {
     photoPath: row.photo_path ?? undefined,
     description: row.description ?? undefined,
     timesCooked: row.times_cooked ?? 0,
+    lastCookedAt: row.last_cooked_at ?? undefined,
     imported: row.imported ?? false,
     ingredientGroups: [...row.ingredient_groups].sort(byPosition).map((g) => ({
       name: g.name,
@@ -73,18 +76,33 @@ function toRecipe(row: Row): Recipe {
   };
 }
 
-export async function listRecipes(category?: string): Promise<Recipe[]> {
-  let query = supabase.from("recipes").select(SELECT).is("deleted_at", null).order("title");
+// One book's recipes (migration 004 gave every recipe a book).
+export async function listRecipes(book: BookId, category?: string): Promise<Recipe[]> {
+  let query = supabase.from("recipes").select(SELECT).eq("book", book).is("deleted_at", null).order("title");
   if (category) query = query.eq("category", category);
   const { data, error } = await query.returns<Row[]>();
   if (error) throw new Error(`Loading recipes failed: ${error.message}`);
   return data.map(toRecipe);
 }
 
-export async function getRecipe(slug: string): Promise<Recipe | undefined> {
+export async function getRecipeById(book: BookId, id: string): Promise<Recipe | undefined> {
   const { data, error } = await supabase
     .from("recipes")
     .select(SELECT)
+    .eq("book", book)
+    .eq("id", id)
+    .is("deleted_at", null)
+    .returns<Row[]>()
+    .maybeSingle();
+  if (error) throw new Error(`Loading the recipe failed: ${error.message}`);
+  return data ? toRecipe(data) : undefined;
+}
+
+export async function getRecipe(book: BookId, slug: string): Promise<Recipe | undefined> {
+  const { data, error } = await supabase
+    .from("recipes")
+    .select(SELECT)
+    .eq("book", book)
     .eq("slug", slug)
     .is("deleted_at", null)
     .returns<Row[]>()

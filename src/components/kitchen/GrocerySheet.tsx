@@ -7,6 +7,7 @@ import { ingredientText } from "@/lib/format";
 import { scaleIngredient } from "@/lib/scale";
 import type { Recipe } from "@/lib/types";
 import { useUnlocked } from "../EditOnly";
+import { useBook } from "../BookContext";
 
 // The "Add to Groceries" sheet: a recipe's ingredients (or a whole week's recipes, one section
 // each) at their serving sizes, all ticked, to untick what you already have.
@@ -14,6 +15,7 @@ export type GrocerySection = { title?: string; recipe: Recipe; factor: number };
 
 export default function GrocerySheet({ sections, heading = "Add to Groceries", close }: { sections: GrocerySection[]; heading?: string; close: () => void }) {
   const unlocked = useUnlocked();
+  const { id: book, path } = useBook();
   const lists = sections.map((s) => ({
     ...s,
     groups: s.recipe.ingredientGroups.map((g) => ({
@@ -41,7 +43,7 @@ export default function GrocerySheet({ sections, heading = "Add to Groceries", c
       for (const [si, s] of lists.entries()) {
         const lines = s.groups.flatMap((g, gi) => g.lines.filter((_, li) => chosen.has(`${si}:${gi}:${li}`)));
         if (!lines.length) continue;
-        const r = await addGroceries(lines, s.recipe.id);
+        const r = await addGroceries(book, lines, s.recipe.id);
         if (!r.ok) {
           setResult({ ok: false, text: added ? `Added ${added} items, then: ${r.error}` : r.error });
           return;
@@ -60,7 +62,7 @@ export default function GrocerySheet({ sections, heading = "Add to Groceries", c
           <button type="button" onClick={close} className="h-[52px] flex-1 rounded-full border border-fg/30 font-semibold">
             Done
           </button>
-          <Link href="/groceries" className="flex h-[52px] flex-1 items-center justify-center rounded-full bg-accent font-semibold text-white">
+          <Link href={path("/groceries")} className="flex h-[52px] flex-1 items-center justify-center rounded-full bg-accent font-semibold text-white">
             View list
           </Link>
         </div>
@@ -125,7 +127,7 @@ export default function GrocerySheet({ sections, heading = "Add to Groceries", c
         ) : (
           <p className="text-[15px]">
             Editing is locked on this device.{" "}
-            <Link href="/settings" className="font-semibold text-accent underline underline-offset-4">
+            <Link href={path("/settings")} className="font-semibold text-accent underline underline-offset-4">
               Unlock in Settings
             </Link>{" "}
             to add to the list.

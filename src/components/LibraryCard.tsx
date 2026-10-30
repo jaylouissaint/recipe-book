@@ -1,17 +1,21 @@
+"use client";
+
 import Link from "next/link";
 import type { Recipe } from "@/lib/types";
 import FavoriteStar from "./FavoriteStar";
 import { PotIcon } from "./Icons";
 import SourceLine from "./SourceLine";
 import Thumb from "./Thumb";
+import { useBook } from "./BookContext";
 
 // One row of the Library, like the Deglaze "My Recipes" cards. The favorite star sits in the
 // top right corner, outside the link, so tapping it doesn't open the recipe.
 export default function LibraryCard({ recipe }: { recipe: Recipe }) {
+  const { path } = useBook();
   return (
     <div className="relative transition-transform hover:-translate-y-0.5">
       <Link
-        href={`/recipe/${recipe.slug}`}
+        href={path(`/recipe/${recipe.slug}`)}
         className="flex items-center gap-4 rounded-[20px] bg-surface p-2 pr-12 shadow-card"
       >
         <Thumb recipe={recipe} className="size-[88px] shrink-0" />

@@ -8,6 +8,7 @@ import { recipePayload, uploadPhoto } from "@/lib/uploadPhoto";
 import { useUnlocked } from "./EditOnly";
 import { CameraIcon } from "./Icons";
 import Thumb, { pictureUrl } from "./Thumb";
+import { useBook } from "./BookContext";
 
 // The recipe's cover at the top of the recipe view, shown whole (never cropped). On unlocked
 // devices a button adds or changes the cover photo in place, without opening the writing page.
@@ -22,6 +23,7 @@ export default function CoverPhoto({
   handwriting?: boolean; // false when the handwritten page is already the recipe's body
 }) {
   const unlocked = useUnlocked();
+  const { id: book } = useBook();
   const router = useRouter();
   const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -35,8 +37,8 @@ export default function CoverPhoto({
     setPreview(URL.createObjectURL(file));
     startSaving(async () => {
       try {
-        const photoPath = await uploadPhoto(recipe.id, file);
-        const result = await saveRecipe({ ...recipePayload(recipe), photoPath });
+        const photoPath = await uploadPhoto(book, recipe.id, file);
+        const result = await saveRecipe(book, { ...recipePayload(recipe), photoPath });
         if (!result.ok) throw new Error(result.error);
         router.refresh();
       } catch (err) {

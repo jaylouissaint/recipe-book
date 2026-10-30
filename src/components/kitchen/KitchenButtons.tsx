@@ -7,12 +7,14 @@ import { recordCooked } from "@/app/actions";
 import type { Recipe } from "@/lib/types";
 import GrocerySheet from "./GrocerySheet";
 import { useScale } from "./Scale";
+import { useBook } from "../BookContext";
 
 // The recipe's sticky bottom buttons: "Add to Groceries" (pick the lines you need, at the current
 // serving size) and "Start Cooking".
 export default function KitchenButtons({ recipe }: { recipe: Recipe }) {
   const { factor } = useScale();
-  const cookHref = `/recipe/${recipe.slug}/cook${factor !== 1 ? `?scale=${factor}` : ""}`;
+  const { path } = useBook();
+  const cookHref = path(`/recipe/${recipe.slug}/cook${factor !== 1 ? `?scale=${factor}` : ""}`);
   const dialog = useRef<HTMLDialogElement>(null);
   const [open, setOpen] = useState(0); // remounts the sheet with fresh choices each time
 
@@ -50,6 +52,7 @@ export default function KitchenButtons({ recipe }: { recipe: Recipe }) {
 
 // "Mark as cooked" in the recipe menu (Start Cooking also counts when it reaches the end).
 export function MarkCooked({ id }: { id: string }) {
+  const { id: book } = useBook();
   const router = useRouter();
   const [state, setState] = useState("");
   const [saving, startSaving] = useTransition();
@@ -59,7 +62,7 @@ export function MarkCooked({ id }: { id: string }) {
       disabled={saving}
       onClick={() =>
         startSaving(async () => {
-          const r = await recordCooked(id);
+          const r = await recordCooked(book, id);
           setState(r.ok ? `Cooked ${r.timesCooked} time${r.timesCooked === 1 ? "" : "s"}` : r.error);
           if (r.ok) router.refresh();
         })

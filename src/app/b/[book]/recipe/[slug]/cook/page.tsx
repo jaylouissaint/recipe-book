@@ -1,18 +1,19 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import CookMode from "@/components/kitchen/CookMode";
+import { bookParam } from "@/lib/bookParam";
 import { getRecipe } from "@/lib/recipes";
 
-type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ scale?: string; step?: string }> };
+type Props = { params: Promise<{ book: string; slug: string }>; searchParams: Promise<{ scale?: string; step?: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const recipe = await getRecipe((await params).slug);
+  const recipe = await getRecipe(await bookParam(params), (await params).slug);
   return recipe ? { title: `Cooking ${recipe.title}` } : {};
 }
 
 // Start Cooking; ?scale=1.5 comes from the recipe's serving scaler, ?step=3 from Home's "Continue".
 export default async function Cook({ params, searchParams }: Props) {
-  const recipe = await getRecipe((await params).slug);
+  const recipe = await getRecipe(await bookParam(params), (await params).slug);
   if (!recipe) notFound();
   const query = await searchParams;
   const scale = Number(query.scale);
