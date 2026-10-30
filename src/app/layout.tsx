@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Figtree, Instrument_Serif, Montserrat, Patrick_Hand, Zilla_Slab } from "next/font/google";
 import AppNav from "@/components/AppNav";
+import LiveUpdates from "@/components/LiveUpdates";
+import Offline from "@/components/Offline";
 import "./globals.css";
 
 // Recipe content. Swap for a custom handwriting font later (see PLAN.md "Your own handwriting font").
@@ -58,6 +60,8 @@ export default function RootLayout({
       <body
         className={`${hand.variable} ${figtree.variable} ${instrument.variable} ${montserrat.variable} ${zilla.variable} antialiased`}
       >
+        <Offline />
+        <LiveUpdates />
         <div className="lg:flex">
           <AppNav />
           <div className="min-w-0 flex-1 pb-24 lg:pb-0">{children}</div>

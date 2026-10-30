@@ -27,6 +27,9 @@ const HEADINGS: [Section, RegExp][] = [
 const BULLET = /^(?:[•·*▢□☐◻○◦]|o(?=\s))\s*/;
 const STEP_MARK = /^(?:[▷►▶>]|\d{1,2}\s*[.)]|step\s*\d+\s*[:.)]?)\s*/i;
 const SUB_MARK = /^[-–—•*]\s*/;
+// How a step starts ("cream butter & sugar", "in a bowl, whisk…"), so it isn't taken for an ingredient.
+const STEP_START =
+  /^(?:add|bake|beat|blend|boil|bring|chill|chop|combine|cook|cover|cream|cut|drizzle|fold|fry|garnish|grease|grill|heat|knead|let|line|marinate|mash|melt|mix|place|pour|preheat|put|reduce|remove|rest|roast|roll|season|serve|sift|simmer|slice|spread|sprinkle|stir|toss|top|transfer|whisk|in a|in the|once|when|then|meanwhile)\b/i;
 // Words that make a short line an ingredient ("salt", "fresh basil"), not a section name.
 const INGREDIENTISH = /\b(of|salt|pepper|taste|garnish|optional|oil|water|butter|sugar|fresh|chopped)\b/i;
 
@@ -95,6 +98,13 @@ function ingredientsFrom(lines: string[]): IngredientGroup[] {
   const groups: IngredientGroup[] = [{ name: "", items: [] }];
   lines.forEach((line, i) => {
     if (!line) return;
+    // A word cut across two lines ("340g mashed Be" / "senanas"): one word with no amount, right
+    // after an ingredient that ends in a short fragment, joins it.
+    const last = groups[groups.length - 1].items.at(-1);
+    if (last && lines[i - 1] && /^\p{L}+$/u.test(line) && last.quantity && /(?:^|\s)\p{L}{1,2}$/u.test(last.item)) {
+      last.item += ` ${line}`;
+      return;
+    }
     const name = groupName(line, lines[i - 1], lines.slice(i + 1).find(Boolean));
     if (name !== null) {
       groups.push({ name, items: [] });
@@ -121,6 +131,57 @@ function directionsFrom(lines: string[]): StepGroup[] {
   return linesToStepGroups(out);
 }
 
+// Common misreads when Live Text reads handwriting, fixed line by line: stray capitals inside
+// words ("sugaR", "bUtteR"; a word like "McCormick" is left alone), "0z" for oz after an amount,
+// and a lone "?" for "&".
+function tidyHandwriting(line: string) {
+  return line
+    .replace(/\p{L}+/gu, (w) => {
+      if (/^\p{Lu}{2,}\p{Ll}/u.test(w) && !/\p{Lu}/u.test(w.slice(2).replace(/^\p{Lu}*/u, ""))) {
+        return w[0] + w.slice(1).toLowerCase(); // "BRead" -> "Bread"
+      }
+      const inner = w.slice(1).match(/\p{Lu}/gu)?.length ?? 0;
+      const mixed = /\p{Ll}/u.test(w) && inner > 0;
+      return mixed && (inner >= 2 || /\p{Lu}$/u.test(w)) ? w.toLowerCase() : w;
+    })
+    .replace(/(\d\s+)[0O][zZ]\b/g, "$1oz")
+    .replace(/^(\d)0[zZ]\b/, "$1 oz") // "20z" -> "2 oz"
+    .replace(/^(\d+)q\b/, "$1g") // "6q" -> "6g"
+    .replace(/(\p{L}) ?\? (\p{L})/gu, "$1 & $2");
+}
+
+// Live Text sometimes runs several handwritten lines into one ("20z maple syrup cream butter &
+// sugar mash & mix in bananas"). A long line with no commas is split before a clear cooking verb,
+// unless it follows "&", "and", "then"… (one step), or it's "heavy cream" or "low heat".
+const SPLIT_VERB = /^(?:add|bake|beat|blend|boil|chill|combine|cook|cream|fold|fry|grill|heat|knead|marinate|mash|melt|mix|pour|preheat|roast|simmer|sift|stir|toss|transfer|whisk)$/i;
+const JOINS = /^(?:&|and|or|then|to|until|heavy|sour|whipping|whipped|ice|double|single|light|low|medium|high|over|on)$/i;
+
+function splitRunTogether(line: string): string[] {
+  const words = line.split(" ");
+  if (words.length < 8 || line.includes(",")) return [line];
+  const out: string[][] = [[]];
+  words.forEach((w, i) => {
+    const bare = w.replace(/[^\p{L}]/gu, "");
+    if (i > 0 && out[out.length - 1].length > 1 && SPLIT_VERB.test(bare) && !JOINS.test(words[i - 1])) out.push([]);
+    out[out.length - 1].push(w);
+  });
+  return out.map((ws) => ws.join(" "));
+}
+
+// A handwritten "g" is often read as a 9 or a 0 ("69 vanilla paste", "3400 mashed bananas"). In a
+// recipe that measures in grams on other lines, a unitless amount ending that way is read as grams.
+function fixMisreadGrams(groups: IngredientGroup[]) {
+  const items = groups.flatMap((g) => g.items);
+  if (items.filter((i) => i.unit === "g").length < 2) return;
+  for (const i of items) {
+    if (i.unit || !/^\d+$/.test(i.quantity)) continue;
+    if ((i.quantity.length >= 2 && i.quantity.endsWith("9")) || (i.quantity.length >= 3 && i.quantity.endsWith("0"))) {
+      i.quantity = i.quantity.slice(0, -1);
+      i.unit = "g";
+    }
+  }
+}
+
 export function parseRecipeText(text: string): PastedRecipe {
   const out: PastedRecipe = {
     title: "",
@@ -133,7 +194,8 @@ export function parseRecipeText(text: string): PastedRecipe {
   };
   const lines = text
     .split(/\r?\n/)
-    .map((l) => l.replace(/\s+/g, " ").trim())
+    .flatMap((l) => splitRunTogether(l.replace(/\s+/g, " ").trim()))
+    .map(tidyHandwriting)
     .map((l) => (/^[^\p{L}\p{N}]+$/u.test(l) ? "" : l)); // a lone "*" or bullet counts as blank
 
   const sections: Record<Section, string[]> = { head: [], ingredients: [], directions: [], notes: [] };
@@ -144,13 +206,23 @@ export function parseRecipeText(text: string): PastedRecipe {
     else sections[section].push(line);
   }
 
-  // With no headings, amounts are ingredients until the first line that isn't one.
+  // With no headings, amounts are ingredients and the steps start after them. A line without an
+  // amount still counts as an ingredient when another amount follows within two lines (a misread
+  // "5g" as "Bg"), or when it reads like one ("salt and pepper to taste"), or names a section;
+  // a line that starts like a step ("cream butter & sugar") always starts the steps.
   if (!sections.ingredients.length && !sections.directions.length) {
     const head = sections.head;
     const first = head.findIndex((l) => hasQuantity(l));
     if (first >= 0) {
       const rest = head.slice(first);
-      const end = rest.findIndex((l, i) => l !== "" && !hasQuantity(l) && groupName(l, rest[i - 1], rest[i + 1]) === null);
+      const amountSoon = (i: number) => rest.slice(i + 1, i + 3).some((l) => l !== "" && hasQuantity(l));
+      const end = rest.findIndex(
+        (l, i) =>
+          l !== "" &&
+          !hasQuantity(l) &&
+          (STEP_START.test(l) || (!amountSoon(i) && !INGREDIENTISH.test(l))) &&
+          groupName(l, rest[i - 1], rest[i + 1]) === null,
+      );
       sections.head = head.slice(0, first);
       sections.ingredients = end < 0 ? rest : rest.slice(0, end);
       sections.directions = end < 0 ? [] : rest.slice(end);
@@ -182,6 +254,7 @@ export function parseRecipeText(text: string): PastedRecipe {
   }
 
   out.ingredientGroups = ingredientsFrom(sections.ingredients);
+  fixMisreadGrams(out.ingredientGroups);
   out.stepGroups = directionsFrom(sections.directions);
   out.notes = sections.notes.filter(Boolean).join("\n");
   return out;

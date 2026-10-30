@@ -103,6 +103,12 @@ Scribble works on the iPad in Safari: write with the Apple Pencil on any line an
 
 **Settings.** Unlock editing (enter the write key once per device).
 
+**Offline.** Pages opened on a device (recipes, Home, Library, Groceries, the book) and their pictures still open with no signal. A dark strip at the top says "You're offline. Pages you've opened before still work, and grocery check-offs save when you're back online." A page never opened on that device shows a short "You're offline" page with links to Home and Groceries. Checking off groceries works offline: the check-offs show as checked, "N check-offs saved on this device" says so, and they're sent when the connection is back. Adding and clearing need a connection.
+
+**Live updates.** A change on one device (a recipe, a check-off, a meal) shows on every other open device within about a second, without reloading; pages also refresh when brought back to the front.
+
+**Paste text from a handwritten card.** Live Text often runs lines together, splits a word across lines and misreads letters ("1709" for 170g, "6q" for 6g, "sugaR"). The paste rules fix what they safely can (docs/PLAN.md §4C and the specs, FR-PASTE-001); misread words are left as they are for the review.
+
 ## Behavior notes
 - Everyone can read. **Editing on the website** shows only after the device is unlocked with the write key. It's kept in a secure, httpOnly cookie for one year and can be locked again in Settings. Writes go through the website's server to the `save-recipe` function, so the key never reaches page scripts.
 - Recipes imported from a link or photo show "Check this import" until edited and saved once.

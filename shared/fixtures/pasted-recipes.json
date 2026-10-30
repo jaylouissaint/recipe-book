@@ -87,5 +87,71 @@
       ],
       "notes": ""
     }
+  },
+  {
+    "name": "a handwritten card (salted maple banana bread), as Apple's text recognition reads Louis's photo: no headings, misread letters",
+    "text": "Salted mapk Banana Bread\n170g UnsaLtedOUtER (SOftEnAd)\n223g brown sugaR\n122 white sugar\n3400 masted bananas\n2 eggs\n69 vanilla paste\n250 g all purpose floriR\nBg baking soda\n5g salt\n4 0z buttermilk\n207 тарік зуДир\ncream bUtteR 3 sugaR\nmash ? mix in bananas\nmix in liguids\ncombine solids in separate bocul\nadd buttermilk 12 at a time\nmi a 325 til internal teno 200-20",
+    "expected": {
+      "title": "Salted mapk Banana Bread",
+      "servings": null,
+      "prepMin": null,
+      "cookMin": null,
+      "ingredientGroups": [
+        { "name": "", "items": [
+          { "quantity": "170", "unit": "g", "item": "unsaltedouter (softenad)" },
+          { "quantity": "223", "unit": "g", "item": "brown sugar" },
+          { "quantity": "122", "unit": "", "item": "white sugar" },
+          { "quantity": "340", "unit": "g", "item": "masted bananas" },
+          { "quantity": "2", "unit": "", "item": "eggs" },
+          { "quantity": "6", "unit": "g", "item": "vanilla paste" },
+          { "quantity": "250", "unit": "g", "item": "all purpose florir" },
+          { "quantity": "", "unit": "", "item": "Bg baking soda" },
+          { "quantity": "5", "unit": "g", "item": "salt" },
+          { "quantity": "4", "unit": "oz", "item": "buttermilk" },
+          { "quantity": "207", "unit": "", "item": "тарік зуДир" }
+        ] }
+      ],
+      "stepGroups": [
+        { "title": "cream butter 3 sugar", "steps": [] },
+        { "title": "mash & mix in bananas", "steps": [] },
+        { "title": "mix in liguids", "steps": [] },
+        { "title": "combine solids in separate bocul", "steps": [] },
+        { "title": "add buttermilk 12 at a time", "steps": [] },
+        { "title": "mi a 325 til internal teno 200-20", "steps": [] }
+      ],
+      "notes": ""
+    }
+  },
+  {
+    "name": "the same banana bread card, as iPad Live Text copies it (Louis, 2026-10-29): lines run together, a word split across lines, misread letters",
+    "text": "Salted mapte Banana BRead\n1709 unsaltedbutteR (softened)\n223g beocun sugar\n340g mashed Be\nsenanas\n2 eggs\n6q vanilla paste\n250 g all purpose florr\n3g baking soda\n5g salt\n4 oz buttermilk\n20z maple syzup cream butteR 3 sugaR mash? mix in bananas mix in liguids\ncombine solids in separate boul add buttermilk 'i at a time mi. 0325+1 internal temp 200-20",
+    "expected": {
+      "title": "Salted mapte Banana Bread",
+      "servings": null,
+      "prepMin": null,
+      "cookMin": null,
+      "ingredientGroups": [
+        { "name": "", "items": [
+          { "quantity": "170", "unit": "g", "item": "unsaltedbutter (softened)" },
+          { "quantity": "223", "unit": "g", "item": "beocun sugar" },
+          { "quantity": "340", "unit": "g", "item": "mashed Be senanas" },
+          { "quantity": "2", "unit": "", "item": "eggs" },
+          { "quantity": "6", "unit": "g", "item": "vanilla paste" },
+          { "quantity": "250", "unit": "g", "item": "all purpose florr" },
+          { "quantity": "3", "unit": "g", "item": "baking soda" },
+          { "quantity": "5", "unit": "g", "item": "salt" },
+          { "quantity": "4", "unit": "oz", "item": "buttermilk" },
+          { "quantity": "2", "unit": "oz", "item": "maple syzup" }
+        ] }
+      ],
+      "stepGroups": [
+        { "title": "cream butter 3 sugar", "steps": [] },
+        { "title": "mash & mix in bananas", "steps": [] },
+        { "title": "mix in liguids", "steps": [] },
+        { "title": "combine solids in separate boul", "steps": [] },
+        { "title": "add buttermilk 'i at a time mi. 0325+1 internal temp 200-20", "steps": [] }
+      ],
+      "notes": ""
+    }
   }
 ]

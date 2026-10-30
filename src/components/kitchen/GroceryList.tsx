@@ -2,15 +2,39 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import { addGroceries, checkGrocery, clearGroceries } from "@/app/actions";
 import type { GroceryItem } from "@/lib/groceries";
 import { publicFileUrl } from "@/lib/storage";
 import { useUnlocked } from "../EditOnly";
 import { CartIcon } from "../Icons";
+import { useOnline } from "../Offline";
+
+// Check-offs that couldn't be saved yet (no signal in the store), by item id. Kept in this browser
+// and sent when the connection is back; until then the list shows them as checked.
+const PENDING = "rb-grocery-pending";
+type Pending = Record<string, boolean>;
+
+function readPending(): Pending {
+  try {
+    return JSON.parse(localStorage.getItem(PENDING) ?? "{}");
+  } catch {
+    return {};
+  }
+}
+
+function writePending(p: Pending) {
+  try {
+    if (Object.keys(p).length) localStorage.setItem(PENDING, JSON.stringify(p));
+    else localStorage.removeItem(PENDING);
+  } catch {}
+}
+
+const OFFLINE = "You’re offline. Adding and clearing work again when you’re back online.";
 
 // Groceries (docs/DESIGN.md): one list, not sorted by aisle or date. Check things off at the
-// store; "Group by recipe" is optional. Changes show at once and save in the background.
+// store; "Group by recipe" is optional. Changes show at once and save in the background, and
+// check-offs made with no signal save when it's back.
 export default function GroceryList({ initial }: { initial: GroceryItem[] }) {
   const router = useRouter();
   const unlocked = useUnlocked();
@@ -19,8 +43,43 @@ export default function GroceryList({ initial }: { initial: GroceryItem[] }) {
   const [text, setText] = useState("");
   const [error, setError] = useState("");
   const [busy, startBusy] = useTransition();
+  const [waiting, setWaiting] = useState(0);
+  const online = useOnline();
 
-  useEffect(() => setItems(initial), [initial]);
+  // The list as the server has it, with check-offs still waiting to save on top.
+  useEffect(() => {
+    const pending = readPending();
+    setItems(initial.map((i) => (i.id in pending ? { ...i, checked: pending[i.id] } : i)));
+    setWaiting(Object.keys(pending).length);
+  }, [initial]);
+
+  const remember = useCallback((id: string, checked: boolean) => {
+    const pending = { ...readPending(), [id]: checked };
+    writePending(pending);
+    setWaiting(Object.keys(pending).length);
+  }, []);
+
+  // Send waiting check-offs whenever there's a connection.
+  useEffect(() => {
+    if (!online || !unlocked) return;
+    const pending = readPending();
+    const ids = Object.keys(pending);
+    if (!ids.length) return;
+    (async () => {
+      for (const id of ids) {
+        try {
+          const r = await checkGrocery(id, pending[id]);
+          if (!r.ok) setError(r.error);
+        } catch {
+          return; // still no connection: try again next time
+        }
+        const left = readPending();
+        if (left[id] === pending[id]) delete left[id];
+        writePending(left);
+        setWaiting(Object.keys(left).length);
+      }
+    })();
+  }, [online, unlocked]);
   useEffect(() => {
     try {
       setGrouped(localStorage.getItem("rb-groceries-grouped") === "1");
@@ -36,12 +95,17 @@ export default function GroceryList({ initial }: { initial: GroceryItem[] }) {
 
   function toggle(item: GroceryItem) {
     if (!unlocked) return;
-    setItems((list) => list.map((i) => (i.id === item.id ? { ...i, checked: !i.checked } : i)));
-    checkGrocery(item.id, !item.checked).then((r) => {
-      if (r.ok) return;
-      setItems((list) => list.map((i) => (i.id === item.id ? { ...i, checked: item.checked } : i)));
-      setError(r.error);
-    });
+    const checked = !item.checked;
+    setItems((list) => list.map((i) => (i.id === item.id ? { ...i, checked } : i)));
+    if (!navigator.onLine) return remember(item.id, checked);
+    checkGrocery(item.id, checked).then(
+      (r) => {
+        if (r.ok) return;
+        setItems((list) => list.map((i) => (i.id === item.id ? { ...i, checked: item.checked } : i)));
+        setError(r.error);
+      },
+      () => remember(item.id, checked), // no connection after all: save it later
+    );
   }
 
   function add(e: React.FormEvent) {
@@ -49,8 +113,9 @@ export default function GroceryList({ initial }: { initial: GroceryItem[] }) {
     const lines = [text.trim()].filter(Boolean);
     if (!lines.length) return;
     setError("");
+    if (!navigator.onLine) return setError(OFFLINE);
     startBusy(async () => {
-      const r = await addGroceries(lines);
+      const r = await addGroceries(lines).catch(() => ({ ok: false as const, error: OFFLINE }));
       if (!r.ok) return setError(r.error);
       setItems((list) => [...list, ...r.items.map((i) => ({ ...i, recipe: null }))]);
       setText("");
@@ -60,8 +125,9 @@ export default function GroceryList({ initial }: { initial: GroceryItem[] }) {
   function clear(onlyChecked: boolean) {
     if (!onlyChecked && !confirm("Clear the whole list?")) return;
     setError("");
+    if (!navigator.onLine) return setError(OFFLINE);
     startBusy(async () => {
-      const r = await clearGroceries(onlyChecked);
+      const r = await clearGroceries(onlyChecked).catch(() => ({ ok: false as const, error: OFFLINE }));
       if (!r.ok) return setError(r.error);
       setItems((list) => (onlyChecked ? list.filter((i) => !i.checked) : []));
       router.refresh();
@@ -121,6 +187,12 @@ export default function GroceryList({ initial }: { initial: GroceryItem[] }) {
             +
           </button>
         </form>
+      )}
+
+      {waiting > 0 && (
+        <p role="status" className="mb-4 rounded-2xl bg-field px-4 py-3 text-[15px]">
+          {waiting} check-off{waiting === 1 ? "" : "s"} saved on this device, sent when you’re back online.
+        </p>
       )}
 
       {error && (

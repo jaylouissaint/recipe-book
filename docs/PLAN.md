@@ -1,6 +1,6 @@
 # Recipe Site — End-to-End Build Plan
 
-> **Status 2026-10-27:** the website is live at https://ramiyas-recipes.vercel.app, reading from Supabase. A native iPad app was planned, prototyped and dropped (2026-10-29); on the iPad the website is used from the Home Screen. **The look and screens are being redesigned after the Deglaze app: see `docs/DESIGN.md`, which wins over sections 1, 4 and 5 below.** The book-page design in section 1 now applies to the writing page. Current state and next steps: `docs/HANDOFF.md`.
+> **Status 2026-10-29:** the website is live at https://ramiyas-recipes.vercel.app, reading from Supabase, with R1–R4 and the 2026-10-29 changes (Pencil page mode, the rebuilt Home with the week plan, Library filters and favorites) deployed. Offline and live updates are built, not yet deployed. It is used on the iPad from a Home Screen shortcut in Safari, which is the primary browser; a native iPad app was prototyped and dropped (2026-10-29). **The look and screens follow `docs/DESIGN.md`, which wins over sections 1, 4 and 5 below** (kept for history). The specifications (v2.0, `Specification Documentation/`) are the detailed reference. Current state and next steps: `docs/HANDOFF.md`.
 
 ## Context
 You want a personal recipe website with two ways to add recipes: typing them in, or writing them by hand on an iPad. It should also work well for reading recipes on the iPad. The look follows your spiral recipe book (photo: "Sweet chili chicken with coconut lime drizzle"), so it feels like an extension of the physical book.
@@ -112,6 +112,13 @@ The site has a **Paste text** box that splits pasted text into a recipe using si
 - Short lines without a quantity in the ingredient area ("marinade") → group name
 - Anything unclear goes into Notes
 
+Added 2026-10-29 for handwritten cards (tuned on the salted maple banana bread card; cases in `shared/fixtures/pasted-recipes.json`):
+- Without headings, a line with no amount stays an ingredient when another amount follows within two lines, or when it reads like one ("salt and pepper to taste"); a line that starts like a step ("cream butter & sugar", "in a bowl…") starts the steps
+- Lines Live Text ran together (8+ words, no commas) are split before a clear cooking verb, but not after "&", "and" or "then", and not in "heavy cream" or "low heat"
+- A one-word line right after an ingredient ending in a short fragment ("340g mashed Be" / "senanas") is joined to it
+- Misreads tidied: stray capitals ("sugaR", "BRead"), "0z" and "20z" for oz, "6q" for 6g, a lone "?" for "&"; in a recipe measured in grams, a unitless "1709" or "3400" is read as 170 g or 340 g
+- Words that were simply misread ("syzup", "florr") are left for the review: the rules don't guess
+
 The result opens in the "write it" page for review, with the original next to it if you uploaded one.
 
 Note that Live Text and Scribble are on-device machine learning features built into iPadOS, but they are not an AI service and nothing leaves the iPad. Live Text reads neat print (like your book) well; messy cursive less so, which is when you fall back to A.
@@ -138,24 +145,26 @@ The same "write it" page with the keyboard, on any device.
 - **Milestone 2 (design system + hard-coded page): done 2026-10-20.** Components in `src/components/`; cover, category and recipe pages.
 - **Step 1 (skeleton): done 2026-10-27, without login.** Supabase schema (migration 000), `save-recipe` Edge Function with the write key, keep-awake workflow, website reading from Supabase and deployed to Vercel. All `scripts/check-setup.sh` checks pass against the live site.
 - Next.js upgraded to 15.5.28 (React 19.1.10) on 2026-10-27; Vercel blocks deploys of versions affected by React2Shell (CVE-2025-55182 / CVE-2025-66478).
-- Specs in `Specification Documentation/` are regenerated with `python3 scripts/specs/build_specs.py`.
+- **R1–R4 (2026-10-28)** and **the iPad experience (2026-10-29)** deployed; details in HANDOFF.md "Done".
+- Specs in `Specification Documentation/` (v2.0, 2026-10-29, website only) are regenerated with `python3 scripts/specs/build_specs.py`.
 
 ## Docket (queued, not scheduled)
-- **Custom book cover** (Louis will provide later): replace the plain raspberry cover page in the book view (`PageFace` cover in `src/components/book/BookView.tsx`) with an uploaded image or design.
+- **Custom book cover** (optional): the cover is the Home Screen icon's spoon and whisk; swap for an uploaded image or design if wanted.
 - **Write key → your own passphrase** (queued 2026-10-28): rerun `npm run setup:supabase` and paste a passphrase of 4–5 random words instead of pressing Enter; then unlock each browser again. No code change. Bigger alternatives if ever wanted: a separate simple website password with the long key kept on the server (new code plus a rate limit), or login (below), which replaces the key.
 - **Login** (deferred 2026-10-20): Supabase Auth, `owner_id` on recipes, owner-only RLS, optional `shared` flag for family. Replaces the write key.
-- Custom handwriting font
+- Custom handwriting font (Louis making it; see "Your own handwriting font" below)
 - Upgrade to Next.js 16 (clears two low-risk `postcss` advisories bundled in Next 15)
-- Instant website refresh after saves (today pages refresh within a minute)
+- ~~Instant website refresh after saves~~: built 2026-10-29 as live updates (migration 003)
 
 ## 6. Build order
 1. ✅ **Skeleton:** Supabase, tables and RLS (anon read-only; writes only through the `save-recipe` Edge Function with the write key), deployed to Vercel. Login left out (see Docket). Done 2026-10-27
 2. ✅ **Design system v1:** the book page matching the photo. Done 2026-10-20. It becomes the **writing page** in R2
-3. ✅ **R1 – New look and navigation** (built 2026-10-28, not yet deployed) (DESIGN.md): light-only tokens, Instrument Serif / Figtree / Patrick Hand, sidebar and tab bar, Home book shelf, Library ("My Recipes") cards with search pill, Recipe view in handwriting on cream
-4. ✅ **R2 – Editing on the website** (built 2026-10-28; needs migration 001 and a function redeploy before it works live): migration 001 (author, source, photo, description, times cooked, imported flag, grocery items), unlock with the write key (httpOnly cookie), server-side save through `save-recipe`, the **writing page** ("Enter your own" and Edit) with one field per ruled line, recipe photo upload
-5. ✅ **R3 – Bringing recipes in** (built 2026-10-28): Save from the web (schema.org recipe data, no AI), Add from photos (upload, original beside the writing page, Paste text box with the paste parser); parser tests with shared fixtures
-6. ✅ **R4 – In the kitchen** (built 2026-10-28; search was already done in R1, on the page, which is plenty for a family-sized book): Groceries (one list, optional group by recipe), Start Cooking, serving scaler, search and tag filters
-7. **R5 – Polish:** Home Screen install, offline cache, print
+3. ✅ **R1 – New look and navigation** (deployed 2026-10-28) (DESIGN.md): light-only tokens, Instrument Serif / Figtree / Patrick Hand, sidebar and tab bar, Home book shelf, Library ("My Recipes") cards with search pill, Recipe view in handwriting on cream
+4. ✅ **R2 – Editing on the website** (deployed 2026-10-28, with migration 001): migration 001 (author, source, photo, description, times cooked, imported flag, grocery items), unlock with the write key (httpOnly cookie), server-side save through `save-recipe`, the **writing page** ("Enter your own" and Edit) with one field per ruled line, recipe photo upload
+5. ✅ **R3 – Bringing recipes in** (deployed 2026-10-28; paste rules for handwritten cards improved 2026-10-29): Save from the web (schema.org recipe data, no AI), Add from photos (upload, original beside the writing page, Paste text box with the paste parser); parser tests with shared fixtures
+6. ✅ **R4 – In the kitchen** (deployed 2026-10-28; search was already done in R1, on the page, which is plenty for a family-sized book): Groceries (one list, optional group by recipe), Start Cooking, serving scaler, search and tag filters
+7. ✅ **2026-10-29 – The iPad experience on the website** (deployed): Pencil page mode with pages, Home Screen icon and name, Home rebuilt (pick up, Surprise me, this week's meals with migration 002, groceries at a glance, to finish), Library filters and favorite stars, Type the lines, the book cover as the icon
+8. **R5 – Polish:** ✅ offline (opened pages, pictures, grocery check-offs queue) and ✅ live updates (migration 003), built 2026-10-29, not yet deployed; print check; full-screen Home Screen app (decision pending, see HANDOFF.md)
 
 ---
 
