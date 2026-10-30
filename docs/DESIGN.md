@@ -1,15 +1,15 @@
-# Recipe Book — Design (website and iPad app)
+# Recipe Book — Design (website)
 
-Status: agreed 2026-10-27, not built yet. The website and the iPad app share this design. It is modeled on the Deglaze app (demo video: https://cdn.deglaze.app/photos/videos/DeglazeBookDemo.mp4), with three differences: handwriting is part of the design, the **writing page looks like the book page** (the sweet chili chicken photo, `docs/reference/recipe-book-page.jpg`), and **nothing relies on an AI service**.
+Status: agreed 2026-10-27 and built on the website (R1–R4). A native iPad app was dropped on 2026-10-29; on the iPad the website is used from the Home Screen. It is modeled on the Deglaze app (demo video: https://cdn.deglaze.app/photos/videos/DeglazeBookDemo.mp4), with three differences: handwriting is part of the design, the **writing page looks like the book page** (the sweet chili chicken photo, `docs/reference/recipe-book-page.jpg`), and **nothing relies on an AI service**.
 
 ## Decisions (Louis, 2026-10-27)
 - **Light only.** White and cream backgrounds; no dark mode.
 - **Accent: Deglaze green** `#1F4D3D` for buttons, the + button, active tabs and links.
 - **Home tab = the book shelf**: category tabs, Family Favorites, recently added.
 - **Recipe view = the video's layout, in handwriting on cream**: titles and ingredients in the handwriting font.
-- **Adding recipes, both on the website and in the app:** Save from the web, Add from photos, Enter your own. The website is no longer read-only.
+- **Adding recipes on the website:** Save from the web, Add from photos, Enter your own. The website is no longer read-only.
 - **Groceries: one simple list.** Not sorted by aisle or date; it can optionally be grouped by recipe.
-- **Less AI:** web import reads the recipe data that recipe sites publish (schema.org), photos are read with on-device text recognition on the iPad, and simple rules sort the text. You always review before saving. The video's "imported with AI" warning becomes a "Check this import" note on recipes that came from a link or photo.
+- **Less AI:** web import reads the recipe data that recipe sites publish (schema.org), text from photos comes from the iPad's Live Text (copied and pasted), and simple rules sort the text. You always review before saving. The video's "imported with AI" warning becomes a "Check this import" note on recipes that came from a link or photo.
 
 ## Look
 | Token | Value | Use |
@@ -28,7 +28,7 @@ Status: agreed 2026-10-27, not built yet. The website and the iPad app share thi
 
 The book-page tokens (ruled lines `#DDD8DC`, label gray `#8C8C8C`, mauve `#9A8597`, tab colors, raspberry `#A3174B`) stay for the writing page, the handwritten-page view and the Home shelf tabs.
 
-**Fonts** (all free Google Fonts, bundled in the app):
+**Fonts** (all free Google Fonts):
 - Page titles ("My Recipes", "Groceries"): **Instrument Serif**, close to the video's high-contrast serif.
 - UI text, buttons, labels: **Figtree**.
 - Recipe content: **Patrick Hand** in plum (until the custom handwriting font exists).
@@ -50,7 +50,7 @@ The book-page tokens (ruled lines `#DDD8DC`, label gray `#8C8C8C`, mauve `#9A859
 - **Long recipes:** a recipe that doesn't fit continues on the next page, which starts "recipe: … (continued)". No page is ever longer than the screen.
 - **Layout:** an open two-page spread with the spiral down the middle on landscape screens (iPad landscape, desktop); one page with the spiral on its left edge on phones and portrait.
 - **What's in it:** the cover (plain raspberry with "Ramiya's Recipes" for now; a custom cover comes later), then contents with page numbers, then recipes grouped by category in tab order.
-- **Getting around:** turn pages by swiping, with the arrow keys, or with the ‹ › buttons, with a page-turn animation (none with Reduce Motion). In the app the pages turn with the iPad's page curl. The colored category tabs on the outer edge jump to that section; contents entries jump to their recipe.
+- **Getting around:** turn pages by swiping, with the arrow keys, or with the ‹ › buttons, with a page-turn animation (none with Reduce Motion). The colored category tabs on the outer edge jump to that section; contents entries jump to their recipe.
 - **Links:** each recipe's first page has "open recipe →". The recipe view's menu has "Open in the book" (`/book#slug`).
 
 **Library ("My Recipes").** Serif title, a search pill ("Search your library") and a filter button (categories and tags). Below them, a list of white rounded cards. Each card has:
@@ -82,14 +82,13 @@ Two columns on iPad, three on desktop.
 - one field per ruled line, in handwriting and plum ink
 - spiral and stickers on wide screens
 
-Scribble works on both the website (Safari on iPad) and the app. **Page mode on the website** ("Write on the lines" | "Write on the page"): the fields at the top stay (title, stats, tags, category, photo), and the ingredients, directions and notes become one ruled page to write on with the Apple Pencil (pen, eraser, undo, clear, "Draw with finger"; fingers scroll). The writing is kept as the handwritten page and isn't read into text; a recipe with only a handwritten page shows that page in the recipe view and the book. The app (paused) adds **page mode** ("Write on the lines" | "Write on the page" at the top): write anywhere with the Apple Pencil on a ruled page with printed areas for the title, ingredients (two columns), directions and notes. "Read my writing" fills the lines from the recognized text to review (indented lines are sub-steps; a skipped line starts a new section). The drawing is kept as the handwritten page, shown from "View handwritten page" and as the thumbnail when there's no photo. A photo button adds the hero photo. The bottom bar has Cancel and Save.
+Scribble works on the iPad in Safari: write with the Apple Pencil on any line and it becomes text. **Page mode** ("Write on the lines" | "Write on the page"): the fields at the top stay (title, stats, tags, category, photo), and the ingredients, directions and notes become one ruled page to write on with the Apple Pencil (pen, eraser, undo, clear, "Draw with finger"; fingers scroll). The writing is kept as the handwritten page and isn't read into text; a recipe with only a handwritten page shows that page in the recipe view and the book, and it's the thumbnail when there's no photo. A photo button adds the hero photo. The bottom bar has Cancel and Save.
 
-**Save from the web.** Paste a link, and the site or app reads the page's published recipe data: title, photo, author, site, servings, times, ingredients and steps. The result opens in the writing page for review. If the page has no recipe data, the writing page opens with just the link and title filled in, plus the Paste text box. Some sites refuse to be read by other sites; then the writing page opens with the link and the Paste text box, to copy the recipe in from the page. Only public web addresses work, and the photo is copied in when the recipe is saved.
+**Save from the web.** Paste a link, and the site reads the page's published recipe data: title, photo, author, site, servings, times, ingredients and steps. The result opens in the writing page for review. If the page has no recipe data, the writing page opens with just the link and title filled in, plus the Paste text box. Some sites refuse to be read by other sites; then the writing page opens with the link and the Paste text box, to copy the recipe in from the page. Only public web addresses work, and the photo is copied in when the recipe is saved.
 
 **Add from photos.**
-- **App:** scan with the document scanner or pick photos/PDFs. On-device text recognition and the paste rules fill the writing page, with the original beside it.
-- **Website:** upload the photo or PDF. It shows beside the writing page (above it on narrow screens), with a "Paste text" box for iPad Live Text, plus manual entry. "Paste a recipe's text" is also on Enter your own.
-- **Both:** the original is kept as the original card.
+- Upload the photo or PDF. It shows beside the writing page (above it on narrow screens), with a "Paste text" box for iPad Live Text, plus manual entry. "Paste a recipe's text" is also on Enter your own.
+- The original is kept as the original card.
 
 **Start Cooking.** Full screen. It opens on "Gather your ingredients" (a checklist at the current serving size), then shows one step at a time in large handwriting, with the ingredients that step uses above it: a step that names a section ("make coconut lime drizzle") gets that whole section, and other ingredients show when one of their main words is in the step. Next and Back buttons, swipe, or the arrow keys; sub-steps can be checked off. The screen stays awake. The last page, "enjoy!", adds one to times cooked.
 
@@ -97,7 +96,7 @@ Scribble works on both the website (Safari on iPad) and the app. **Page mode on 
 
 **Serving scaler.** − and + on the Servings box (or ×½ to ×4 for recipes without a serving count) rescale the ingredients with kitchen fractions (⅓ c × 1½ = ½ c), and Add to Groceries and Start Cooking use the scaled amounts.
 
-**Settings.** On the website: unlock editing (enter the write key once per device). In the app: the write key, sync status and last refresh.
+**Settings.** Unlock editing (enter the write key once per device).
 
 ## Behavior notes
 - Everyone can read. **Editing on the website** shows only after the device is unlocked with the write key. It's kept in a secure, httpOnly cookie for one year and can be locked again in Settings. Writes go through the website's server to the `save-recipe` function, so the key never reaches page scripts.

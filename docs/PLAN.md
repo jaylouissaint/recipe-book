@@ -1,12 +1,12 @@
 # Recipe Site — End-to-End Build Plan
 
-> **Status 2026-10-27:** the website is live at https://ramiyas-recipes.vercel.app, reading from Supabase. A native iPad app is planned as well (`docs/APP_PLAN.md`). **The look and screens are being redesigned after the Deglaze app: see `docs/DESIGN.md`, which wins over sections 1, 4 and 5 below.** The book-page design in section 1 now applies to the writing page. Current state and next steps: `docs/HANDOFF.md`.
+> **Status 2026-10-27:** the website is live at https://ramiyas-recipes.vercel.app, reading from Supabase. A native iPad app was planned, prototyped and dropped (2026-10-29); on the iPad the website is used from the Home Screen. **The look and screens are being redesigned after the Deglaze app: see `docs/DESIGN.md`, which wins over sections 1, 4 and 5 below.** The book-page design in section 1 now applies to the writing page. Current state and next steps: `docs/HANDOFF.md`.
 
 ## Context
 You want a personal recipe website with two ways to add recipes: typing them in, or writing them by hand on an iPad. It should also work well for reading recipes on the iPad. The look follows your spiral recipe book (photo: "Sweet chili chicken with coconut lime drizzle"), so it feels like an extension of the physical book.
 
 **Decisions so far**
-- **Website plus a native iPad app** (changed 2026-10-24; originally website only). The app is installed with SideStore on a free Apple ID and refreshed automatically; see `docs/APP_PLAN.md`. The website stays for family, other devices, and as a fallback, and can still be added to the Home Screen.
+- **Website only** (2026-10-29). A native iPad app (SideStore, planned 2026-10-24) was prototyped and dropped; the website, added to the iPad Home Screen, has Scribble and Apple Pencil page mode.
 - **No AI service.** Handwriting becomes text using what the iPad already does on the device: **Scribble** (write with the Apple Pencil into any text box) and **Live Text** (select text in a photo or PDF). The site never sends your pages to an outside service.
 - **PDF and photo upload** of handwritten pages (e.g. from GoodNotes, Notability, Apple Notes, or a scan of the spiral book). The upload is kept as the "original card".
 
@@ -44,7 +44,7 @@ Dark mode: paper `#2A2527`, ink `#E3B6CC`, lines `#3A3336`.
 ## 2. Stack
 - **Next.js** (App Router, TypeScript) + **Tailwind**, deployed on **Vercel**
 - **Supabase:** Postgres, Storage for uploaded files, and the `save-recipe` Edge Function, the only way to save (it needs the write key; login queued, see Docket)
-- **pdf.js** (`pdfjs-dist`) to show original cards that are PDFs in the browser (uploading itself moves to the iPad app)
+- **pdf.js** (`pdfjs-dist`) to show original cards that are PDFs in the browser
 - **Web app manifest** (PWA) so "Add to Home Screen" on the iPad opens it full screen with its own icon
 - No paid services; the free tiers cover a personal or family site
 
@@ -61,13 +61,13 @@ ingredients        id, group_id, quantity, unit, item, position
 step_groups        id, recipe_id, title ("cook chicken"), position   -- the ▷ line
 steps              id, group_id, text, position                      -- the "–" lines
 ```
-The live schema is `supabase/migrations/000_initial_schema.sql`, which adds `slug` (web address), `handwriting_path`, `search`, `deleted_at` (soft delete, so the app can sync deletes) and uses uuid ids. Row Level Security lets everyone read and nobody write directly: saves go through `save_recipe()` / `delete_recipe()`, which only the Edge Function can call. Per-person privacy and a `shared` flag for family come with login (Docket).
+The live schema is `supabase/migrations/000_initial_schema.sql`, which adds `slug` (web address), `handwriting_path`, `search`, `deleted_at` (soft delete) and uses uuid ids. Row Level Security lets everyone read and nobody write directly: saves go through `save_recipe()` / `delete_recipe()`, which only the Edge Function can call. Per-person privacy and a `shared` flag for family come with login (Docket).
 
 ---
 
 ## 4. Adding recipes
 
-> **Both the website and the app** add recipes (decided 2026-10-27; see DESIGN.md: Save from the web, Add from photos, Enter your own). The rules below are the reference for the ingredient and paste parsers in both.
+> **The website adds recipes** (decided 2026-10-27; see DESIGN.md: Save from the web, Add from photos, Enter your own). The rules below are the reference for the ingredient and paste parsers.
 
 ### A. The "write it" page (main way to add a recipe on the iPad)
 The recipe form *is* the book page, designed so writing on it with the Apple Pencil feels like writing in the book, while Scribble turns it into text as you go.
@@ -142,11 +142,11 @@ The same "write it" page with the keyboard, on any device.
 
 ## Docket (queued, not scheduled)
 - **Custom book cover** (Louis will provide later): replace the plain raspberry cover page in the book view (`PageFace` cover in `src/components/book/BookView.tsx`) with an uploaded image or design.
-- **Write key → your own passphrase** (queued 2026-10-28): rerun `npm run setup:supabase` and paste a passphrase of 4–5 random words instead of pressing Enter; then unlock each browser again (and the iPad app later). No code change. Bigger alternatives if ever wanted: a separate simple website password with the long key kept on the server (new code plus a rate limit), or login (below), which replaces the key.
+- **Write key → your own passphrase** (queued 2026-10-28): rerun `npm run setup:supabase` and paste a passphrase of 4–5 random words instead of pressing Enter; then unlock each browser again. No code change. Bigger alternatives if ever wanted: a separate simple website password with the long key kept on the server (new code plus a rate limit), or login (below), which replaces the key.
 - **Login** (deferred 2026-10-20): Supabase Auth, `owner_id` on recipes, owner-only RLS, optional `shared` flag for family. Replaces the write key.
 - Custom handwriting font
 - Upgrade to Next.js 16 (clears two low-risk `postcss` advisories bundled in Next 15)
-- Instant website refresh when the app saves (today pages refresh within a minute)
+- Instant website refresh after saves (today pages refresh within a minute)
 
 ## 6. Build order
 1. ✅ **Skeleton:** Supabase, tables and RLS (anon read-only; writes only through the `save-recipe` Edge Function with the write key), deployed to Vercel. Login left out (see Docket). Done 2026-10-27

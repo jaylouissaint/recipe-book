@@ -1,7 +1,7 @@
 import { publicFileUrl } from "@/lib/storage";
 import type { Recipe } from "@/lib/types";
 
-// Recipe picture: the photo, else the handwritten page (from the iPad app), else the original
+// Recipe picture: the photo, else the handwritten page (Pencil page mode), else the original
 // card's photo, else a cream card with faint ruled lines and the title's first letter in handwriting.
 export default function Thumb({ recipe, className = "" }: { recipe: Recipe; className?: string }) {
   const original = recipe.originalFilePath && /\.(jpe?g|png)$/i.test(recipe.originalFilePath) ? recipe.originalFilePath : "";

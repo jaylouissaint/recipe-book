@@ -1,10 +1,10 @@
-// save-recipe: the only way to change the recipe book. Called by the iPad app and the website's server.
+// save-recipe: the only way to change the recipe book. Called by the website's server.
 //
 // Every request is a POST with the header `x-write-key: <WRITE_KEY>` and a JSON body:
 //   { "action": "save", "recipe": { ...Recipe payload, see save_recipe in 000_initial_schema.sql } }
 //   { "action": "delete", "id": "<recipe uuid>" }
 //   { "action": "upload-url", "bucket": "photos" | "originals" | "handwriting", "recipeId": "<uuid>", "ext": "jpg" }
-//     -> a signed URL the app uploads one file to, and the path to save on the recipe
+//     -> a signed URL the browser uploads one file to, and the path to save on the recipe
 //   { "action": "check" }                                   -> { ok: true } if the write key is right
 //   { "action": "cooked", "id": "<recipe uuid>" }           -> adds one to times cooked
 //   { "action": "groceries-add", "items": ["2 lbs chicken"], "recipeId"?: "<uuid>" }

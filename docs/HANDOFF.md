@@ -3,8 +3,8 @@
 Status as of 2026-10-28, for picking up the work in a new Claude Code session.
 
 ## What this is
-A personal recipe book styled after Louis's handwritten spiral recipe book (reference photo: `docs/reference/recipe-book-page.jpg`). It is a **website**, live now, plus a planned **native iPad app** that shares the same Supabase database.
-- **Design (look and screens, both): `docs/DESIGN.md`** (modeled on the Deglaze app, 2026-10-27). Website plan and build order: `docs/PLAN.md`. iPad app plan: `docs/APP_PLAN.md`.
+A personal recipe book styled after Louis's handwritten spiral recipe book (reference photo: `docs/reference/recipe-book-page.jpg`). It is a **website**, used on the iPad from the Home Screen (Scribble and Apple Pencil page mode work in Safari). A native iPad app was prototyped and dropped (2026-10-29).
+- **Design (look and screens, both): `docs/DESIGN.md`** (modeled on the Deglaze app, 2026-10-27). Website plan and build order: `docs/PLAN.md`.
 - Specs: `Specification Documentation/Recipe_Book_Functional_Specification.docx` and `Recipe_Book_Technical_Specification.docx` (v1.1).
 
 ## Where things live
@@ -14,45 +14,13 @@ A personal recipe book styled after Louis's handwritten spiral recipe book (refe
 | GitHub | https://github.com/jaylouissaint/recipe-book (public) |
 | Supabase project | ref `trdlqlulpfwsfhqnfqfu` (https://trdlqlulpfwsfhqnfqfu.supabase.co) |
 | Website env vars | `.env.local` (git-ignored) and Vercel: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (read-only) |
-| Write key | Supabase secret `WRITE_KEY` and Louis's password manager (also in `.env.local` as `WRITE_KEY`, which is git-ignored and not read by the website). Never in the repo, the app binary, or chat. **Never rename it to `NEXT_PUBLIC_WRITE_KEY`:** anything starting with `NEXT_PUBLIC_` is built into the page and visible to everyone |
+| Write key | Supabase secret `WRITE_KEY` and Louis's password manager (also in `.env.local` as `WRITE_KEY`, which is git-ignored and not read by the website). Never in the repo or chat. **Never rename it to `NEXT_PUBLIC_WRITE_KEY`:** anything starting with `NEXT_PUBLIC_` is built into the page and visible to everyone |
 | GitHub Actions secrets | `SUPABASE_URL`, `SUPABASE_ANON_KEY` (for the keep-awake workflow) |
 
 ## How to use the website
 **Settings → Unlock editing**
 - Paste your write key once per browser. It's kept in a secure cookie that page scripts can't read, and only the website's server sends it on.
 - Locked browsers see no + button and no Edit.
-
-## Running the iPad app
-**On the Mac, in the iPad Simulator**
-- To open it yourself, run `npm run ios:sim` from the project folder. The first build takes about a minute, then the Simulator opens with the app.
-- Rotate the Simulator with ⌘ → (or ⌘ ←) to see landscape.
-- `npm run ios:test` runs the app's Swift tests.
-
-**On the iPad, straight from Xcode (for now)**
-Installs over a cable with the free Apple ID. The app stops opening after 7 days; plug in and press ▶ again (recipes are safe in the database). The long-term plan is still SideStore (below), which re-signs the app by itself.
-
-First, check the iPad's version (Settings → General → About). On iPadOS 18, Xcode 16.4 is fine. On iPadOS 26, Xcode 16.4 may refuse to install; get **Xcode 26.0** from developer.apple.com/download/all (it runs on macOS Sequoia 15.6).
-
-1. From the project folder:
-   ```
-   npm run ios:project
-   open ios/RamiyasRecipes.xcodeproj
-   ```
-2. Plug the iPad into the Mac, unlock it, and tap **Trust** if it asks.
-3. If the iPad asks for **Developer Mode**: Settings → Privacy & Security → Developer Mode → on. The iPad restarts; confirm when it asks.
-4. In Xcode, click the blue **RamiyasRecipes** project at the top of the left sidebar → target **RamiyasRecipes** → **Signing & Capabilities**:
-   - Tick **Automatically manage signing**.
-   - **Team** → **Add an Account…** → sign in with the signing Apple ID → pick its **(Personal Team)**.
-   - If Xcode says the bundle identifier isn't available, add something to the end, e.g. `com.jaylouissaint.ramiyasrecipes.louis`.
-5. In the bar at the top of Xcode, pick **the iPad** as the device (not a Simulator) and press **▶** (⌘R). The first build takes a minute or two.
-6. The first launch is blocked: on the iPad, Settings → General → **VPN & Device Management** → the Apple ID under Developer App → **Trust**. Then open Ramiya's Recipes.
-7. In the app's **Settings** tab, paste the write key to unlock writing.
-
-Notes: running `npm run ios:project` again clears the Team, so pick it again in step 4. Signing complaints about **RamiyasRecipesUITests** don't matter for installing; they're only for the UI test.
-
-**On the iPad, through SideStore (long term)**
-- `npm run ios:ipa` builds the file SideStore installs: `build/ios/RamiyasRecipes.ipa`.
-- Setup and the daily refresh automations are in APP_PLAN.md Phase 0 (blocked on SideStore's -80045 sign-in fix).
 
 ## Running a database migration
 Migrations live in `supabase/migrations/` and are run by hand, once each, in order (000, 001, …).
@@ -75,13 +43,13 @@ Run each migration only once. A second run stops with an error like "column auth
 - 001_redesign_fields_and_groceries: run 2026-10-28 (save-recipe redeployed as version 2 the same day).
 
 ## Decisions (don't reopen these)
-- **Website plus a native iPad app** (changed 2026-10-24; it was website only). The app is installed with **SideStore** on a free Apple ID (no $99/yr developer account) and refreshed by a daily Shortcuts automation, so no cable after setup. It is a full recipe book, not only a writing tool.
+- **Website only** (2026-10-29; a native iPad app was planned on 2026-10-24). The app was prototyped in the iPad Simulator (reading, writing with Scribble and PencilKit, the flip-through book) and dropped: the website on the iPad Home Screen, with Scribble and Pencil page mode, does what's needed. Its code is in git history: `git show bff8a2e:ios/` (the last commit with `ios/`).
 - **Redesign after the Deglaze app** (2026-10-27, DESIGN.md): light only (white/cream, no dark mode), Deglaze green accent `#1F4D3D`, Home = book shelf, recipe view in the video's layout with titles and ingredients in handwriting on cream, writing page = the book page from the photo, Groceries = one simple list.
-- **The website adds recipes too** (2026-10-27; it was going to be read-only): Save from the web, Add from photos, Enter your own, the same as the app. The app also gets Apple Pencil page mode and on-device scanning.
+- **The website adds recipes too** (2026-10-27; it was going to be read-only): Save from the web, Add from photos, Enter your own, and Apple Pencil page mode.
 - **No login for now** (deferred 2026-10-20; on the docket). Everyone can read; only the owner's devices save, by sending the write key (`x-write-key`) to the `save-recipe` Edge Function. On the website the key is entered once per device and kept in an httpOnly cookie; writes go through the website's server. Login will replace the write key.
 - **Less AI:** web import reads published schema.org recipe data; photos use on-device text recognition; simple rules sort text; always reviewed before saving.
 - **No AI transcription service.** Handwriting becomes text only on the iPad (Scribble, Live Text, Vision text recognition) or by typing.
-- Website stack: Next.js 15.5.28 (App Router, TypeScript), React 19.1.10, Tailwind 4, Supabase, Vercel. App stack (planned): SwiftUI, SwiftData, PencilKit, VisionKit, PDFKit, iPadOS 17+.
+- Website stack: Next.js 15.5.28 (App Router, TypeScript), React 19.1.10, Tailwind 4, Supabase, Vercel.
 - Supabase GitHub integration: not connected, on purpose. Migrations are run by hand in the SQL Editor, each with a rollback script.
 - Fonts: Patrick Hand (content), Montserrat (labels), Zilla Slab (the "recipe:" label). A custom handwriting font may replace Patrick Hand later.
 - TypeScript stays (Louis asked about JS on 2026-10-20 and chose to keep TS).
@@ -94,7 +62,7 @@ Run each migration only once. A second run stops with an error like "column auth
 
 ## Done
 - **Milestone 2 (2026-10-20):** design tokens and fonts; components `Spiral`, `SideTabs`, `StatBox`, `TagRow`, `Stickers`, `RecipePage`, `Cover`, `RecipeCard`; cover, category and recipe pages matching the photo.
-- **Step 1 / App Phase 1 (2026-10-27):**
+- **Step 1, shared backend (2026-10-27):**
   - `supabase/migrations/000_initial_schema.sql` (+ rollback), run by Louis 2026-10-24. Tested beforehand in PGlite, including permissions and the rollback.
   - `supabase/functions/save-recipe` deployed (actions: save, delete, upload-url) with `verify_jwt = false`.
   - The website reads from Supabase (`src/lib/supabase.ts`, `src/lib/recipes.ts`); recipe pages live at `/recipe/[slug]`; pages refresh every 60 seconds.
@@ -109,7 +77,7 @@ Run each migration only once. A second run stops with an error like "column auth
   - `save-recipe` gained actions `check`, `cooked`, `groceries-add`, `grocery-check`, `groceries-clear` and the `photos` bucket.
   - Website write path: `src/lib/write.ts` (httpOnly `rb_write_key` cookie + readable `rb_unlocked` flag), server actions in `src/app/actions.ts`, `EditOnly`/`useUnlocked`, Settings → Unlock editing.
   - Writing page `RecipeEditor` at `/new` and `/recipe/[slug]/edit`: one field per ruled line, section names, ▷ / – directions (leading "-" or tap the marker; Tab/Shift+Tab), editable stat box, tag circles, category tabs, photo upload (signed URL, supabase-js loaded on demand), drafts in localStorage, Delete.
-  - Parser `src/lib/parse.ts` with `npm test` (node:test) against `shared/fixtures/ingredient-lines.json` (shared with the future Swift tests).
+  - Parser `src/lib/parse.ts` with `npm test` (node:test) against `shared/fixtures/ingredient-lines.json`.
   - Recipe view shows photo, by/from, description, "Check this import"; Library cards show author and times cooked; green + and Add sheet.
   - Cover photo: set when writing a recipe (Add a photo), or later straight from the recipe view (`CoverPhoto`: "Add a cover photo" / "Change cover" on unlocked devices; uploads, then re-saves the recipe with `photoPath`, keeping the "Check this import" flag). Shared upload code in `src/lib/uploadPhoto.ts`.
   - Not yet tested against the live database (saving, photo upload): do that after the migration and redeploy.
@@ -127,41 +95,27 @@ Run each migration only once. A second run stops with an error like "column auth
   - Also fixed: "1 ½ cups" now reads as 1 ½ (added to the shared ingredient fixtures); the writing page's category tabs no longer make phones scroll sideways.
   - Tested in a build copy with headless Chrome: the guard refusals, a BBC Good Food import (16 ingredients, 11 steps, stats, photo), the blocked-site fallback, and the photo flow with the pasted sweet chili chicken text (title, stats, 2 sections with 14 ingredients, 4 steps with sub-steps). **Saving an import was not tested against the live database**; check that on localhost.
 
-- **App Phase 2, reading the book (2026-10-28, built, Simulator only):** Home shelf, Library (search and filters), category pages, recipe view, book page, Settings (write key in the Keychain, sync status), Groceries placeholder; syncs from the live database and keeps recipes and photos on the device. Checked in the iPad Simulator in portrait with the 3 live recipes; 6 Swift tests pass. Landscape and true airplane mode still to check (the Simulator shares the Mac's connection).
-
 - **R4, in the kitchen (2026-10-28, built, not yet deployed; no migration or function redeploy needed, migration 001 and save-recipe v2 already have the grocery tables and actions):**
   - **Serving scaler:** `src/components/kitchen/Scale.tsx` (`ScaleProvider` around the recipe view, `ServingsStat`, `ScaledIngredients`); the maths in `src/lib/scale.ts` (reads "1 1/2", "½", "2-3"; writes kitchen fractions down to 1/8, including 1/6).
   - **Groceries:** `/groceries` (dynamic) with `src/components/kitchen/GroceryList.tsx`; read with `listGroceries()` in `src/lib/groceries.ts`; writes through new server actions `addGroceries`, `checkGrocery`, `clearGroceries` (changes show at once and roll back if a save fails). "Add to Groceries" on a recipe is a sheet in `KitchenButtons.tsx`.
   - **Start Cooking:** `/recipe/[slug]/cook?scale=…` with `CookMode.tsx` (gather page, steps, swipe/arrows, Wake Lock); step ingredients from `ingredientsForStep()` in `src/lib/cook.ts`. The end page, and "Mark as cooked" in the recipe menu, call the new `recordCooked` action. The recipe view shows "cooked N times".
   - Tests: `scale.test.mts`, `cook.test.mts` (27 in all). Checked in headless Chrome at desktop and phone size with only the unlocked-display cookie (no write key, so nothing was written live): scaling, the sheet, cooking steps, the end page, the groceries page and the "locked" messages. **Adding, checking and clearing groceries and recording a cook were not tried against the live database**; check them on localhost.
 
-- **App Phase 3, writing recipes (2026-10-29, built, Simulator only; version 0.3.0):**
-  - **Writing page** `ios/RamiyasRecipes/Views/WritingView.swift`: the book page as a form (title, stat box, tag circles, category side tabs, photo, two ingredient columns with section names, ▷/– directions, notes, and "Paste a recipe's text" on new recipes). Every ruled line is its own text field, so Scribble works line by line. Opens from + → "Enter your own recipe" and from the recipe menu's "Edit recipe" (unlocked only), which also has "Delete recipe".
-  - **Page mode** `Views/PencilPage.swift`: a fixed 760-point ruled page with printed areas (title, ingredients in two columns, directions, notes) and a PencilKit canvas with Apple's tool picker. "Read my writing" runs Apple's on-device Vision text recognition, sorts each line by the area it's in (indented direction lines become sub-steps, a skipped line separates sections), runs the paste rules, and fills the lines to check. On Save the page is rendered as a PNG to the `handwriting` bucket (`source: "pencil"`). Only the picture is kept online, not the editable strokes; editing a Pencil recipe shows the saved page under new ink.
-  - **Parsing in Swift** `Model/Parse.swift`: ports of `parse.ts` and `pasteText.ts`, tested against `shared/fixtures/*.json` (now copied into the Swift test bundle).
-  - **Drafts** `Model/Draft.swift`: kept in Application Support/Drafts after every change (the page, the drawing and an unuploaded photo) and restored with "Discard it". **Saving** `Data/Writer.swift`: save-recipe's `save`, `delete` and `upload-url` with the Keychain write key, then a sync. An offline save keeps the draft and says so (no background queue yet).
-  - "View handwritten page" in the recipe menu, and the handwritten page as the thumbnail when there's no photo, in the app and on the website.
-  - 15 Swift tests pass (fixtures, drafts, payload, area sorting, and Vision reading text drawn in the handwriting font). Screenshots checked: new recipe, editing the sweet chili chicken, page mode. **Not tested:** saving to the live database (the Simulator has no write key), and real Pencil writing (needs the iPad).
-
-- **App: the flip-through book (2026-10-29, built, Simulator only):** Home has a **Shelf | Book** switch (remembered), and the recipe menu has "Open in the book". `Model/BookLayout.swift` ports `src/lib/bookLayout.ts` (same page size, 18–30 lines per page, block packing, "(continued)" pages, contents with page numbers, category order); the app wraps text into lines itself so every line sits on a rule. `Views/BookView.swift` draws the pages and turns them with UIKit's page curl (`UIPageViewController`): one page in portrait, an open spread with the spiral down the middle in landscape (cover alone on the right). Swipe or ‹ ›; the side tabs jump to a section, contents entries to a recipe, "open recipe →" opens it. 5 more Swift tests (20 in all). Screenshots checked in portrait: cover, contents, a recipe page, a continued page. **Landscape (the spread and its page curl) not yet seen**: rotate the Simulator with ⌘→.
-
 - **Website: Pencil page mode (2026-10-29, built, not yet deployed):** the writing page has **Write on the lines | Write on the page**. Page mode (`src/components/PencilPage.tsx`) is a ruled canvas for the Apple Pencil (pressure-sensitive pen, stroke eraser, Undo, Clear page, "Draw with finger"); Safari reports the Pencil as a "stylus" touch, so only it is stopped from scrolling and fingers still scroll. The title, stats, tags, category and photo stay as fields above it (Scribble works there). The writing is **not read into text** (Louis's choice: no AI transcription service, and Safari can't use Apple's on-device recognition): on Save it becomes a PNG in the `handwriting` bucket (`source: "pencil"`), cut off a couple of lines below the writing. Unsaved strokes are kept in the browser beside the draft. Editing a Pencil recipe draws new ink over the saved page ("Clear page" starts over). A recipe with a handwritten page and no lines shows the page on its recipe view (and hides Add to Groceries / Start Cooking) and in the book view. Tests: 28 pass (one new book-layout case); checked in headless Chrome at desktop and iPad size (drawing with the mouse, undo, eraser, draft restored after reload, Save making the image then stopping at the locked upload, no sideways scroll). Also fixed: the selected category tab made the writing page scroll 2px sideways at iPad width. **Not tested:** the real Apple Pencil (Louis, on the iPad), and saving live.
 
-- **iPad app paused (2026-10-29, Louis):** the website on the Home Screen does what's needed, so no more app phases for now. The code in `ios/` and APP_PLAN.md stay as they are. Known app bug if it's picked up again: in page mode, writing beside the title wasn't recognized.
+- **iPad app dropped (2026-10-29, Louis):** the app (Phases 1–3 and the flip-through book, built in the Simulator) was removed from the repo; the website does everything on the iPad. Code: `git show bff8a2e:ios/`. Louis undoes the Xcode/SideStore setup on his devices.
 
 ## Next
 1. **Try Pencil page mode on the iPad** (localhost or after deploying): write a recipe on the page, save it, check the recipe view, the book view and editing it again. Then commit and push.
 2. **Website R5** (Home Screen install, offline, print). Home Screen install matters more now that the website is the iPad's recipe book.
 3. **Photo paste parsing** (docket): send the Live Text copy of the sweet chili chicken photo to tune the rules.
 
-The iPad app is paused (above); its next steps (SideStore, Phases 4–6) are in APP_PLAN.md if it's picked up again.
-
 ## Docket (queued, not scheduled)
-- **Photo paste parsing needs work** (Louis, 2026-10-28): pasting the Live Text of a real photo into Add from photos didn't sort well. Next time: get the exact text Live Text copies from the sweet chili chicken photo, replace the guessed first case in `shared/fixtures/pasted-recipes.json` with it, and tune `parseRecipeText` (`src/lib/pasteText.ts`) until it passes. The iPad app's on-device text recognition (Phase 4) will reuse the same rules.
+- **Photo paste parsing needs work** (Louis, 2026-10-28): pasting the Live Text of a real photo into Add from photos didn't sort well. Next time: get the exact text Live Text copies from the sweet chili chicken photo, replace the guessed first case in `shared/fixtures/pasted-recipes.json` with it, and tune `parseRecipeText` (`src/lib/pasteText.ts`) until it passes.
 - **Custom book cover** (Louis will provide later): replace the plain raspberry cover page in the book view (`PageFace` cover in `src/components/book/BookView.tsx`) with an uploaded image or design.
-- **Write key → your own passphrase** (queued 2026-10-28): rerun `npm run setup:supabase` and paste a passphrase of 4–5 random words instead of pressing Enter; then unlock each browser again (and the iPad app later). No code change. Bigger alternatives if ever wanted: a separate simple website password with the long key kept on the server (new code plus a rate limit), or login (below), which replaces the key.
+- **Write key → your own passphrase** (queued 2026-10-28): rerun `npm run setup:supabase` and paste a passphrase of 4–5 random words instead of pressing Enter; then unlock each browser again. No code change. Bigger alternatives if ever wanted: a separate simple website password with the long key kept on the server (new code plus a rate limit), or login (below), which replaces the key.
 - Login (Supabase Auth, `owner_id`, owner-only RLS, `shared` flag for family). Replaces the write key.
-- Custom handwriting font; Next.js 16 upgrade; instant website refresh after saves; app Share extension (uses extra app IDs on a free account).
+- Custom handwriting font; Next.js 16 upgrade; instant website refresh after saves.
 
 ## Documentation: match the Financial Planner project
 Louis wants this project's documentation to match the financial planner at

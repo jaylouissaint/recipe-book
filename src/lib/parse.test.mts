@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { ingredientLine, linesToStepGroups, parseIngredientLine, readDirectionLine, stepGroupsToLines } from "./parse.ts";
 
-// Shared with the iPad app's Swift tests (docs/APP_PLAN.md).
+// Cases in shared/fixtures.
 const fixtures: { line: string; quantity: string; unit: string; item: string }[] = JSON.parse(
   readFileSync(new URL("../../shared/fixtures/ingredient-lines.json", import.meta.url), "utf8"),
 );

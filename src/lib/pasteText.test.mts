@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { parseRecipeText, readDuration } from "./pasteText.ts";
 
-// Shared with the iPad app's Swift tests (docs/APP_PLAN.md).
+// Cases in shared/fixtures.
 const fixtures: { name: string; text: string; expected: unknown }[] = JSON.parse(
   readFileSync(new URL("../../shared/fixtures/pasted-recipes.json", import.meta.url), "utf8"),
 );

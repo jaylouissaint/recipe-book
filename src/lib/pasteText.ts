@@ -4,8 +4,7 @@ import type { IngredientGroup, StepGroup } from "./types";
 
 // "Paste text" on the writing page (docs/DESIGN.md "Add from photos"): a recipe's text, copied
 // with Live Text from a photo or from anywhere else, sorted into the page by simple rules. No AI.
-// The iPad app runs the same rules on its own text recognition; shared/fixtures/pasted-recipes.json
-// holds the cases both must pass.
+// The test cases are in shared/fixtures/pasted-recipes.json.
 
 export type PastedRecipe = {
   title: string;

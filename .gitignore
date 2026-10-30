@@ -43,7 +43,3 @@ next-env.d.ts
 
 # python
 __pycache__/
-
-# iPad app: generated project, local settings, builds
-ios/*.xcodeproj
-ios/Secrets.xcconfig

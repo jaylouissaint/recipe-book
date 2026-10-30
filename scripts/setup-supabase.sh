@@ -31,7 +31,7 @@ fi
 supabase link --project-ref "$REF"
 
 echo
-echo "== Write key (what the iPad app sends to save recipes)"
+echo "== Write key (what unlocked browsers use to save recipes)"
 read -rsp "Paste your write key, or press Enter to generate a new one: " KEY
 echo
 if [ -z "$KEY" ]; then
