@@ -164,7 +164,7 @@ The same "write it" page with the keyboard, on any device.
 5. ✅ **R3 – Bringing recipes in** (deployed 2026-10-28; paste rules for handwritten cards improved 2026-10-29): Save from the web (schema.org recipe data, no AI), Add from photos (upload, original beside the writing page, Paste text box with the paste parser); parser tests with shared fixtures
 6. ✅ **R4 – In the kitchen** (deployed 2026-10-28; search was already done in R1, on the page, which is plenty for a family-sized book): Groceries (one list, optional group by recipe), Start Cooking, serving scaler, search and tag filters
 7. ✅ **2026-10-29 – The iPad experience on the website** (deployed): Pencil page mode with pages, Home Screen icon and name, Home rebuilt (pick up, Surprise me, this week's meals with migration 002, groceries at a glance, to finish), Library filters and favorite stars, Type the lines, the book cover as the icon
-8. **R5 – Polish:** ✅ offline (opened pages, pictures, grocery check-offs queue) and ✅ live updates (migration 003), built 2026-10-29, not yet deployed; print check; full-screen Home Screen app (decision pending, see HANDOFF.md)
+8. **R5 – Polish:** ✅ offline (opened pages, pictures, grocery check-offs queue) and ✅ live updates (migration 003), built 2026-10-29, not yet deployed; print check; ✅ full-screen Home Screen app (built 2026-10-29)
 
 ---
 

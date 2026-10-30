@@ -784,7 +784,12 @@ export default function RecipeEditor({
             )}
             <button
               type="button"
-              onClick={() => router.back()}
+              onClick={() => {
+                // Opened straight onto this page (as the Home Screen app can be), there's nothing
+                // to go back to: go to the recipe, or the Library for a new one.
+                if (window.history.length > 1) router.back();
+                else router.push(recipe ? `/recipe/${recipe.slug}` : "/library");
+              }}
               className="h-[52px] flex-1 rounded-full border border-fg/30 text-[16px] font-semibold text-fg"
             >
               Cancel

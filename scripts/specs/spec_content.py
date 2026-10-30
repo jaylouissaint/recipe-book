@@ -86,8 +86,7 @@ FUNCTIONAL = [
      BUILT + " (live updates need migration 003)"),
     ("req", "FR-HOME-SCREEN-001", "Home Screen shortcut",
      "Added to the iPad Home Screen (Share → Add to Home Screen), the site shows the whisk-and-wooden-spoon icon "
-     "and the name “Ramiya’s Recipes”. It opens in Safari (full-screen standalone mode is a decision pending, "
-     "FR-PWA-002).",
+     "and the name “Ramiya’s Recipes”, and opens full screen like an app (FR-PWA-002).",
      "A newly added shortcut shows the icon and the name with its space.",
      LIVE + " (re-add the shortcut to pick up the icon and name)"),
 
@@ -317,11 +316,15 @@ FUNCTIONAL = [
      "back to the front or when the connection returns.",
      "A check-off on the iPad shows on the open Mac within a second or two.",
      BUILT + "; needs migration 003 (run by the owner)"),
-    ("req", "FR-PWA-002", "Full-screen Home Screen app (decision pending)",
-     "Opening the Home Screen shortcut as a full-screen app without Safari's address bar. Under consideration; "
-     "see the Technical Specification, section 8.",
-     "Not specified until decided.",
-     "Proposed (website step R5)"),
+    ("req", "FR-PWA-002", "Full-screen Home Screen app",
+     "The Home Screen shortcut opens full screen, without Safari's address bar and buttons, with its own entry "
+     "in the app switcher. The site's own tabs, back buttons and × get around; Cancel on the writing page goes "
+     "back, or to the recipe (or the Library) when there's nothing to go back to. Links to other websites open "
+     "separately. The full-screen app keeps its own storage apart from Safari: editing is unlocked once inside "
+     "it, and its offline copies fill as pages are opened there.",
+     "Opened from the shortcut, no address bar shows; every page has a way back; Unlock editing in its "
+     "Settings works.",
+     BUILT + " (decided by the owner 2026-10-29)"),
     ("req", "FR-PRINT-001", "Printed recipe",
      "Printing a recipe prints the recipe only, on white, without navigation, buttons or decorations.",
      "A printed recipe shows no navigation or bottom buttons.",
@@ -369,7 +372,7 @@ FUNCTIONAL = [
         ["AT-16", "Save without the write key", "Refused; nothing changes"],
         ["AT-17", "Locked browser", "No +, Edit, star buttons or + Add; unlocking shows them"],
         ["AT-18", "Device in dark mode", "Still white and cream (light only)"],
-        ["AT-19", "New Home Screen shortcut", "Whisk-and-spoon icon; name “Ramiya’s Recipes”"],
+        ["AT-19", "New Home Screen shortcut", "Whisk-and-spoon icon; name “Ramiya’s Recipes”; opens full screen"],
     ]),
 
     ("h1", "12. Requirements status and change control"),
@@ -390,10 +393,9 @@ FUNCTIONAL = [
           "rebuilt (pick up, Surprise me, this week's meals with migration 002, groceries at a glance, to "
           "finish); category and Favorites filters on the Library; Type the lines for handwritten-only recipes; "
           "book cover as the icon. Built, not yet deployed: paste rules for handwritten cards, offline, live "
-          "updates (migration 003). Safari on iPad made the primary browser."),
+          "updates (migration 003), the full-screen Home Screen app. Safari on iPad made the primary browser."),
     ("p", "Queued (not scheduled): sign-in (FR-AUTH-001, Supabase Auth replacing the write key) and family "
-          "sharing (FR-AUTH-002); the owner's own handwriting font; the write key as a passphrase; Next.js 16. "
-          "Decision pending: full-screen Home Screen app (FR-PWA-002)."),
+          "sharing (FR-AUTH-002); the owner's own handwriting font; the write key as a passphrase; Next.js 16."),
 
     ("h1", "Appendix A. Worked examples"),
     ("table", [2304, 6912], [
@@ -477,7 +479,7 @@ TECHNICAL = [
     ("h2", "1.2 Out of scope / not yet built"),
     ("p", "Out of scope by decision: native apps (an iPad app was prototyped and dropped 2026-10-29; its code is "
           "in git history at bff8a2e:ios/), AI transcription, dark mode. Queued: sign-in and family sharing, the "
-          "owner's handwriting font, Next.js 16. Decision pending: full-screen Home Screen app (section 8)."),
+          "owner's handwriting font, Next.js 16."),
 
     ("h1", "2. System Architecture"),
     ("table", [1872, 7488], [
@@ -613,14 +615,15 @@ TECHNICAL = [
           "on the online event. Server writes call revalidatePath, so the refreshed data is current. Without "
           "migration 003 the channel connects but receives nothing; refresh on coming back still works."),
 
-    ("h1", "8. Home Screen install (decision pending)"),
-    ("p", "Today the manifest uses display: browser, so the shortcut opens in Safari with its address bar and "
-          "the Home Screen title and icon come from appleWebApp.title, src/app/apple-icon.png and "
-          "src/app/manifest.ts. Changing display to standalone would open it as a full-screen app: no address "
-          "bar or Safari back/forward/share buttons (the site's own back buttons and share menu remain), its own "
-          "app switcher entry, and its own storage kept apart from Safari (so it needs its own Unlock editing "
-          "and builds its own offline copies, which Safari is less inclined to clear). Links to other websites "
-          "would open in Safari. To be decided by the owner."),
+    ("h1", "8. Home Screen app"),
+    ("p", "src/app/manifest.ts sets display: standalone (id, start_url and scope /), and layout.tsx sets "
+          "appleWebApp (title “Ramiya’s Recipes”, capable, status bar default, which keeps the page below the "
+          "status bar); the icon is src/app/apple-icon.png. The shortcut opens as a full-screen app: no address "
+          "bar or Safari back/forward/share buttons (the site's tabs, back buttons, share menu and Start "
+          "Cooking's × remain; the writing page's Cancel falls back to the recipe or the Library when history "
+          "is empty), its own app switcher entry, and its own storage apart from Safari (its own Unlock editing "
+          "cookie and offline copies, which iPadOS keeps for Home Screen apps). Links to other websites open "
+          "outside it. An existing shortcut must be removed and added again to open full screen."),
 
     ("h1", "9. Code Organization"),
     ("table", [3024, 6336], [
@@ -675,12 +678,11 @@ TECHNICAL = [
         "Step 1 – Skeleton (Supabase, RLS, save-recipe, Vercel). Done 2026-10-27.",
         "R1–R4 – New look, writing page, imports, groceries and cooking. Done 2026-10-28.",
         "2026-10-29 – Pencil page mode, Home rebuilt with the week plan, Library filters, favorites, icon. Deployed.",
-        "R5 – Offline and live updates (built 2026-10-29), print check, Home Screen app decision.",
+        "R5 – Offline, live updates and the full-screen Home Screen app (built 2026-10-29); print check.",
     ]),
 
     ("h1", "13. Planned / Recommended Enhancements"),
     ("bullets", [
-        "Decide – Full-screen Home Screen app (section 8).",
         "Queued – Sign-in (Supabase Auth, owner-only RLS) replacing the write key; family sharing.",
         "Queued – The owner's handwriting font (iFontMaker or Calligraphr), with Patrick Hand as fallback.",
         "Queued – Write key as a passphrase (no code change).",

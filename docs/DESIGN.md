@@ -103,6 +103,8 @@ Scribble works on the iPad in Safari: write with the Apple Pencil on any line an
 
 **Settings.** Unlock editing (enter the write key once per device).
 
+**Home Screen app.** Added to the Home Screen, the site opens full screen like an app, with the whisk-and-spoon icon and the name "Ramiya’s Recipes": no Safari address bar or buttons. The tabs, back buttons and × get around; the writing page's Cancel goes back, or to the recipe or Library. It keeps its own storage apart from Safari, so editing is unlocked once inside it. Links to other websites open separately.
+
 **Offline.** Pages opened on a device (recipes, Home, Library, Groceries, the book) and their pictures still open with no signal. A dark strip at the top says "You're offline. Pages you've opened before still work, and grocery check-offs save when you're back online." A page never opened on that device shows a short "You're offline" page with links to Home and Groceries. Checking off groceries works offline: the check-offs show as checked, "N check-offs saved on this device" says so, and they're sent when the connection is back. Adding and clearing need a connection.
 
 **Live updates.** A change on one device (a recipe, a check-off, a meal) shows on every other open device within about a second, without reloading; pages also refresh when brought back to the front.
