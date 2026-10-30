@@ -136,7 +136,16 @@ function focusLine(form: HTMLFormElement | null, id: string) {
   else requestAnimationFrame(() => find()?.focus());
 }
 
-export default function RecipeEditor({ recipe, start }: { recipe: Recipe | null; start?: EditorStart }) {
+// `startMode` "lines" opens a handwritten recipe on the lines, to type them beside the page.
+export default function RecipeEditor({
+  recipe,
+  start,
+  startMode,
+}: {
+  recipe: Recipe | null;
+  start?: EditorStart;
+  startMode?: "lines" | "page";
+}) {
   const router = useRouter();
   const unlocked = useUnlocked();
   const formRef = useRef<HTMLFormElement>(null);
@@ -150,8 +159,8 @@ export default function RecipeEditor({ recipe, start }: { recipe: Recipe | null;
   const originalPath = useRef(""); // the photo's original, once uploaded (not again on a retry)
   // Pencil writing not saved yet, kept beside the draft. A recipe written only on the page opens on the page.
   const [ink, setInk] = useState<Stroke[]>([]);
-  const [mode, setMode] = useState<"lines" | "page">(() =>
-    recipe?.handwritingPath && !recipe.ingredientGroups.length && !recipe.stepGroups.length ? "page" : "lines",
+  const [mode, setMode] = useState<"lines" | "page">(
+    () => startMode ?? (recipe?.handwritingPath && !recipe.ingredientGroups.length && !recipe.stepGroups.length ? "page" : "lines"),
   );
   const inkKey = `${draftKey}:ink`;
 
@@ -171,13 +180,13 @@ export default function RecipeEditor({ recipe, start }: { recipe: Recipe | null;
       const savedInk = localStorage.getItem(inkKey);
       if (savedInk) {
         setInk(JSON.parse(savedInk));
-        setMode("page");
+        if (startMode !== "lines") setMode("page");
         setRestored(true);
       }
     } catch {
       // storage unavailable or an unreadable draft: start from the recipe
     }
-  }, [draftKey, inkKey, original, recipe, start]);
+  }, [draftKey, inkKey, original, recipe, start, startMode]);
   useEffect(() => {
     if (!loaded.current) return;
     const t = setTimeout(() => {
@@ -401,8 +410,16 @@ export default function RecipeEditor({ recipe, start }: { recipe: Recipe | null;
   const photoUrl = photo?.preview ?? (draft.photoPath ? publicFileUrl("photos", draft.photoPath) : draft.remotePhoto || null);
   const directionRows: DirectionLine[] = [...draft.directions, { kind: "step", text: "" }];
 
+  // Beside the page: the photo being imported, or the handwritten page while typing its lines.
+  const beside =
+    start?.kind === "photo" ? (
+      <OriginalPanel file={start.file} onFill={fillFromText} />
+    ) : mode === "lines" && draft.handwritingPath && !ink.length ? (
+      <HandwrittenPanel src={publicFileUrl("handwriting", draft.handwritingPath)} onFill={fillFromText} />
+    ) : null;
+
   const page = (
-    <div className={start?.kind === "photo" ? "min-w-0" : "mx-auto max-w-4xl overflow-x-clip px-3 pt-4 pb-32 md:px-10"}>
+    <div className={beside ? "min-w-0" : "mx-auto max-w-4xl overflow-x-clip px-3 pt-4 pb-32 md:px-10"}>
       {!unlocked && (
         <p role="status" className="mb-4 rounded-2xl bg-field px-4 py-3 text-[15px]">
           Editing is locked on this device, so this recipe can&apos;t be saved yet.{" "}
@@ -510,8 +527,8 @@ export default function RecipeEditor({ recipe, start }: { recipe: Recipe | null;
           </label>
         </div>
 
-        <header className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <label className="flex flex-1 items-end gap-2">
+        <header className="flex flex-wrap items-start justify-between gap-4">
+          <label className="flex min-w-64 flex-1 items-end gap-2">
             <span className="pb-2 font-slab text-xl font-light text-label">recipe:</span>
             {/* Wraps like the title in the book; Enter moves on instead of adding a line break. */}
             <textarea
@@ -785,10 +802,10 @@ export default function RecipeEditor({ recipe, start }: { recipe: Recipe | null;
     </div>
   );
 
-  if (start?.kind !== "photo") return page;
+  if (!beside) return page;
   return (
-    <div className="mx-auto grid max-w-7xl gap-6 px-3 pt-4 pb-32 md:px-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-10">
-      <OriginalPanel file={start.file} onFill={fillFromText} />
+    <div className="mx-auto grid max-w-7xl gap-6 px-3 pt-4 pb-32 md:pr-12 md:pl-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-10">
+      {beside}
       {page}
     </div>
   );
@@ -897,6 +914,33 @@ function OriginalPanel({ file, onFill }: { file: File; onFill: (text: string) =>
               ? "Select the recipe's text in the PDF, copy it, and paste it here."
               : "On an iPad or iPhone: touch and hold the text in the photo, tap Select All, then Copy, and paste it here. Or write it in yourself."
           }
+        />
+      </section>
+    </aside>
+  );
+}
+
+// The handwritten page beside the lines, to type them from (or copy them with Live Text).
+function HandwrittenPanel({ src, onFill }: { src: string; onFill: (text: string) => string }) {
+  return (
+    <aside className="font-sans lg:sticky lg:top-4 lg:max-h-[calc(100dvh-2rem)] lg:self-start lg:overflow-y-auto">
+      <div className="overflow-hidden rounded-2xl bg-surface shadow-card">
+        {/* eslint-disable-next-line @next/next/no-img-element -- a Supabase public URL, shown as is */}
+        <img src={src} alt="The handwritten page" className="max-h-[40vh] w-full object-contain lg:max-h-[60dvh]" />
+      </div>
+      <p className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[13px] text-muted">
+        <span>Your handwritten page. Type its lines on the page here.</span>
+        <a href={src} target="_blank" rel="noreferrer" className="font-semibold text-accent underline underline-offset-4">
+          Open full size
+        </a>
+      </p>
+      <section aria-labelledby="paste-hand" className="mt-4 rounded-2xl bg-field px-4 py-3">
+        <h2 id="paste-hand" className="text-[15px] font-semibold">
+          Paste text
+        </h2>
+        <PasteText
+          onFill={onFill}
+          hint="Or on the iPad: touch and hold the writing in the picture, tap Select All, then Copy, and paste it here. Check each line after."
         />
       </section>
     </aside>

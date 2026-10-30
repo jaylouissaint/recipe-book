@@ -5,8 +5,8 @@ import { usePathname } from "next/navigation";
 import { BookIcon, CartIcon, GearIcon, HomeIcon } from "./Icons";
 
 const ITEMS = [
-  { href: "/", label: "Home", Icon: HomeIcon, match: (p: string) => p === "/" || p.startsWith("/category/") },
-  { href: "/library", label: "Library", Icon: BookIcon, match: (p: string) => p.startsWith("/library") || p === "/book" || p.startsWith("/recipe/") || p === "/new" },
+  { href: "/", label: "Home", Icon: HomeIcon, match: (p: string) => p === "/" },
+  { href: "/library", label: "Library", Icon: BookIcon, match: (p: string) => p.startsWith("/library") || p === "/book" || p.startsWith("/category/") || p.startsWith("/recipe/") || p === "/new" },
   { href: "/groceries", label: "Groceries", Icon: CartIcon, match: (p: string) => p.startsWith("/groceries") },
   { href: "/settings", label: "Settings", Icon: GearIcon, match: (p: string) => p.startsWith("/settings") },
 ];

@@ -7,6 +7,7 @@ import { ingredientText } from "@/lib/format";
 import type { Recipe } from "@/lib/types";
 import { BackIcon } from "../Icons";
 import Spiral from "../Spiral";
+import { SpoonAndWhisk } from "../Stickers";
 import BookBlock, { OpenRecipeLink } from "./BookBlocks";
 
 // The book view: fixed-size pages you flip through like the spiral book. One page at a time on
@@ -422,15 +423,14 @@ function PageFace({
   const shadow = "shadow-[0_2px_14px_rgba(0,0,0,0.14)]";
   if (page.kind === "cover") {
     return (
-      <div className={`flex size-full items-center justify-center bg-cover p-[5%] ${rounded} ${shadow}`}>
-        <div className="flex size-full flex-col items-center justify-center border border-white/80 text-center text-white">
-          <p className="font-serif leading-tight" style={{ fontSize: geo.line * 1.7 }}>
-            {"Ramiya’s Recipes"}
-          </p>
-          <p className="label-caps mt-3 !text-white/80" style={{ fontSize: geo.line * 0.42 }}>
-            recipe book
-          </p>
-        </div>
+      // The Home Screen icon as the cover: the wooden spoon and whisk on cream ruled paper.
+      <div
+        aria-label="Ramiya’s Recipes"
+        role="img"
+        className={`paper-lines flex size-full items-center justify-center bg-paper ${rounded} ${shadow}`}
+        style={{ ["--line" as string]: `${geo.line * 1.6}px` }}
+      >
+        <SpoonAndWhisk className="w-[78%]" />
       </div>
     );
   }

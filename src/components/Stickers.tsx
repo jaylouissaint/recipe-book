@@ -46,3 +46,27 @@ export function PlateSetting({ className }: Props) {
     </svg>
   );
 }
+
+// The wooden spoon and whisk from the Home Screen icon (src/app/icon.svg), for the book's cover.
+export function SpoonAndWhisk({ className }: Props) {
+  return (
+    <svg aria-hidden viewBox="0 0 100 100" className={className}>
+      <g transform="rotate(-40 50 50)">
+        <rect x="46.5" y="40" width="7" height="52" rx="3.5" fill="#c08a52" />
+        <rect x="48.5" y="44" width="1.6" height="44" rx="0.8" fill="#a8743f" opacity=".6" />
+        <ellipse cx="50" cy="27" rx="12.5" ry="17" fill="#c99760" />
+        <ellipse cx="50" cy="28" rx="8.5" ry="12.5" fill="#b37d47" />
+        <ellipse cx="47" cy="24" rx="3" ry="6" fill="#d9ad7c" opacity=".7" />
+      </g>
+      <g transform="rotate(40 50 50)">
+        <rect x="46" y="58" width="8" height="34" rx="4" fill="#1f4d3d" />
+        <rect x="47" y="55" width="6" height="6" rx="1.5" fill="#8d939b" />
+        <g fill="none" stroke="#8d939b" strokeWidth="2.2">
+          <path d="M50 57 C34 44 34 16 50 8 C66 16 66 44 50 57 Z" />
+          <path d="M50 57 C41 44 41 18 50 8 C59 18 59 44 50 57" />
+          <path d="M50 57 L50 8" />
+        </g>
+      </g>
+    </svg>
+  );
+}

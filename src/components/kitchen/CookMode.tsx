@@ -8,6 +8,7 @@ import { ingredientsForStep } from "@/lib/cook";
 import { ingredientText } from "@/lib/format";
 import { scaleIngredient } from "@/lib/scale";
 import type { Ingredient, Recipe } from "@/lib/types";
+import { setCooking } from "@/lib/remember";
 import { useUnlocked } from "../EditOnly";
 
 // Start Cooking (docs/DESIGN.md): full screen, one step at a time in large handwriting, with the
@@ -15,11 +16,12 @@ import { useUnlocked } from "../EditOnly";
 // off; the screen stays awake. Reaching the end adds one to "times cooked".
 type Page = { kind: "gather" } | { kind: "step"; index: number } | { kind: "done" };
 
-export default function CookMode({ recipe, factor }: { recipe: Recipe; factor: number }) {
+// `start` is the page to open on (Home's "Continue cooking").
+export default function CookMode({ recipe, factor, start = 0 }: { recipe: Recipe; factor: number; start?: number }) {
   const router = useRouter();
   const unlocked = useUnlocked();
   const pages: Page[] = [{ kind: "gather" }, ...recipe.stepGroups.map((_, index) => ({ kind: "step" as const, index })), { kind: "done" }];
-  const [at, setAt] = useState(0);
+  const [at, setAt] = useState(() => Math.max(0, Math.min(start, recipe.stepGroups.length)));
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const [cooked, setCooked] = useState("");
   const recorded = useRef(false);
@@ -41,6 +43,12 @@ export default function CookMode({ recipe, factor }: { recipe: Recipe; factor: n
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
   }, [go, router, recipeHref]);
+
+  // Home offers to continue from here; finishing clears it.
+  useEffect(() => {
+    if (at === pages.length - 1) return setCooking(null);
+    setCooking({ slug: recipe.slug, title: recipe.title, page: at, steps: pages.length - 2, scale: factor, at: Date.now() });
+  }, [at, pages.length, recipe.slug, recipe.title, factor]);
 
   // Reaching the end counts as cooking it once.
   useEffect(() => {

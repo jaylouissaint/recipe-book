@@ -30,6 +30,8 @@ Migrations live in `supabase/migrations/` and are run by hand, once each, in ord
 2. In Supabase, open the project → **SQL Editor** → **New query**.
 3. Paste it and click **Run**. You should see "Success. No rows returned".
 
+**After migration 002 (2026-10-29), also redeploy the save function:** `npm run deploy:functions`. Then Home's "This week" shows the days instead of "needs a one-time database update", and Table Editor lists **meal_plan**.
+
 **How to tell it worked (migration 001)**
 - **Table Editor** (left sidebar) lists **grocery_items** under the existing tables.
 - In the **recipes** table, scrolling right shows the new columns: author, source_name, source_url, photo_path, description, times_cooked, imported.
@@ -41,6 +43,7 @@ Run each migration only once. A second run stops with an error like "column auth
 **Migration history**
 - 000_initial_schema: run 2026-10-24.
 - 001_redesign_fields_and_groceries: run 2026-10-28 (save-recipe redeployed as version 2 the same day).
+- 002_meal_plan: written 2026-10-29, **not run yet**. Run it, then `npm run deploy:functions` (save-recipe gains `plan-add` and `plan-remove`).
 
 ## Decisions (don't reopen these)
 - **Website only** (2026-10-29; a native iPad app was planned on 2026-10-24). The app was prototyped in the iPad Simulator (reading, writing with Scribble and PencilKit, the flip-through book) and dropped: the website on the iPad Home Screen, with Scribble and Pencil page mode, does what's needed. Its code is in git history: `git show bff8a2e:ios/` (the last commit with `ios/`).
@@ -110,19 +113,30 @@ Run each migration only once. A second run stops with an error like "column auth
   - **List | Book** toggle moved from Home to the Library (`ViewToggle`); `/book` is titled "My Recipes" and lights up the Library tab.
   - **Cover photo** shown whole (`CoverPhoto`, `pictureUrl()` in `Thumb.tsx`), not cropped to a fixed box.
   - **Tags** trimmed to Quick & Easy, Slow Cooker, One Pot/Pan, Air Fryer, Veg (`TAGS` in `src/lib/book.ts`; removed ids stay in the database, unseen). The paste parser still skips all the book's printed labels (`BOOK_TAG_LABELS`).
-  - **Favorites:** a star by the title on the recipe view (`FavoriteStar.tsx`, saves the whole recipe with the `family-favorite` tag toggled; no database change). Home's row is now "Favorites".
+  - **Favorites:** a star in the top right corner of each Library card (`FavoriteStar.tsx`, outside the card's link; saves the whole recipe with the `family-favorite` tag toggled; no database change). It was by the recipe view's title first; Louis moved it. Home's row is now "Favorites".
+  - **Book cover** is now the icon: the wooden spoon and whisk on cream ruled paper (`SpoonAndWhisk` in `Stickers.tsx`), no longer plain raspberry.
   - **Writing page:** "Add a photo" moved to the page's top right; page mode has "+ Add a page" (each page its own canvas; saved as one tall PNG, scaled down past 16 megapixels for Safari).
   - **Safari first (Louis, 2026-10-29):** the iPad's Safari is the target. Checks now run in **WebKit** (Playwright 1.55, WebKit 26, iPad Pro 11" profile, portrait and landscape) from the scratchpad, not only Chrome. Safari fixes: Enter moves to the next line straight away (iPad Safari only keeps the keyboard up for focus moved during the key press), and the Pencil page turns off Safari's text selection and callout.
   - Tested in WebKit as an iPad and in headless Chrome (every page; the book turning; typing and Enter on the lines; drawing on two pages; Save stopping at the locked upload; no sideways scroll; no errors). 28 tests pass. **Not tested live:** the star saving, the icon and name on the real iPad.
 
+- **Home rebuilt as the kitchen (2026-10-29, built, not yet deployed; needs migration 002 and a function redeploy):**
+  - **Pick up where you left off** (`src/components/home/PickUp.tsx`, `src/lib/remember.ts`): Start Cooking remembers its page in the browser (`CookMode` writes it, `?step=` reopens it); recipe pages remember being opened (`RememberRecipe`). **Surprise me** opens a random recipe.
+  - **This week** (`src/components/home/WeekPlan.tsx`, `src/lib/plan.ts`): migration `002_meal_plan.sql` (+ rollback; tested in PGlite: rules, permissions, cleanup of days over a month old, rollback), save-recipe actions `plan-add` / `plan-remove`, server actions `addMeal` / `removeMeal`. Until 002 is run, Home says the update is needed. **Add the week to Groceries** uses the grocery sheet, now its own component (`kitchen/GrocerySheet.tsx`, also used by the recipe's Add to Groceries) with one section per recipe.
+  - **Groceries at a glance** and **To finish** (handwritten-only recipes) on Home, which is now always fresh (`force-dynamic`). Home no longer has the category shelves, Favorites or Recently added (`Shelf.tsx` removed).
+  - **Library filters:** category tabs and ★ Favorites above the list; `/library?category=…` / `?favorites=1`; `/category/[slug]` redirects there; "in Mains" on a recipe links there.
+  - **Handwritten-only recipes:** the recipe view shows "Type the lines" in place of Add to Groceries / Start Cooking; `/recipe/[slug]/edit?lines=1` opens the lines with the handwritten page beside them (`HandwrittenPanel` in `RecipeEditor.tsx`, with Paste text for Live Text).
+  - Also fixed: the writing page's title squeezed into a narrow column beside a photo or handwritten page (title and stat box now wrap), and the category tabs made that two-column layout scroll sideways.
+  - Tested in WebKit as an iPad, portrait and landscape: Home's sections, last opened, continue cooking at step 2 with the scale kept, Surprise me, Library filters from a link, the week with sample meals (scratch-only test page; the live table doesn't exist yet), the week's grocery sheet (29 items in 2 sections), the add-a-meal sheet reaching the locked server, Type the lines. 28 tests pass. **Not tested live:** adding and removing meals and adding the week to Groceries (needs 002, the redeploy and the write key).
+
 ## Next
-1. **Try Pencil page mode on the iPad** (localhost or after deploying): write a recipe on the page, save it, check the recipe view, the book view and editing it again. Then commit and push.
-2. **Website R5** (Home Screen install, offline, print). Home Screen install matters more now that the website is the iPad's recipe book.
-3. **Photo paste parsing** (docket): send the Live Text copy of the sweet chili chicken photo to tune the rules.
+1. **Run migration 002** (`supabase/migrations/002_meal_plan.sql`, steps above) and **`npm run deploy:functions`**, then try Home's week: add a recipe and a note, remove one, Add the week to Groceries. Then commit and push.
+2. **Try on the iPad:** Pencil page mode (several pages), the favorite stars, Type the lines beside a handwritten page, the new Home Screen icon (remove and re-add the shortcut).
+3. **Website R5** (Home Screen install, offline, print).
+4. **Photo paste parsing** (docket): send the Live Text copy of the sweet chili chicken photo.
 
 ## Docket (queued, not scheduled)
 - **Photo paste parsing needs work** (Louis, 2026-10-28): pasting the Live Text of a real photo into Add from photos didn't sort well. Next time: get the exact text Live Text copies from the sweet chili chicken photo, replace the guessed first case in `shared/fixtures/pasted-recipes.json` with it, and tune `parseRecipeText` (`src/lib/pasteText.ts`) until it passes.
-- **Custom book cover** (Louis will provide later): replace the plain raspberry cover page in the book view (`PageFace` cover in `src/components/book/BookView.tsx`) with an uploaded image or design.
+- **Custom book cover** (optional): the cover is now the Home Screen icon's wooden spoon and whisk on ruled paper (`SpoonAndWhisk` in `Stickers.tsx`, used by the `PageFace` cover in `src/components/book/BookView.tsx`). Swap it for an uploaded image or design if Louis wants one later.
 - **Write key → your own passphrase** (queued 2026-10-28): rerun `npm run setup:supabase` and paste a passphrase of 4–5 random words instead of pressing Enter; then unlock each browser again. No code change. Bigger alternatives if ever wanted: a separate simple website password with the long key kept on the server (new code plus a rate limit), or login (below), which replaces the key.
 - Login (Supabase Auth, `owner_id`, owner-only RLS, `shared` flag for family). Replaces the write key.
 - Custom handwriting font (Louis making it; steps in PLAN.md "Your own handwriting font"); Next.js 16 upgrade; instant website refresh after saves.

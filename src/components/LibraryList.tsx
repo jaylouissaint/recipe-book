@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { CATEGORIES, TAGS } from "@/lib/book";
+import { useEffect, useMemo, useState } from "react";
+import { CATEGORIES, TAGS, isFavorite } from "@/lib/book";
 import type { Recipe } from "@/lib/types";
 import { FilterIcon, SearchIcon } from "./Icons";
 import LibraryCard from "./LibraryCard";
@@ -19,11 +19,22 @@ function haystack(r: Recipe) {
     .toLowerCase();
 }
 
-export default function LibraryList({ recipes, showCategories = true }: { recipes: Recipe[]; showCategories?: boolean }) {
+// The category tabs and Favorites sit above the list as filters (they were Home's shelves);
+// /library?category=mains and ?favorites=1 open with one already on.
+export default function LibraryList({ recipes }: { recipes: Recipe[] }) {
   const [query, setQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [category, setCategory] = useState<string | null>(null);
   const [tags, setTags] = useState<string[]>([]);
+  const [favorites, setFavorites] = useState(false);
+
+  // Read after loading, so the page itself can stay cached.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const c = params.get("category");
+    if (c && CATEGORIES.some((x) => x.slug === c)) setCategory(c);
+    if (params.get("favorites")) setFavorites(true);
+  }, []);
 
   const indexed = useMemo(() => recipes.map((r) => ({ r, text: haystack(r) })), [recipes]);
   const words = query.toLowerCase().split(/\s+/).filter(Boolean);
@@ -31,8 +42,9 @@ export default function LibraryList({ recipes, showCategories = true }: { recipe
     .filter(({ text }) => words.every((w) => text.includes(w)))
     .filter(({ r }) => !category || r.category === category)
     .filter(({ r }) => tags.every((t) => r.tags.includes(t)))
+    .filter(({ r }) => !favorites || isFavorite(r))
     .map(({ r }) => r);
-  const filtering = category !== null || tags.length > 0;
+  const filtering = tags.length > 0;
 
   const toggleTag = (id: string) => setTags((t) => (t.includes(id) ? t.filter((x) => x !== id) : [...t, id]));
   const chip = (on: boolean) =>
@@ -64,23 +76,34 @@ export default function LibraryList({ recipes, showCategories = true }: { recipe
         </button>
       </div>
 
+      <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Show">
+        {CATEGORIES.map((c) => {
+          const on = category === c.slug;
+          return (
+            <button
+              key={c.slug}
+              type="button"
+              aria-pressed={on}
+              onClick={() => setCategory(on ? null : c.slug)}
+              className={`label-caps rounded-lg px-3.5 py-2 !text-[0.68rem] ${on ? `${c.tabClass} !text-white shadow-card` : "bg-surface !text-fg shadow-card"}`}
+            >
+              <span aria-hidden className={`mr-2 inline-block size-2 rounded-full align-middle ${on ? "bg-white/80" : c.tabClass}`} />
+              {c.name}
+            </button>
+          );
+        })}
+        <button
+          type="button"
+          aria-pressed={favorites}
+          onClick={() => setFavorites((f) => !f)}
+          className={`label-caps rounded-lg px-3.5 py-2 !text-[0.68rem] shadow-card ${favorites ? "bg-tab-mustard !text-white" : "bg-surface !text-fg"}`}
+        >
+          <span aria-hidden className={favorites ? "" : "text-tab-mustard"}>★</span> Favorites
+        </button>
+      </div>
+
       {showFilters && (
         <div className="mt-4 space-y-3">
-          {showCategories && (
-            <div className="flex flex-wrap gap-2">
-              {CATEGORIES.map((c) => (
-                <button
-                  key={c.slug}
-                  type="button"
-                  aria-pressed={category === c.slug}
-                  onClick={() => setCategory((cur) => (cur === c.slug ? null : c.slug))}
-                  className={chip(category === c.slug)}
-                >
-                  {c.name}
-                </button>
-              ))}
-            </div>
-          )}
           <div className="flex flex-wrap gap-2">
             {TAGS.map((t) => (
               <button
@@ -97,10 +120,7 @@ export default function LibraryList({ recipes, showCategories = true }: { recipe
           {filtering && (
             <button
               type="button"
-              onClick={() => {
-                setCategory(null);
-                setTags([]);
-              }}
+              onClick={() => setTags([])}
               className="text-sm font-semibold text-accent"
             >
               Clear filters
@@ -111,7 +131,7 @@ export default function LibraryList({ recipes, showCategories = true }: { recipe
 
       {shown.length === 0 ? (
         <p className="mt-16 text-center font-hand text-2xl text-muted">
-          {recipes.length === 0 ? "no recipes here yet" : "nothing matches that"}
+          {recipes.length === 0 ? "no recipes here yet" : favorites && !category && !words.length ? "no favorites yet: tap a recipe’s star" : "nothing matches that"}
         </p>
       ) : (
         <ul className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3">

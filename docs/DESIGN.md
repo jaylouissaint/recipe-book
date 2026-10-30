@@ -5,7 +5,7 @@ Status: agreed 2026-10-27 and built on the website (R1–R4). A native iPad app 
 ## Decisions (Louis, 2026-10-27)
 - **Light only.** White and cream backgrounds; no dark mode.
 - **Accent: Deglaze green** `#1F4D3D` for buttons, the + button, active tabs and links.
-- **Home tab = the book shelf**: category tabs, Favorites, recently added.
+- **Home = the kitchen** (changed 2026-10-29; it was the book shelf): the page you open before cooking or shopping. The Library is where you browse.
 - **Recipe view = the video's layout, in handwriting on cream**: titles and ingredients in the handwriting font.
 - **Adding recipes on the website:** Save from the web, Add from photos, Enter your own. The website is no longer read-only.
 - **Groceries: one simple list.** Not sorted by aisle or date; it can optionally be grouped by recipe.
@@ -35,7 +35,7 @@ The book-page tokens (ruled lines `#DDD8DC`, label gray `#8C8C8C`, mauve `#9A859
 - Book-page labels on the writing page: Montserrat small caps and Zilla Slab "recipe:", as now.
 
 ## Navigation
-- **Phone and iPad portrait:** bottom tab bar with Home (book shelf), Library, Groceries and Settings, plus a floating green **+** at the bottom right.
+- **Phone and iPad portrait:** bottom tab bar with Home, Library, Groceries and Settings, plus a floating green **+** at the bottom right.
 - **iPad landscape and desktop website:** the same four destinations as a slim left sidebar. The + button stays.
 - **+** opens the **Add sheet** (white, with hairline dividers and line icons):
   1. 🔗 Save a recipe from the web
@@ -43,29 +43,34 @@ The book-page tokens (ruled lines `#DDD8DC`, label gray `#8C8C8C`, mauve `#9A859
   3. ⊕ Enter your own recipe
 
 ## Screens
-**Home (book shelf).** Serif title "Recipe Book"; the four category tabs as large colored book tabs (Mains, Sides, Desserts, More Recipes); then rows for Favorites and Recently added, as horizontal strips of cards.
+**Home.** Serif title "Ramiya’s Recipes", then:
+- **Pick up where you left off:** "Continue cooking" (where Start Cooking was left in this browser, in the last day: "step 2 of 4", opening Start Cooking there at the same serving size), else "Last opened", plus a **Surprise me** button that opens a random recipe.
+- **This week:** today and the next 6 days as a strip of day cards. Each day holds recipes (with how many they should serve) or a plain note ("leftovers"); "+ Add" picks a recipe (search, servings − +) or writes a note, × removes. **Add the week to Groceries** opens the grocery sheet with every planned recipe at its planned servings, one section each, all ticked. Stored in the database (`meal_plan`), so every device sees the same week.
+- **Groceries at a glance:** how many items are left to buy, the first few, and "Open the list".
+- **To finish:** recipes written only on the Pencil page, with "Type the lines" (they can't be scaled, added to Groceries or cooked with Start Cooking until they have typed lines).
 
 **Book view (`/book`, the List | Book toggle on the Library, moved from Home 2026-10-29).** The whole recipe book to flip through like the spiral book:
 - **Pages:** every page is the same size (about 0.78 wide to 1 tall), sized to fit the screen, with whole ruled lines. Fewer, bigger lines on small screens (18–30 lines per page) keep the writing readable.
 - **Long recipes:** a recipe that doesn't fit continues on the next page, which starts "recipe: … (continued)". No page is ever longer than the screen.
 - **Layout:** an open two-page spread with the spiral down the middle on landscape screens (iPad landscape, desktop); one page with the spiral on its left edge on phones and portrait.
-- **What's in it:** the cover (plain raspberry with "Ramiya's Recipes" for now; a custom cover comes later), then contents with page numbers, then recipes grouped by category in tab order.
+- **What's in it:** the cover (the Home Screen icon's wooden spoon and whisk on cream ruled paper, 2026-10-29), then contents with page numbers, then recipes grouped by category in tab order.
 - **Getting around:** turn pages by swiping, with the arrow keys, or with the ‹ › buttons, with a page-turn animation (none with Reduce Motion). The colored category tabs on the outer edge jump to that section; contents entries jump to their recipe.
 - **Links:** each recipe's first page has "open recipe →". The recipe view's menu has "Open in the book" (`/book#slug`).
 
-**Library ("My Recipes").** Serif title, a search pill ("Search your library") and a filter button (categories and tags). Below them, a list of white rounded cards. Each card has:
+**Library ("My Recipes").** Serif title with the **List | Book** switch, a search pill ("Search your library") and a filter button (tags). Below the search, the four colored **category tabs and ★ Favorites** as filters, always showing (they were Home's shelves; `/library?category=mains` or `?favorites=1` opens with one on, and the old `/category/…` pages lead there). Then a list of white rounded cards. Each card has:
 - a photo thumbnail on the left: the recipe photo, else the handwritten page, else the original card, else a cream placeholder with the first letter in handwriting
 - a source line with a small icon (a link icon with the site name, a camera icon for "From a photo", a pencil icon for "Written by hand", or the cookbook name)
 - the title in handwriting
 - "by …" when there is an author
-- a small pot icon with a count at the right: times cooked
+- a small pot icon with a count: times cooked
+- a **star** in the top right corner: tapping it (unlocked devices) adds the recipe to Favorites on Home or takes it off; locked devices see the favorites' stars. Favorite is no longer a tag checkbox (2026-10-29)
 
 Two columns on iPad, three on desktop.
 
 **Recipe view.**
 - **Top bar:** back, share, menu (Edit, View handwritten page / View original card, Delete).
 - **Hero:** the photo in a rounded container, shown whole at its own shape (never cropped), up to about two-thirds of the screen tall.
-- **Title:** large, in handwriting, with a **star**: tapping it (unlocked devices) adds the recipe to Favorites on Home or takes it off. Favorite is no longer a tag checkbox.
+- **Title:** large, in handwriting.
 - **Check this import note:** a muted pill, only on recipes imported from a link or photo until the first edit.
 - **By and from:** "by Author" and "from Source" with underlined links.
 - **Stats:** a row of Servings, Prep and Cook, which also opens the serving scaler.
@@ -73,7 +78,7 @@ Two columns on iPad, three on desktop.
 - **Ingredients:** a sans heading; group names in muted small caps; items in handwriting on plain cream lines with hairline dividers.
 - **Directions:** numbered steps in handwriting, with indented "–" sub-steps.
 - **Notes.**
-- **Bottom buttons:** sticky "Add to Groceries" (outline) and "Start Cooking" (filled green).
+- **Bottom buttons:** sticky "Add to Groceries" (outline) and "Start Cooking" (filled green). A recipe written only on the Pencil page shows "Type the lines" there instead, which opens the writing page on the lines with the handwritten page beside them (with a Paste text box for Live Text).
 - **Wide screens:** ingredients sit in a left column and directions in a right one.
 
 **Writing page ("Enter your own", also Edit).** The book page from the sweet chili chicken photo:

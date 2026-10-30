@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import type { GroceryItem } from "@/lib/groceries";
+import type { Meal } from "@/lib/plan";
 import { FetchError, decodeText, safeFetch } from "@/lib/safeFetch";
 import { type WebRecipe, recipeFromHtml } from "@/lib/schemaRecipe";
 import { FLAG_COOKIE, KEY_COOKIE, WriteError, callSaveRecipe } from "@/lib/write";
@@ -183,6 +184,34 @@ export async function clearGroceries(onlyChecked: boolean): Promise<ActionResult
     const { removed } = await callSaveRecipe<{ removed: number }>({ action: "groceries-clear", onlyChecked });
     revalidatePath("/groceries");
     return { ok: true, removed };
+  } catch (e) {
+    return failure(e);
+  }
+}
+
+// ---- this week's meals (Home)
+
+export async function addMeal(meal: { day: string; recipeId?: string; note?: string; servings?: number }): Promise<ActionResult<{ meal: Meal }>> {
+  try {
+    const { meal: row } = await callSaveRecipe<{ meal: { id: string; day: string; recipe_id: string | null; note: string | null; servings: number | null } }>({
+      action: "plan-add",
+      day: meal.day,
+      recipeId: meal.recipeId ?? null,
+      note: meal.note ?? null,
+      servings: meal.servings ?? null,
+    });
+    revalidatePath("/");
+    return { ok: true, meal: { id: row.id, day: row.day, recipeId: row.recipe_id, note: row.note ?? "", servings: row.servings } };
+  } catch (e) {
+    return failure(e);
+  }
+}
+
+export async function removeMeal(id: string): Promise<ActionResult> {
+  try {
+    await callSaveRecipe({ action: "plan-remove", id });
+    revalidatePath("/");
+    return { ok: true };
   } catch (e) {
     return failure(e);
   }

@@ -10,6 +10,8 @@
 //   { "action": "groceries-add", "items": ["2 lbs chicken"], "recipeId"?: "<uuid>" }
 //   { "action": "grocery-check", "id": "<item uuid>", "checked": true }
 //   { "action": "groceries-clear", "onlyChecked": true }
+//   { "action": "plan-add", "day": "2026-10-30", "recipeId"?: "<uuid>", "note"?: "leftovers", "servings"?: 6 }
+//   { "action": "plan-remove", "id": "<meal uuid>" }
 //
 // WRITE_KEY is set with `supabase secrets set`. SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are
 // provided to Edge Functions by Supabase. Deploy with --no-verify-jwt (there is no login yet;
@@ -30,6 +32,8 @@ const UPLOAD_TYPES: Record<string, string[]> = {
   originals: ["jpg", "jpeg", "png", "heic", "heif", "pdf"],
   handwriting: ["png", "drawing"],
 };
+
+const DAY = /^\d{4}-\d{2}-\d{2}$/;
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -128,6 +132,29 @@ Deno.serve(async (req) => {
       const { data, error } = await supabase.rpc("clear_groceries", { only_checked: body.onlyChecked !== false });
       if (error) return json({ error: error.message }, 400);
       return json({ removed: data });
+    }
+
+    case "plan-add": {
+      if (typeof body.day !== "string" || !DAY.test(body.day)) return json({ error: "day must be YYYY-MM-DD" }, 400);
+      if (body.recipeId != null && !isUuid(body.recipeId)) return json({ error: "recipeId must be a recipe uuid" }, 400);
+      const note = typeof body.note === "string" ? body.note : null;
+      if (body.recipeId == null && !note?.trim()) return json({ error: "a meal needs a recipe or a note" }, 400);
+      const servings = Number.isInteger(body.servings) ? body.servings : null;
+      const { data, error } = await supabase.rpc("plan_add", {
+        plan_day: body.day,
+        rid: body.recipeId ?? null,
+        plan_note: note,
+        plan_servings: servings,
+      });
+      if (error) return json({ error: error.message }, 400);
+      return json({ meal: data });
+    }
+
+    case "plan-remove": {
+      if (!isUuid(body.id)) return json({ error: "id must be a meal uuid" }, 400);
+      const { error } = await supabase.rpc("plan_remove", { item_id: body.id });
+      if (error) return json({ error: error.message }, 400);
+      return json({ ok: true });
     }
 
     default:

@@ -5,10 +5,10 @@ import { publicFileUrl } from "@/lib/storage";
 import type { Recipe } from "@/lib/types";
 import CoverPhoto from "./CoverPhoto";
 import EditOnly from "./EditOnly";
-import FavoriteStar from "./FavoriteStar";
 import { BackIcon, MenuIcon } from "./Icons";
 import KitchenButtons, { MarkCooked } from "./kitchen/KitchenButtons";
 import { ScaledIngredients, ScaleProvider, ServingsStat } from "./kitchen/Scale";
+import RememberRecipe from "./RememberRecipe";
 import ShareButton from "./ShareButton";
 import SourceLine from "./SourceLine";
 
@@ -84,7 +84,6 @@ export default function RecipeView({ recipe }: { recipe: Recipe }) {
 
       <h1 className="mt-6 font-hand text-4xl leading-tight text-ink md:text-5xl">
         {recipe.title}
-        <FavoriteStar recipe={recipe} />
       </h1>
 
       {recipe.imported && (
@@ -103,7 +102,7 @@ export default function RecipeView({ recipe }: { recipe: Recipe }) {
           <SourceLine recipe={recipe} className="!text-[15px]" />
         )}
         {category && (
-          <Link href={`/category/${category.slug}`} className="text-[15px] text-muted underline underline-offset-4">
+          <Link href={`/library?category=${category.slug}`} className="text-[15px] text-muted underline underline-offset-4">
             in {category.name}
           </Link>
         )}
@@ -191,8 +190,29 @@ export default function RecipeView({ recipe }: { recipe: Recipe }) {
         </section>
       )}
 
-      {!handwrittenOnly && <KitchenButtons recipe={recipe} />}
+      {handwrittenOnly ? <TypeTheLines slug={recipe.slug} /> : <KitchenButtons recipe={recipe} />}
+      <RememberRecipe slug={recipe.slug} title={recipe.title} />
     </article>
     </ScaleProvider>
+  );
+}
+
+// In place of Add to Groceries and Start Cooking on a recipe written only on the Pencil page:
+// those need typed lines, so offer to type them (beside the handwritten page).
+function TypeTheLines({ slug }: { slug: string }) {
+  return (
+    <div className="no-print fixed inset-x-0 bottom-0 z-10 border-t border-divider bg-surface/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur lg:left-60">
+      <div className="mx-auto flex max-w-xl flex-wrap items-center gap-x-4 gap-y-2">
+        <p className="min-w-0 flex-1 text-[14px] text-muted">Type the lines to scale it, add it to Groceries and use Start Cooking.</p>
+        <EditOnly>
+          <Link
+            href={`/recipe/${slug}/edit?lines=1`}
+            className="flex h-[48px] items-center justify-center rounded-full bg-accent px-6 text-[16px] font-semibold text-white"
+          >
+            Type the lines
+          </Link>
+        </EditOnly>
+      </div>
+    </div>
   );
 }
