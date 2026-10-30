@@ -9,8 +9,10 @@ import type { Recipe } from "@/lib/types";
 
 // Home is the page you open before cooking or shopping (docs/DESIGN.md "Home"): pick up where you
 // left off, this week's meals, the grocery list at a glance, and recipes still to finish.
-// Browsing is the Library's job. Always fresh, since the plan and the list change often.
-export const dynamic = "force-dynamic";
+// Browsing is the Library's job. A cached page like the rest, so switching to it is instant: every
+// change to recipes, the list or the week refreshes it, and open pages hear about changes through
+// live updates.
+export const revalidate = 60;
 
 // Written on the page with the Pencil, but with no typed lines yet.
 const handwrittenOnly = (r: Recipe) =>

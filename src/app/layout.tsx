@@ -56,15 +56,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* The menu's place (top capsule or side), set before drawing so the page doesn't jump. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(localStorage.getItem("rb-nav")==="side")document.documentElement.dataset.nav="side"}catch(e){}`,
+          }}
+        />
+      </head>
       <body
         className={`${hand.variable} ${figtree.variable} ${instrument.variable} ${montserrat.variable} ${zilla.variable} antialiased`}
       >
         <Offline />
         <LiveUpdates />
-        <div className="lg:flex">
+        <div className="navside:md:flex">
           <AppNav />
-          <div className="min-w-0 flex-1 pb-24 lg:pb-0">{children}</div>
+          {/* Room for the bottom tab bar on phones, and for the top capsule from iPad up */}
+          <div className="min-w-0 flex-1 pb-24 md:pt-14 md:pb-0 navside:md:pt-0">{children}</div>
         </div>
       </body>
     </html>

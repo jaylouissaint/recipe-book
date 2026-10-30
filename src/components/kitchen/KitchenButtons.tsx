@@ -17,7 +17,7 @@ export default function KitchenButtons({ recipe }: { recipe: Recipe }) {
   const [open, setOpen] = useState(0); // remounts the sheet with fresh choices each time
 
   return (
-    <div className="no-print fixed inset-x-0 bottom-0 z-10 border-t border-divider bg-surface/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur lg:left-60">
+    <div className="no-print fixed inset-x-0 bottom-0 z-10 border-t border-divider bg-surface/95 px-4 navside:md:left-60 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur">
       <div className="mx-auto flex max-w-xl gap-3">
         <button
           type="button"

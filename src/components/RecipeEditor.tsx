@@ -775,7 +775,7 @@ export default function RecipeEditor({
           </p>
         )}
 
-        <div className="no-print fixed inset-x-0 bottom-0 z-20 border-t border-divider bg-surface/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] font-sans backdrop-blur lg:left-60">
+        <div className="no-print fixed inset-x-0 bottom-0 z-20 border-t border-divider bg-surface/95 px-4 navside:md:left-60 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] font-sans backdrop-blur">
           <div className="mx-auto flex max-w-xl items-center gap-3">
             {recipe && (
               <button type="button" onClick={remove} disabled={saving} className="px-2 text-[15px] text-cover disabled:opacity-50">
@@ -890,7 +890,7 @@ function OriginalPanel({ file, onFill }: { file: File; onFill: (text: string) =>
   }, [file]);
   const pdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name);
   return (
-    <aside className="font-sans lg:sticky lg:top-4 lg:max-h-[calc(100dvh-2rem)] lg:self-start lg:overflow-y-auto">
+    <aside className="font-sans lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] navside:lg:top-4 navside:lg:max-h-[calc(100dvh-2rem)] lg:self-start lg:overflow-y-auto">
       <div className="overflow-hidden rounded-2xl bg-surface shadow-card">
         {url &&
           (pdf ? (
@@ -928,7 +928,7 @@ function OriginalPanel({ file, onFill }: { file: File; onFill: (text: string) =>
 // The handwritten page beside the lines, to type them from (or copy them with Live Text).
 function HandwrittenPanel({ src, onFill }: { src: string; onFill: (text: string) => string }) {
   return (
-    <aside className="font-sans lg:sticky lg:top-4 lg:max-h-[calc(100dvh-2rem)] lg:self-start lg:overflow-y-auto">
+    <aside className="font-sans lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] navside:lg:top-4 navside:lg:max-h-[calc(100dvh-2rem)] lg:self-start lg:overflow-y-auto">
       <div className="overflow-hidden rounded-2xl bg-surface shadow-card">
         {/* eslint-disable-next-line @next/next/no-img-element -- a Supabase public URL, shown as is */}
         <img src={src} alt="The handwritten page" className="max-h-[40vh] w-full object-contain lg:max-h-[60dvh]" />

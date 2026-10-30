@@ -149,6 +149,7 @@ The same "write it" page with the keyboard, on any device.
 - Specs in `Specification Documentation/` (v2.0, 2026-10-29, website only) are regenerated with `python3 scripts/specs/build_specs.py`.
 
 ## Docket (queued, not scheduled)
+- **A second book, "Who's using this"** (2026-10-30): a Ramiya / Jay switcher in Settings (a `book` column, per-book addresses, same write key), or login, which replaces the write key. Details in HANDOFF.md "Docket".
 - **Custom book cover** (optional): the cover is the Home Screen icon's spoon and whisk; swap for an uploaded image or design if wanted.
 - **Write key → your own passphrase** (queued 2026-10-28): rerun `npm run setup:supabase` and paste a passphrase of 4–5 random words instead of pressing Enter; then unlock each browser again. No code change. Bigger alternatives if ever wanted: a separate simple website password with the long key kept on the server (new code plus a rate limit), or login (below), which replaces the key.
 - **Login** (deferred 2026-10-20): Supabase Auth, `owner_id` on recipes, owner-only RLS, optional `shared` flag for family. Replaces the write key.

@@ -4,8 +4,9 @@ import { listGroceries } from "@/lib/groceries";
 
 export const metadata: Metadata = { title: "Groceries" };
 
-// Always the current list: it changes at the store, from any device.
-export const dynamic = "force-dynamic";
+// A cached page like the rest, so switching to it is instant: every change to the list refreshes
+// it (refreshGroceries in actions.ts), and open pages hear about changes through live updates.
+export const revalidate = 60;
 
 export default async function Groceries() {
   return (

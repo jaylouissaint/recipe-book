@@ -149,7 +149,7 @@ export default function PencilPage({
 
   return (
     <div>
-      <div className="sticky top-0 z-10 -mx-1 mb-3 flex flex-wrap items-center gap-2 bg-paper/95 px-1 py-2 font-sans backdrop-blur">
+      <div className="sticky top-0 z-10 -mx-1 mb-3 md:top-16 navside:md:top-0 flex flex-wrap items-center gap-2 bg-paper/95 px-1 py-2 font-sans backdrop-blur">
         <div className="flex rounded-full bg-field p-1" role="radiogroup" aria-label="Tool">
           {(["pen", "eraser"] as const).map((t) => (
             <button

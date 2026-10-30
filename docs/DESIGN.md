@@ -35,8 +35,8 @@ The book-page tokens (ruled lines `#DDD8DC`, label gray `#8C8C8C`, mauve `#9A859
 - Book-page labels on the writing page: Montserrat small caps and Zilla Slab "recipe:", as now.
 
 ## Navigation
-- **Phone and iPad portrait:** bottom tab bar with Home, Library, Groceries and Settings, plus a floating green **+** at the bottom right.
-- **iPad landscape and desktop website:** the same four destinations as a slim left sidebar. The + button stays.
+- **iPad and wider (changed 2026-10-29):** a floating capsule at the top centre, like iPadOS's own tab bar: Home, Library, Groceries, Settings, with the current tab as a white pill. A sidebar button at its left moves the menu to a **sidebar** on the left (with a button to move it back); the choice is remembered per browser. The tapped tab lights up at once.
+- **Phones:** a bottom tab bar with Home, Library, Groceries and Settings (hidden on recipe and writing pages, which have their own bottom buttons), plus a floating green **+** at the bottom right.
 - **+** opens the **Add sheet** (white, with hairline dividers and line icons):
   1. 🔗 Save a recipe from the web
   2. 📷 Add from recipe photos

@@ -69,10 +69,15 @@ FUNCTIONAL = [
      "browser shows no + button, Edit, stars to tap or + Add on days.",
      CHECKED + " for the save function; website unlock deployed 2026-10-28 and in use"),
     ("req", "FR-NAV-001", "Navigation",
-     "Home, Library, Groceries and Settings: a bottom tab bar on phones and iPad portrait, a left sidebar on "
-     "iPad landscape and desktops. A floating green + button (unlocked only) opens Add a recipe.",
-     "Each tab opens its page and is highlighted; the book view and recipe pages highlight Library.",
-     LIVE),
+     "Home, Library, Groceries and Settings. On iPad and wider: a floating capsule at the top centre, like "
+     "iPadOS's tab bar, with the current tab as a white pill and a sidebar button that moves the menu to a left "
+     "sidebar (and back); remembered per browser and applied before the page is drawn. On phones: a bottom tab "
+     "bar. The tapped tab lights up at once and every tab opens instantly (cached pages, refreshed on every "
+     "change). A "
+     "floating green + button (unlocked only) opens Add a recipe.",
+     "Each tab opens its page and is highlighted; the book view and recipe pages highlight Library; the menu's "
+     "place survives a reload; a tab lights up within 100 ms of a tap.",
+     BUILT),
     ("req", "FR-NAV-002", "Recipe web addresses",
      "Each recipe has a readable address made from its title, such as /recipe/sweet-chili-chicken. Editing the "
      "title keeps the address; a second recipe with the same title gets a short code added. Old category "
@@ -123,7 +128,8 @@ FUNCTIONAL = [
 
     ("h1", "4. Home"),
     ("p", "Home is the page opened before cooking or shopping (changed 2026-10-29; it was a book shelf). "
-          "Browsing is the Library's job (Section 5). Home always loads fresh."),
+          "Browsing is the Library's job (Section 5). Like every page it opens instantly from the site's cache, "
+          "which every change refreshes at once."),
     ("req", "FR-HOME-001", "Pick up where you left off",
      "If Start Cooking was left part way in the last day on this device, Home shows “Continue cooking”, the "
      "recipe and “step 2 of 4”; tapping it reopens Start Cooking at that step and serving size. Otherwise it "
@@ -394,8 +400,9 @@ FUNCTIONAL = [
           "finish); category and Favorites filters on the Library; Type the lines for handwritten-only recipes; "
           "book cover as the icon. Built, not yet deployed: paste rules for handwritten cards, offline, live "
           "updates (migration 003), the full-screen Home Screen app. Safari on iPad made the primary browser."),
-    ("p", "Queued (not scheduled): sign-in (FR-AUTH-001, Supabase Auth replacing the write key) and family "
-          "sharing (FR-AUTH-002); the owner's own handwriting font; the write key as a passphrase; Next.js 16."),
+    ("p", "Queued (not scheduled): a second book for the owner's partner (“Who's using this”: Ramiya / Jay in "
+          "Settings, each book with its own recipes, groceries and week; or via sign-in); sign-in (FR-AUTH-001, "
+          "Supabase Auth replacing the write key) and family sharing (FR-AUTH-002); the owner's own handwriting font; the write key as a passphrase; Next.js 16."),
 
     ("h1", "Appendix A. Worked examples"),
     ("table", [2304, 6912], [
@@ -484,9 +491,11 @@ TECHNICAL = [
     ("h1", "2. System Architecture"),
     ("table", [1872, 7488], [
         ["Layer", "Technology / Responsibility"],
-        ["Pages", "Next.js App Router with React Server Components. Library, category, recipe and book pages "
-         "are statically generated and regenerated at most every 60 seconds, and at once after any save "
-         "(revalidatePath). Home, Groceries and the editor are rendered on every request."],
+        ["Pages", "Next.js App Router with React Server Components. Home, Library, Groceries, recipe and book "
+         "pages are statically generated, so the router loads them ahead and tab switches are instant; they "
+         "are regenerated at most every 60 seconds and at once after any change (revalidatePath: recipe saves "
+         "refresh every page, grocery changes Groceries and Home, meals Home). The editor is rendered on every "
+         "request."],
         ["Reads", "src/lib/supabase.ts: read-only supabase-js client (public key). src/lib/recipes.ts "
          "(listRecipes, getRecipe), groceries.ts (listGroceries), plan.ts (listMeals)."],
         ["Writes", "Server actions in src/app/actions.ts read the httpOnly write-key cookie and call the "

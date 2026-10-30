@@ -35,7 +35,7 @@ export default function RecipeView({ recipe }: { recipe: Recipe }) {
   return (
     <ScaleProvider base={recipe.servings}>
     <article className="mx-auto max-w-5xl px-4 pb-32 md:px-8">
-      <header className="no-print sticky top-0 z-10 -mx-4 flex items-center justify-between bg-page/90 px-2 py-2 backdrop-blur md:-mx-8 md:px-6">
+      <header className="no-print sticky top-0 z-10 -mx-4 flex items-center justify-between bg-page px-2 py-2 md:-mx-8 md:px-6 md:py-3.5 navside:md:py-2">
         <Link href="/library" aria-label="Back to library" className="rounded-full p-2 hover:bg-field">
           <BackIcon />
         </Link>
@@ -201,7 +201,7 @@ export default function RecipeView({ recipe }: { recipe: Recipe }) {
 // those need typed lines, so offer to type them (beside the handwritten page).
 function TypeTheLines({ slug }: { slug: string }) {
   return (
-    <div className="no-print fixed inset-x-0 bottom-0 z-10 border-t border-divider bg-surface/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur lg:left-60">
+    <div className="no-print fixed inset-x-0 bottom-0 z-10 border-t border-divider bg-surface/95 px-4 navside:md:left-60 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur">
       <div className="mx-auto flex max-w-xl flex-wrap items-center gap-x-4 gap-y-2">
         <p className="min-w-0 flex-1 text-[14px] text-muted">Type the lines to scale it, add it to Groceries and use Start Cooking.</p>
         <EditOnly>

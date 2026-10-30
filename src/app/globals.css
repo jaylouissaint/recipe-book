@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* The menu at the side instead of the top capsule (iPad and wider), chosen in AppNav and set on
+   <html data-nav="side"> before the page is drawn. Use as navside:md:… */
+@custom-variant navside (&:where([data-nav="side"] *));
+
 /* Light only (docs/DESIGN.md). Interface tokens first, then the book-page tokens
    used by the writing page, the handwritten view and the Home shelf tabs. */
 :root {

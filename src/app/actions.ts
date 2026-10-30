@@ -151,6 +151,13 @@ export async function recordCooked(id: string): Promise<ActionResult<{ timesCook
 
 type GroceryRow = { id: string; text: string; checked: boolean };
 
+// The list shows on Groceries and on Home's grocery card; both are cached pages, refreshed on
+// every change (other open devices hear about it through live updates).
+function refreshGroceries() {
+  revalidatePath("/groceries");
+  revalidatePath("/");
+}
+
 // Adds lines to the end of the list; `recipeId` links them to the recipe they came from.
 export async function addGroceries(
   items: string[],
@@ -162,7 +169,7 @@ export async function addGroceries(
       items,
       recipeId: recipeId ?? null,
     });
-    revalidatePath("/groceries");
+    refreshGroceries();
     return { ok: true, items: added.map(({ id, text, checked }) => ({ id, text, checked })) };
   } catch (e) {
     return failure(e);
@@ -172,6 +179,7 @@ export async function addGroceries(
 export async function checkGrocery(id: string, checked: boolean): Promise<ActionResult> {
   try {
     await callSaveRecipe({ action: "grocery-check", id, checked });
+    refreshGroceries();
     return { ok: true };
   } catch (e) {
     return failure(e);
@@ -182,7 +190,7 @@ export async function checkGrocery(id: string, checked: boolean): Promise<Action
 export async function clearGroceries(onlyChecked: boolean): Promise<ActionResult<{ removed: number }>> {
   try {
     const { removed } = await callSaveRecipe<{ removed: number }>({ action: "groceries-clear", onlyChecked });
-    revalidatePath("/groceries");
+    refreshGroceries();
     return { ok: true, removed };
   } catch (e) {
     return failure(e);

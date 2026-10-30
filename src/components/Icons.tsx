@@ -119,3 +119,11 @@ export const PlusIcon = (p: Props) => (
     <path d="M12 5v14M5 12h14" />
   </Icon>
 );
+
+// A window with a panel down its left side: "menu at the side".
+export const SidebarIcon = (p: Props) => (
+  <Icon {...p}>
+    <rect x="3.5" y="5" width="17" height="14" rx="2.5" />
+    <path d="M9 5v14" />
+  </Icon>
+);
