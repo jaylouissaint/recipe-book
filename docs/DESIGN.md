@@ -5,7 +5,7 @@ Status: agreed 2026-10-27 and built on the website (R1–R4). A native iPad app 
 ## Decisions (Louis, 2026-10-27)
 - **Light only.** White and cream backgrounds; no dark mode.
 - **Accent: Deglaze green** `#1F4D3D` for buttons, the + button, active tabs and links.
-- **Home tab = the book shelf**: category tabs, Family Favorites, recently added.
+- **Home tab = the book shelf**: category tabs, Favorites, recently added.
 - **Recipe view = the video's layout, in handwriting on cream**: titles and ingredients in the handwriting font.
 - **Adding recipes on the website:** Save from the web, Add from photos, Enter your own. The website is no longer read-only.
 - **Groceries: one simple list.** Not sorted by aisle or date; it can optionally be grouped by recipe.
@@ -43,9 +43,9 @@ The book-page tokens (ruled lines `#DDD8DC`, label gray `#8C8C8C`, mauve `#9A859
   3. ⊕ Enter your own recipe
 
 ## Screens
-**Home (book shelf).** Serif title "Recipe Book"; the four category tabs as large colored book tabs (Mains, Sides, Desserts, More Recipes); then rows for Family Favorites and Recently added, as horizontal strips of cards.
+**Home (book shelf).** Serif title "Recipe Book"; the four category tabs as large colored book tabs (Mains, Sides, Desserts, More Recipes); then rows for Favorites and Recently added, as horizontal strips of cards.
 
-**Book view (`/book`, the Shelf | Book toggle on Home).** The whole recipe book to flip through like the spiral book:
+**Book view (`/book`, the List | Book toggle on the Library, moved from Home 2026-10-29).** The whole recipe book to flip through like the spiral book:
 - **Pages:** every page is the same size (about 0.78 wide to 1 tall), sized to fit the screen, with whole ruled lines. Fewer, bigger lines on small screens (18–30 lines per page) keep the writing readable.
 - **Long recipes:** a recipe that doesn't fit continues on the next page, which starts "recipe: … (continued)". No page is ever longer than the screen.
 - **Layout:** an open two-page spread with the spiral down the middle on landscape screens (iPad landscape, desktop); one page with the spiral on its left edge on phones and portrait.
@@ -64,8 +64,8 @@ Two columns on iPad, three on desktop.
 
 **Recipe view.**
 - **Top bar:** back, share, menu (Edit, View handwritten page / View original card, Delete).
-- **Hero:** the photo in a rounded container; it becomes a carousel when there's also an original card or handwritten page.
-- **Title:** large, in handwriting.
+- **Hero:** the photo in a rounded container, shown whole at its own shape (never cropped), up to about two-thirds of the screen tall.
+- **Title:** large, in handwriting, with a **star**: tapping it (unlocked devices) adds the recipe to Favorites on Home or takes it off. Favorite is no longer a tag checkbox.
 - **Check this import note:** a muted pill, only on recipes imported from a link or photo until the first edit.
 - **By and from:** "by Author" and "from Source" with underlined links.
 - **Stats:** a row of Servings, Prep and Cook, which also opens the serving scaler.
@@ -77,12 +77,12 @@ Two columns on iPad, three on desktop.
 - **Wide screens:** ingredients sit in a left column and directions in a right one.
 
 **Writing page ("Enter your own", also Edit).** The book page from the sweet chili chicken photo:
-- a cream ruled page with the "recipe:" title line, the mauve stat box and the circle tag checkboxes
+- a cream ruled page with "Add a photo" at the top right, the "recipe:" title line, the mauve stat box and the circle tag checkboxes (Quick & Easy, Slow Cooker, One Pot/Pan, Air Fryer, Veg; the rest were removed 2026-10-29)
 - INGREDIENTS in two columns and DIRECTIONS with ▷ and – lines
 - one field per ruled line, in handwriting and plum ink
 - spiral and stickers on wide screens
 
-Scribble works on the iPad in Safari: write with the Apple Pencil on any line and it becomes text. **Page mode** ("Write on the lines" | "Write on the page"): the fields at the top stay (title, stats, tags, category, photo), and the ingredients, directions and notes become one ruled page to write on with the Apple Pencil (pen, eraser, undo, clear, "Draw with finger"; fingers scroll). The writing is kept as the handwritten page and isn't read into text; a recipe with only a handwritten page shows that page in the recipe view and the book, and it's the thumbnail when there's no photo. A photo button adds the hero photo. The bottom bar has Cancel and Save.
+Scribble works on the iPad in Safari: write with the Apple Pencil on any line and it becomes text. **Page mode** ("Write on the lines" | "Write on the page"): the fields at the top stay (title, stats, tags, category, photo), and the ingredients, directions and notes become ruled pages to write on with the Apple Pencil (pen, eraser, undo, clear, "Draw with finger", "+ Add a page"; fingers scroll). The pages are saved one under the other as one picture. The writing is kept as the handwritten page and isn't read into text; a recipe with only a handwritten page shows that page in the recipe view and the book, and it's the thumbnail when there's no photo. The bottom bar has Cancel and Save.
 
 **Save from the web.** Paste a link, and the site reads the page's published recipe data: title, photo, author, site, servings, times, ingredients and steps. The result opens in the writing page for review. If the page has no recipe data, the writing page opens with just the link and title filled in, plus the Paste text box. Some sites refuse to be read by other sites; then the writing page opens with the link and the Paste text box, to copy the recipe in from the page. Only public web addresses work, and the photo is copied in when the recipe is saved.
 

@@ -1,4 +1,4 @@
-import { TAGS } from "./book.ts"; // extensions so node --test can run this file
+import { BOOK_TAG_LABELS } from "./book.ts"; // extensions so node --test can run this file
 import { type DirectionLine, linesToStepGroups, parseIngredientLine } from "./parse.ts";
 import type { IngredientGroup, StepGroup } from "./types";
 
@@ -75,7 +75,7 @@ function readStats(line: string, out: PastedRecipe): boolean {
 // The book page's tag checkboxes ("o QUICK & EASY o SLOW COOKER"): skipped.
 function isTagLine(line: string) {
   const upper = line.toUpperCase();
-  return TAGS.some((t) => upper.includes(t.label.toUpperCase()));
+  return BOOK_TAG_LABELS.some((label) => upper.includes(label.toUpperCase()));
 }
 
 function groupName(line: string, prev: string | undefined, next: string | undefined): string | null {

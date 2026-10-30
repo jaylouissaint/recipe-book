@@ -5,6 +5,7 @@ import { publicFileUrl } from "@/lib/storage";
 import type { Recipe } from "@/lib/types";
 import CoverPhoto from "./CoverPhoto";
 import EditOnly from "./EditOnly";
+import FavoriteStar from "./FavoriteStar";
 import { BackIcon, MenuIcon } from "./Icons";
 import KitchenButtons, { MarkCooked } from "./kitchen/KitchenButtons";
 import { ScaledIngredients, ScaleProvider, ServingsStat } from "./kitchen/Scale";
@@ -26,7 +27,6 @@ export default function RecipeView({ recipe }: { recipe: Recipe }) {
   const handwrittenOnly =
     Boolean(recipe.handwritingPath?.endsWith(".png")) && !recipe.ingredientGroups.length && !recipe.stepGroups.length;
   const tagLabels = TAGS.filter((t) => recipe.tags.includes(t.id)).map((t) => t.label);
-  const favorite = recipe.tags.includes("family-favorite");
   const stats = [
     recipe.prepMin != null && { label: "Prep", value: `${recipe.prepMin} min` },
     recipe.cookMin != null && { label: "Cook", value: `${recipe.cookMin} min` },
@@ -80,15 +80,11 @@ export default function RecipeView({ recipe }: { recipe: Recipe }) {
         </div>
       </header>
 
-      <CoverPhoto recipe={recipe} className="mt-2 aspect-[16/9] max-h-72 w-full md:aspect-auto md:h-64" />
+      <CoverPhoto recipe={recipe} handwriting={!handwrittenOnly} className="mt-2 aspect-[16/9] max-h-72 w-full md:aspect-auto md:h-64" />
 
       <h1 className="mt-6 font-hand text-4xl leading-tight text-ink md:text-5xl">
         {recipe.title}
-        {favorite && (
-          <span className="ml-2 font-sans font-bold text-teal" title="Family favorite">
-            *
-          </span>
-        )}
+        <FavoriteStar recipe={recipe} />
       </h1>
 
       {recipe.imported && (

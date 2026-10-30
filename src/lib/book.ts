@@ -1,23 +1,27 @@
 // The fixed parts of a recipe page: tag checkboxes and the colored side tabs.
 
+// The tag checkboxes (trimmed 2026-10-29). Recipes may still carry ids of removed tags; they're
+// kept in the database but not shown.
 export const TAGS = [
   { id: "quick-easy", label: "Quick & Easy" },
   { id: "slow-cooker", label: "Slow Cooker" },
   { id: "one-pot", label: "One Pot/Pan" },
-  { id: "kid-chef", label: "Kid Chef Friendly" },
-  { id: "everyday", label: "Everyday" },
-  { id: "make-ahead", label: "Make Ahead" },
-  { id: "pressure-cooker", label: "Pressure Cooker" },
   { id: "air-fryer", label: "Air Fryer" },
-  { id: "family-favorite", label: "Family Favorite" },
-  { id: "special-occasion", label: "Special Occasion" },
   { id: "veg", label: "Veg" },
-  { id: "vegan", label: "Vegan" },
-  { id: "gluten-free", label: "Gluten Free" },
-  { id: "dairy-free", label: "Dairy Free" },
-  { id: "nut-free", label: "Nut Free" },
-  { id: "kosher", label: "Kosher" },
 ] as const;
+
+// Favorites: the star on the recipe view (stored as a tag, so no database change).
+export const FAVORITE = "family-favorite";
+
+export function isFavorite(recipe: { tags: string[] }) {
+  return recipe.tags.includes(FAVORITE);
+}
+
+// Every checkbox printed on the paper book's pages, so pasted Live Text of a page can skip them.
+export const BOOK_TAG_LABELS = [
+  "Quick & Easy", "Slow Cooker", "One Pot/Pan", "Kid Chef Friendly", "Everyday", "Make Ahead", "Pressure Cooker",
+  "Air Fryer", "Family Favorite", "Special Occasion", "Veg", "Vegan", "Gluten Free", "Dairy Free", "Nut Free", "Kosher",
+];
 
 // Full class names live here so Tailwind can see them.
 export const CATEGORIES = [

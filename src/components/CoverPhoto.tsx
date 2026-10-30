@@ -7,11 +7,20 @@ import type { Recipe } from "@/lib/types";
 import { recipePayload, uploadPhoto } from "@/lib/uploadPhoto";
 import { useUnlocked } from "./EditOnly";
 import { CameraIcon } from "./Icons";
-import Thumb from "./Thumb";
+import Thumb, { pictureUrl } from "./Thumb";
 
-// The recipe's cover at the top of the recipe view. On unlocked devices a button adds or
-// changes the cover photo in place, without opening the writing page.
-export default function CoverPhoto({ recipe, className = "" }: { recipe: Recipe; className?: string }) {
+// The recipe's cover at the top of the recipe view, shown whole (never cropped). On unlocked
+// devices a button adds or changes the cover photo in place, without opening the writing page.
+// `className` sizes the placeholder shown when there's no picture.
+export default function CoverPhoto({
+  recipe,
+  className = "",
+  handwriting = true,
+}: {
+  recipe: Recipe;
+  className?: string;
+  handwriting?: boolean; // false when the handwritten page is already the recipe's body
+}) {
   const unlocked = useUnlocked();
   const router = useRouter();
   const [preview, setPreview] = useState<string | null>(null);
@@ -37,11 +46,12 @@ export default function CoverPhoto({ recipe, className = "" }: { recipe: Recipe;
     });
   }
 
+  const picture = preview ?? pictureUrl(recipe, { handwriting });
   return (
-    <div className={`relative ${className}`}>
-      {preview ? (
-        // eslint-disable-next-line @next/next/no-img-element -- local preview while uploading
-        <img src={preview} alt="" className="size-full rounded-2xl object-cover" />
+    <div className={`relative ${picture ? "mx-auto mt-2 w-fit max-w-full" : className}`}>
+      {picture ? (
+        // eslint-disable-next-line @next/next/no-img-element -- Supabase public URLs and local previews, shown as is
+        <img src={picture} alt="" className="block h-auto max-h-[min(65vh,34rem)] w-auto max-w-full rounded-2xl bg-field" />
       ) : (
         <Thumb recipe={recipe} className="size-full" />
       )}

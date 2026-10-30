@@ -127,9 +127,13 @@ function readNumber(label: string, value: string): number | null {
 
 const LINE = "h-12 w-full border-b border-rule bg-transparent font-hand text-xl text-ink outline-none placeholder:text-ink/30 focus:border-ink/40";
 
-// Focus a line by its data-line id once React has rendered it.
+// Focus a line by its data-line id. Right away when it's there, because iPad Safari only keeps the
+// keyboard up for focus moved during the key press; otherwise once React has rendered it.
 function focusLine(form: HTMLFormElement | null, id: string) {
-  requestAnimationFrame(() => form?.querySelector<HTMLInputElement>(`[data-line="${id}"]`)?.focus());
+  const find = () => form?.querySelector<HTMLInputElement>(`[data-line="${id}"]`);
+  const line = find();
+  if (line) line.focus();
+  else requestAnimationFrame(() => find()?.focus());
 }
 
 export default function RecipeEditor({ recipe, start }: { recipe: Recipe | null; start?: EditorStart }) {
@@ -481,6 +485,31 @@ export default function RecipeEditor({ recipe, start }: { recipe: Recipe | null;
           </div>
         </fieldset>
 
+        {/* Photo: top right of the page */}
+        <div className="mb-3 flex items-center justify-end gap-3">
+          {photoUrl && (
+            <button
+              type="button"
+              onClick={() => {
+                setPhoto(null);
+                update({ photoPath: "", remotePhoto: "" });
+              }}
+              className="font-sans text-[14px] text-muted underline underline-offset-4"
+            >
+              Remove
+            </button>
+          )}
+          {photoUrl && (
+            // eslint-disable-next-line @next/next/no-img-element -- local previews and Supabase URLs, shown as is
+            <img src={photoUrl} alt="" referrerPolicy="no-referrer" className="size-14 rounded-2xl object-cover shadow-card" />
+          )}
+          <label className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-surface px-4 py-2 font-sans text-[14px] font-semibold text-accent shadow-card has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent">
+            <CameraIcon className="size-5" />
+            {photoUrl ? "Change photo" : "Add a photo"}
+            <input type="file" accept="image/*" onChange={choosePhoto} className="sr-only" />
+          </label>
+        </div>
+
         <header className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <label className="flex flex-1 items-end gap-2">
             <span className="pb-2 font-slab text-xl font-light text-label">recipe:</span>
@@ -564,31 +593,6 @@ export default function RecipeEditor({ recipe, start }: { recipe: Recipe | null;
             })}
           </div>
         </fieldset>
-
-        {/* Photo */}
-        <div className="mt-4 flex items-center gap-4">
-          {photoUrl && (
-            // eslint-disable-next-line @next/next/no-img-element -- local previews and Supabase URLs, shown as is
-            <img src={photoUrl} alt="" referrerPolicy="no-referrer" className="size-20 rounded-2xl object-cover shadow-card" />
-          )}
-          <label className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-surface px-4 py-2 font-sans text-[14px] font-semibold text-accent shadow-card has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent">
-            <CameraIcon className="size-5" />
-            {photoUrl ? "Change photo" : "Add a photo"}
-            <input type="file" accept="image/*" onChange={choosePhoto} className="sr-only" />
-          </label>
-          {photoUrl && (
-            <button
-              type="button"
-              onClick={() => {
-                setPhoto(null);
-                update({ photoPath: "", remotePhoto: "" });
-              }}
-              className="font-sans text-[14px] text-muted underline underline-offset-4"
-            >
-              Remove
-            </button>
-          )}
-        </div>
 
         {mode === "page" ? (
           <section className="mt-6" aria-label="Handwritten page">

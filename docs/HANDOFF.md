@@ -105,6 +105,16 @@ Run each migration only once. A second run stops with an error like "column auth
 
 - **iPad app dropped (2026-10-29, Louis):** the app (Phases 1–3 and the flip-through book, built in the Simulator) was removed from the repo; the website does everything on the iPad. Code: `git show bff8a2e:ios/`. Louis undoes the Xcode/SideStore setup on his devices.
 
+- **Website tweaks (2026-10-29, built, not yet deployed):**
+  - **Home Screen:** whisk-and-wooden-spoon icon (`src/app/icon.svg`, `src/app/apple-icon.png`, `public/icon-192.png`/`icon-512.png`), `src/app/manifest.ts`, and `appleWebApp.title` "Ramiya’s Recipes" in `layout.tsx`, so the iPad no longer guesses the name from the page title. Remove the old shortcut and add it again to pick these up.
+  - **List | Book** toggle moved from Home to the Library (`ViewToggle`); `/book` is titled "My Recipes" and lights up the Library tab.
+  - **Cover photo** shown whole (`CoverPhoto`, `pictureUrl()` in `Thumb.tsx`), not cropped to a fixed box.
+  - **Tags** trimmed to Quick & Easy, Slow Cooker, One Pot/Pan, Air Fryer, Veg (`TAGS` in `src/lib/book.ts`; removed ids stay in the database, unseen). The paste parser still skips all the book's printed labels (`BOOK_TAG_LABELS`).
+  - **Favorites:** a star by the title on the recipe view (`FavoriteStar.tsx`, saves the whole recipe with the `family-favorite` tag toggled; no database change). Home's row is now "Favorites".
+  - **Writing page:** "Add a photo" moved to the page's top right; page mode has "+ Add a page" (each page its own canvas; saved as one tall PNG, scaled down past 16 megapixels for Safari).
+  - **Safari first (Louis, 2026-10-29):** the iPad's Safari is the target. Checks now run in **WebKit** (Playwright 1.55, WebKit 26, iPad Pro 11" profile, portrait and landscape) from the scratchpad, not only Chrome. Safari fixes: Enter moves to the next line straight away (iPad Safari only keeps the keyboard up for focus moved during the key press), and the Pencil page turns off Safari's text selection and callout.
+  - Tested in WebKit as an iPad and in headless Chrome (every page; the book turning; typing and Enter on the lines; drawing on two pages; Save stopping at the locked upload; no sideways scroll; no errors). 28 tests pass. **Not tested live:** the star saving, the icon and name on the real iPad.
+
 ## Next
 1. **Try Pencil page mode on the iPad** (localhost or after deploying): write a recipe on the page, save it, check the recipe view, the book view and editing it again. Then commit and push.
 2. **Website R5** (Home Screen install, offline, print). Home Screen install matters more now that the website is the iPad's recipe book.
@@ -115,7 +125,7 @@ Run each migration only once. A second run stops with an error like "column auth
 - **Custom book cover** (Louis will provide later): replace the plain raspberry cover page in the book view (`PageFace` cover in `src/components/book/BookView.tsx`) with an uploaded image or design.
 - **Write key → your own passphrase** (queued 2026-10-28): rerun `npm run setup:supabase` and paste a passphrase of 4–5 random words instead of pressing Enter; then unlock each browser again. No code change. Bigger alternatives if ever wanted: a separate simple website password with the long key kept on the server (new code plus a rate limit), or login (below), which replaces the key.
 - Login (Supabase Auth, `owner_id`, owner-only RLS, `shared` flag for family). Replaces the write key.
-- Custom handwriting font; Next.js 16 upgrade; instant website refresh after saves.
+- Custom handwriting font (Louis making it; steps in PLAN.md "Your own handwriting font"); Next.js 16 upgrade; instant website refresh after saves.
 
 ## Documentation: match the Financial Planner project
 Louis wants this project's documentation to match the financial planner at

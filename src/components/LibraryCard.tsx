@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { isFavorite } from "@/lib/book";
 import type { Recipe } from "@/lib/types";
 import { PotIcon } from "./Icons";
 import SourceLine from "./SourceLine";
@@ -6,7 +7,7 @@ import Thumb from "./Thumb";
 
 // One row of the Library, like the Deglaze "My Recipes" cards.
 export default function LibraryCard({ recipe }: { recipe: Recipe }) {
-  const favorite = recipe.tags.includes("family-favorite");
+  const favorite = isFavorite(recipe);
   return (
     <Link
       href={`/recipe/${recipe.slug}`}
@@ -26,9 +27,9 @@ export default function LibraryCard({ recipe }: { recipe: Recipe }) {
         <p className="mt-1 font-hand text-xl leading-6 text-ink">
           {recipe.title}
           {favorite && (
-            <span className="ml-1 font-sans font-bold text-teal" title="Family favorite">
-              *
-            </span>
+            <svg viewBox="0 0 24 24" role="img" aria-label="Favorite" className="ml-1 inline size-5 align-[-0.15em]">
+              <path d="M12 3.2l2.6 5.5 6 .8-4.4 4.1 1.1 5.9L12 16.6l-5.3 2.9 1.1-5.9-4.4-4.1 6-.8z" fill="var(--tab-mustard)" />
+            </svg>
           )}
         </p>
         {recipe.author && <p className="mt-0.5 text-[13px] text-muted">by {recipe.author}</p>}

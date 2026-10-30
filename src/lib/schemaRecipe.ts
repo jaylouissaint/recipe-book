@@ -183,15 +183,9 @@ function category(o: Obj): string {
 
 const TAG_WORDS: [string, RegExp][] = [
   ["slow-cooker", /slow[- ]cooker|crock ?pot/],
-  ["pressure-cooker", /pressure cooker|instant pot/],
   ["air-fryer", /air[- ]fr(y|ie)er/],
   ["one-pot", /one[- ](pot|pan)|sheet pan/],
-  ["make-ahead", /make[- ]ahead/],
-  ["vegan", /\bvegan/],
-  ["veg", /vegetarian/],
-  ["gluten-free", /gluten[- ]free/],
-  ["dairy-free", /dairy[- ]free/],
-  ["nut-free", /nut[- ]free/],
+  ["veg", /vegetarian|\bvegan/],
 ];
 
 function tags(o: Obj): string[] {

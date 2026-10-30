@@ -27,7 +27,7 @@ export function ShelfTabs({ recipes }: { recipes: Recipe[] }) {
   );
 }
 
-// A horizontally scrolling row of small cards ("Family Favorites", "Recently added").
+// A horizontally scrolling row of small cards ("Favorites", "Recently added").
 export function RecipeStrip({ title, recipes }: { title: string; recipes: Recipe[] }) {
   if (recipes.length === 0) return null;
   return (

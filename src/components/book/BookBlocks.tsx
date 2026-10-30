@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CATEGORIES, TAGS, categoryBySlug } from "@/lib/book";
+import { CATEGORIES, TAGS, isFavorite, categoryBySlug } from "@/lib/book";
 import { type Block, splitColumns } from "@/lib/bookLayout";
 import { ingredientText } from "@/lib/format";
 import { publicFileUrl } from "@/lib/storage";
@@ -12,7 +12,7 @@ import { PlateSetting, RollingPin, WhiskAndSpoon } from "../Stickers";
 const LABEL = "font-label font-semibold uppercase tracking-[0.12em] text-label";
 
 function Header({ recipe }: { recipe: Recipe }) {
-  const favorite = recipe.tags.includes("family-favorite");
+  const favorite = isFavorite(recipe);
   const cells = [
     ["Servings", recipe.servings ?? ""],
     ["Prep time", recipe.prepMin != null ? `${recipe.prepMin} min` : ""],

@@ -52,7 +52,7 @@ test("a WordPress-style @graph with sections, entities and times", () => {
   assert.equal(r.prepMin, 15);
   assert.equal(r.cookMin, 45); // total minus prep
   assert.equal(r.category, "mains");
-  assert.deepEqual(r.tags, ["one-pot", "gluten-free"]);
+  assert.deepEqual(r.tags, ["one-pot"]); // "gluten free" is no longer a tag
   assert.deepEqual(r.ingredientGroups, [
     {
       name: "",

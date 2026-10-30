@@ -38,6 +38,9 @@ const zilla = Zilla_Slab({
 export const metadata: Metadata = {
   title: { default: "Ramiya’s Recipes", template: "%s · Ramiya’s Recipes" },
   description: "Our family recipes, written by hand.",
+  // The Home Screen name. Without it the iPad takes the page's title, which on a recipe page is
+  // "<recipe> · Ramiya’s Recipes".
+  appleWebApp: { title: "Ramiya’s Recipes" },
 };
 
 export const viewport: Viewport = {
