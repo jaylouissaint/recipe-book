@@ -30,14 +30,14 @@ export default function PickUp({ recipes }: { recipes: { slug: string; title: st
   const c = state?.cooking;
   const o = state?.opened;
   return (
-    <section aria-label="Pick up where you left off" className="flex flex-wrap items-center gap-4 rounded-[20px] bg-surface p-5 shadow-card">
+    <section aria-label="Pick up where you left off" className="flex items-center gap-3 rounded-[20px] bg-surface px-4 py-2.5 shadow-card md:gap-4 md:p-5">
       <div className="min-w-0 flex-1">
         {c ? (
           <>
             <p className="text-[12px] font-semibold tracking-widest text-muted uppercase">Continue cooking</p>
             <Link
               href={path(`/recipe/${c.slug}/cook?step=${c.page}${c.scale !== 1 ? `&scale=${c.scale}` : ""}`)}
-              className="mt-1 block truncate font-hand text-2xl text-ink hover:underline"
+              className="mt-0.5 block truncate font-hand text-xl text-ink hover:underline md:mt-1 md:text-2xl"
             >
               {c.title}
             </Link>
@@ -46,14 +46,16 @@ export default function PickUp({ recipes }: { recipes: { slug: string; title: st
         ) : o ? (
           <>
             <p className="text-[12px] font-semibold tracking-widest text-muted uppercase">Last opened</p>
-            <Link href={path(`/recipe/${o.slug}`)} className="mt-1 block truncate font-hand text-2xl text-ink hover:underline">
+            <Link href={path(`/recipe/${o.slug}`)} className="mt-0.5 block truncate font-hand text-xl text-ink hover:underline md:mt-1 md:text-2xl">
               {o.title}
             </Link>
           </>
         ) : (
           <>
-            <p className="text-[12px] font-semibold tracking-widest text-muted uppercase">Pick up where you left off</p>
-            <p className="mt-1 text-[15px] text-muted">{state ? "Recipes you open or cook show up here." : " "}</p>
+            {/* Phones: one slim line until there's something to pick up */}
+            <p className="text-[15px] text-muted md:hidden">Not sure what to cook?</p>
+            <p className="hidden text-[12px] font-semibold tracking-widest text-muted uppercase md:block">Pick up where you left off</p>
+            <p className="mt-1 hidden text-[15px] text-muted md:block">{state ? "Recipes you open or cook show up here." : " "}</p>
           </>
         )}
       </div>
@@ -61,7 +63,7 @@ export default function PickUp({ recipes }: { recipes: { slug: string; title: st
         <button
           type="button"
           onClick={surprise}
-          className="h-12 shrink-0 rounded-full border border-fg/30 px-5 text-[15px] font-semibold text-accent hover:bg-field"
+          className="h-10 shrink-0 rounded-full border border-fg/30 px-4 text-[14px] font-semibold text-accent hover:bg-field md:h-12 md:px-5 md:text-[15px]"
         >
           Surprise me
         </button>

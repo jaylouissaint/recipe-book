@@ -49,7 +49,7 @@ Run each migration only once. A second run stops with an error like "column auth
 - 001_redesign_fields_and_groceries: run 2026-10-28 (save-recipe redeployed as version 2 the same day).
 - 003_live_updates: written 2026-10-29 (adds three tables to Realtime); check it was run.
 - 004_books: run 2026-10-30, with `WRITE_KEY_JAY` set and save-recipe redeployed; both books in use.
-- 005_last_cooked: written 2026-10-30, **not run yet** (when each recipe was last cooked; nothing to redeploy).
+- 005_last_cooked: run 2026-10-30 (when each recipe was last cooked).
 - 002_meal_plan: run 2026-10-29, with save-recipe redeployed (gains `plan-add` and `plan-remove`). Checked: the table reads with the public key, and Home's week is in use.
 
 ## Decisions (don't reopen these)
@@ -159,14 +159,20 @@ Run each migration only once. A second run stops with an error like "column auth
   - **Copy to the other book** (`CopyToBook` in the recipe menu, server action `copyRecipe`): shown only when the other book is unlocked on this device, because the copy is saved with that book's key. The copy is its own recipe (new id; photo, handwritten page and original shared in storage), starting with no times cooked and no favorite star. `recipePayload` moved to `src/lib/payload.ts`.
   - Checked in WebKit: the Home section with live data, the copy item hidden while the other book is locked and shown once unlocked, and a copy without the real key refused. 35 tests pass. **Not tried live:** a real copy (needs both keys on one device).
 
+- **Home on iPhone (2026-10-30, built, not yet deployed):** Home went from 2.3 screens to about one on an iPhone 15 (742 px page for a 659 px screen; the last row tucks under the tab bar; an iPhone SE scrolls a little): "+ Groceries" instead of the big button, narrower day cards, short wide "Haven't made in a while" cards, a slim pick-up line, and one-row Groceries / To finish (`md:` classes keep iPad and desktop as they were). Also fixed: a recipe planned for today could show under "Haven't made in a while" in the evening (the server's day is UTC). Checked in WebKit (iPhone 15, iPhone SE, iPad Pro 11).
+
+- **Ramiya's handwriting font and the phone tab bar (2026-10-30, built, not yet deployed):**
+  - **Font:** `src/app/fonts/RamiyasHandwriting-Regular.ttf` (Louis made it; the `.otf` he added was the same file and was removed), loaded with `next/font/local` in `layout.tsx` and used for recipe content in **Ramiya's book only** (`.hand-ramiya` in `globals.css`, set by the book layout); Jay's book keeps Patrick Hand. The font has letters, digits and `& ! ? % # $ <`, but no `. , ( ) - / : '`, quotes, dashes or ▷, and its fractions are tiny, so it's limited to `U+0020-007E` and everything else falls back to Patrick Hand (no generated system-font stand-in: `adjustFontFallback: false`). Its lowercase is drawn small, thin and widely spaced, so it's shown at `size-adjust: 118%`, `letter-spacing: -0.03em`, with a light `-webkit-text-stroke`. **To update the font:** replace the `.ttf` with the same name; if the new version is drawn bigger or bolder, lower those three numbers.
+  - **Phone tab bar:** at least 12 px below the labels (`max(0.75rem, safe area)`), and `viewportFit: "cover"` so iPhones report the home indicator; the page keeps clear of the notch with side padding on `body`.
+
 ## Next
-1. **Run migration 005** (`supabase/migrations/005_last_cooked.sql`; nothing to redeploy), then commit and push. With both keys unlocked on one device, try "Copy to Jay's Recipes" from a recipe's menu.
+1. **Try a real copy:** with both books unlocked on one device, a recipe's menu → "Copy to Jay's Recipes".
 
 ## Docket (queued, not scheduled)
 - **Custom book cover** (optional): the cover is now the Home Screen icon's wooden spoon and whisk on ruled paper (`SpoonAndWhisk` in `Stickers.tsx`, used by the `PageFace` cover in `src/components/book/BookView.tsx`). Swap it for an uploaded image or design if Louis wants one later.
 - **Decided 2026-10-30:** no login: the two write keys stay (one per book). No print check (Louis isn't interested in printing; the print rules from R1 stay as they are).
 - **Write keys → your own passphrases** (queued 2026-10-28): rerun `npm run setup:supabase` (Ramiya's key) or `npm run setup:jay-key` (Jay's) and paste a passphrase of 4–5 random words instead of pressing Enter; then unlock that book again on each device. No code change. Bigger alternatives if ever wanted: a separate simple website password with the long key kept on the server (new code plus a rate limit), or login (below), which replaces the key.
-- Custom handwriting font (Louis making it; steps in PLAN.md "Your own handwriting font"); Next.js 16 upgrade.
+- Next.js 16 upgrade.
 
 ## Documentation: match the Financial Planner project
 Louis wants this project's documentation to match the financial planner at

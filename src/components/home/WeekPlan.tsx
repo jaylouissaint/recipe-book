@@ -88,8 +88,8 @@ export default function WeekPlan({ meals: initial, recipes }: { meals: Meal[] | 
 
   return (
     <section aria-labelledby="week">
-      <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
-        <h2 id="week" className="text-2xl font-medium">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h2 id="week" className="text-xl font-medium md:text-2xl">
           This week
         </h2>
         {sections.length > 0 && (
@@ -99,9 +99,12 @@ export default function WeekPlan({ meals: initial, recipes }: { meals: Meal[] | 
               setSheet((n) => n + 1);
               groceryDialog.current?.showModal();
             }}
-            className="rounded-full bg-accent px-5 py-2.5 text-[15px] font-semibold text-white"
+            aria-label="Add the week to Groceries"
+            className="shrink-0 rounded-full bg-accent px-3.5 py-1.5 text-[13px] font-semibold text-white md:px-5 md:py-2.5 md:text-[15px]"
           >
-            Add the week to Groceries
+            {/* Short on phones, where the heading and button share a narrow row */}
+            <span className="md:hidden">+ Groceries</span>
+            <span className="hidden md:inline">Add the week to Groceries</span>
           </button>
         )}
       </div>
@@ -114,7 +117,7 @@ export default function WeekPlan({ meals: initial, recipes }: { meals: Meal[] | 
         {days.map((day, i) => {
           const today = meals.filter((m) => m.day === day);
           return (
-            <li key={day} className="flex w-56 shrink-0 snap-start flex-col rounded-[20px] bg-surface p-4 shadow-card">
+            <li key={day} className="flex w-44 shrink-0 snap-start flex-col rounded-[20px] bg-surface p-3 shadow-card md:w-56 md:p-4">
               <h3 className={`text-[13px] font-semibold tracking-widest uppercase ${i === 0 ? "text-accent" : "text-muted"}`}>{dayLabel(day, i)}</h3>
               <ul className="mt-2 flex-1 space-y-2">
                 {today.map((m) => {

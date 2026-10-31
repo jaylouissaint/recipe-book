@@ -153,7 +153,7 @@ The same "write it" page with the keyboard, on any device.
 - **Custom book cover** (optional): the cover is the Home Screen icon's spoon and whisk; swap for an uploaded image or design if wanted.
 - **Write key → your own passphrase** (queued 2026-10-28): rerun `npm run setup:supabase` and paste a passphrase of 4–5 random words instead of pressing Enter; then unlock each browser again. No code change. Bigger alternatives if ever wanted: a separate simple website password with the long key kept on the server (new code plus a rate limit), or login (below), which replaces the key.
 - **Login** (deferred 2026-10-20): Supabase Auth, `owner_id` on recipes, owner-only RLS, optional `shared` flag for family. Replaces the write key.
-- Custom handwriting font (Louis making it; see "Your own handwriting font" below)
+- ~~Custom handwriting font~~: added 2026-10-30 (Ramiya's book)
 - Upgrade to Next.js 16 (clears two low-risk `postcss` advisories bundled in Next 15)
 - ~~Instant website refresh after saves~~: built 2026-10-29 as live updates (migration 003)
 
@@ -177,7 +177,7 @@ The same "write it" page with the keyboard, on any device.
 - Milestone 7: install to the Home Screen, open a recipe, turn on airplane mode, and check it still opens; check cook mode keeps the screen on
 - RLS: the anon key can read but not insert, update or delete. (Once login is built: a second test account can't see the first account's recipes)
 
-## Your own handwriting font (optional, about 1–2 hours)
+## Your own handwriting font (optional, about 1–2 hours) ✅ added 2026-10-30 for Ramiya's book (see HANDOFF.md)
 Not hard, and it fits well here: the site would show recipes in the same handwriting as the book.
 
 **How**

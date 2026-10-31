@@ -28,7 +28,7 @@ Status: agreed 2026-10-27 and built on the website (R1–R4). A native iPad app 
 
 The book-page tokens (ruled lines `#DDD8DC`, label gray `#8C8C8C`, mauve `#9A8597`, tab colors, raspberry `#A3174B`) stay for the writing page, the handwritten-page view and the Home shelf tabs.
 
-**Fonts** (all free Google Fonts):
+**Fonts** (Google Fonts, plus Ramiya's own handwriting for recipe content in her book since 2026-10-30, with Patrick Hand for characters it lacks; Jay's book uses Patrick Hand):
 - Page titles ("My Recipes", "Groceries"): **Instrument Serif**, close to the video's high-contrast serif.
 - UI text, buttons, labels: **Figtree**.
 - Recipe content: **Patrick Hand** in plum (until the custom handwriting font exists).
@@ -48,6 +48,7 @@ The book-page tokens (ruled lines `#DDD8DC`, label gray `#8C8C8C`, mauve `#9A859
 - **This week:** today and the next 6 days as a strip of day cards. Each day holds recipes (with how many they should serve) or a plain note ("leftovers"); "+ Add" picks a recipe (search, servings − +) or writes a note, × removes. **Add the week to Groceries** opens the grocery sheet with every planned recipe at its planned servings, one section each, all ticked. Stored in the database (`meal_plan`), so every device sees the same week.
 - **Groceries at a glance:** how many items are left to buy, the first few, and "Open the list".
 - **Haven't made in a while:** favorites and recipes cooked before that haven't been made in 3 weeks (and aren't planned), longest ago first, as small cards with "last made 5 weeks ago" or "not made yet".
+- **On phones** (2026-10-30), Home fits about one screen: the week's button is a small "+ Groceries"; day cards are narrower; "Haven't made in a while" cards are short and wide (photo beside the title); the pick-up card is one slim line ("Not sure what to cook?") until there's something to pick up; Groceries and To finish are one tappable row each ("28 items left to buy ›") instead of cards.
 - **To finish:** recipes written only on the Pencil page, with "Type the lines" (they can't be scaled, added to Groceries or cooked with Start Cooking until they have typed lines).
 
 **Book view (`/book`, the List | Book toggle on the Library, moved from Home 2026-10-29).** The whole recipe book to flip through like the spiral book:

@@ -110,7 +110,7 @@ export default function AppNav() {
 
       {/* Phones: bottom tab bar */}
       <div
-        className={`fixed inset-x-0 bottom-0 z-20 border-t border-divider bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden ${
+        className={`fixed inset-x-0 bottom-0 z-20 border-t border-divider bg-surface/95 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur md:hidden ${
           onRecipe ? "hidden" : ""
         }`}
       >
@@ -123,7 +123,7 @@ export default function AppNav() {
                   href={link(item.href)}
                   onClick={tap(item.href)}
                   aria-current={active ? "page" : undefined}
-                  className={`flex flex-col items-center gap-0.5 px-4 pt-2 pb-1.5 text-[11px] ${
+                  className={`flex flex-col items-center gap-0.5 px-4 pt-2.5 pb-1 text-[11px] ${
                     active ? "font-semibold text-accent" : "text-muted"
                   }`}
                 >

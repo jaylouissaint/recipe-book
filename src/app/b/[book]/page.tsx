@@ -27,14 +27,15 @@ export default async function Home({ params }: { params: Promise<{ book: string 
   const [recipes, meals, groceries] = await Promise.all([listRecipes(book), listMeals(book), listGroceries(book)]);
   const toBuy = groceries.filter((g) => !g.checked);
   const toFinish = recipes.filter(handwrittenOnly);
-  // Recipes already planned from today on aren't suggested again.
-  const today = new Date().toISOString().slice(0, 10);
+  // Recipes already planned from today on aren't suggested again. "Today" is the cook's own day,
+  // which can be a day behind the server's (UTC) in the evening, so the plan from yesterday on counts.
+  const today = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
   const planned = new Set((meals ?? []).filter((m) => m.day >= today && m.recipeId).map((m) => m.recipeId!));
   const lately = notMadeLately(recipes, planned);
 
   return (
-    <main className="mx-auto max-w-5xl space-y-8 px-4 py-8 md:px-8 md:py-12">
-      <h1 className="font-serif text-[2.6rem] leading-none md:text-5xl">{BOOKS[book].name}</h1>
+    <main className="mx-auto max-w-5xl space-y-4 px-4 pt-4 pb-6 md:space-y-8 md:px-8 md:py-12">
+      <h1 className="font-serif text-[2rem] leading-none md:text-5xl">{BOOKS[book].name}</h1>
 
       <PickUp recipes={recipes.map((r) => ({ slug: r.slug, title: r.title }))} />
 
@@ -42,16 +43,22 @@ export default async function Home({ params }: { params: Promise<{ book: string 
 
       {lately.length > 0 && (
         <section aria-labelledby="lately">
-          <h2 id="lately" className="mb-3 text-2xl font-medium">
+          <h2 id="lately" className="mb-3 text-xl font-medium md:text-2xl">
             Haven’t made in a while
           </h2>
           <ul className="-mx-4 flex snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-3 md:-mx-8 md:scroll-px-8 md:px-8">
             {lately.map(({ recipe, label }) => (
-              <li key={recipe.id} className="w-40 shrink-0 snap-start">
-                <Link href={bookPath(book, `/recipe/${recipe.slug}`)} className="block rounded-[20px] bg-surface p-2 shadow-card">
-                  <Thumb recipe={recipe} className="aspect-square w-full" />
-                  <p className="mt-2 line-clamp-2 px-1 font-hand text-lg leading-6 text-ink">{recipe.title}</p>
-                  <p className="px-1 pb-1 text-[12px] text-muted">{label}</p>
+              <li key={recipe.id} className="w-56 shrink-0 snap-start md:w-40">
+                {/* Phones: short and wide (photo beside the title); iPad up: a photo card */}
+                <Link
+                  href={bookPath(book, `/recipe/${recipe.slug}`)}
+                  className="flex items-center gap-3 rounded-[20px] bg-surface p-2 pr-3 shadow-card md:block md:pr-2"
+                >
+                  <Thumb recipe={recipe} className="size-14 shrink-0 md:aspect-square md:size-auto md:w-full" />
+                  <div className="min-w-0">
+                    <p className="truncate font-hand text-lg leading-6 text-ink md:mt-2 md:line-clamp-2 md:px-1 md:whitespace-normal">{recipe.title}</p>
+                    <p className="truncate text-[12px] text-muted md:px-1 md:pb-1">{label}</p>
+                  </div>
                 </Link>
               </li>
             ))}
@@ -59,7 +66,30 @@ export default async function Home({ params }: { params: Promise<{ book: string 
         </section>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2">
+      {/* Phones: one row each, so Home fits about one screen; the full cards from iPad up. */}
+      <div className="space-y-2 md:hidden">
+        <Link href={bookPath(book, "/groceries")} className="flex items-center gap-3 rounded-[20px] bg-surface px-4 py-3.5 shadow-card">
+          <span className="text-[16px] font-medium">Groceries</span>
+          <span className="min-w-0 flex-1 truncate text-right text-[14px] text-muted">
+            {toBuy.length === 0 ? "nothing to buy" : `${toBuy.length} item${toBuy.length === 1 ? "" : "s"} left to buy`}
+          </span>
+          <span aria-hidden className="text-muted">›</span>
+        </Link>
+        {toFinish.length > 0 && (
+          <Link
+            href={bookPath(book, toFinish.length === 1 ? `/recipe/${toFinish[0].slug}/edit?lines=1` : "/library")}
+            className="flex items-center gap-3 rounded-[20px] bg-surface px-4 py-3.5 shadow-card"
+          >
+            <span className="text-[16px] font-medium">To finish</span>
+            <span className="min-w-0 flex-1 truncate text-right font-hand text-lg text-ink">
+              {toFinish.length === 1 ? toFinish[0].title : `${toFinish.length} written by hand`}
+            </span>
+            <span aria-hidden className="text-muted">›</span>
+          </Link>
+        )}
+      </div>
+
+      <div className="hidden gap-4 md:grid md:grid-cols-2">
         <section aria-labelledby="glance" className="rounded-[20px] bg-surface p-5 shadow-card">
           <div className="flex items-baseline justify-between gap-3">
             <h2 id="glance" className="text-2xl font-medium">

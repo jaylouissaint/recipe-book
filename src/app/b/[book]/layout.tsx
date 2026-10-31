@@ -37,10 +37,11 @@ export default async function BookLayout({ children, params }: Props & { childre
   if (!isBook(book)) notFound();
   return (
     <BookProvider book={book}>
-      <div className="navside:md:flex">
+      {/* Each book's handwriting: Ramiya's own in her book (globals.css), Patrick Hand in Jay's */}
+      <div className={`navside:md:flex ${book === "ramiya" ? "hand-ramiya" : ""}`}>
         <AppNav />
         {/* Room for the bottom tab bar on phones, and for the top capsule from iPad up */}
-        <div className="min-w-0 flex-1 pb-24 md:pt-14 md:pb-0 navside:md:pt-0">{children}</div>
+        <div className="min-w-0 flex-1 pb-28 md:pt-14 md:pb-0 navside:md:pt-0">{children}</div>
       </div>
     </BookProvider>
   );

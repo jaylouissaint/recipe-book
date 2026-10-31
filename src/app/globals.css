@@ -66,6 +66,12 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans);
+  /* Handwriting: Patrick Hand, unless a book has its own (.hand-ramiya below) */
+  --font-hand-family: var(--font-patrick);
+  /* The page runs to the screen's edges (viewport-fit=cover): keep text clear of an iPhone's
+     rounded corners and notch in landscape. */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 /* Small letter-spaced caps printed on the book page (INGREDIENTS / DIRECTIONS) */
@@ -111,4 +117,15 @@ body {
   .no-print {
     display: none !important;
   }
+}
+
+/* Ramiya's book is in her own handwriting; characters it doesn't have come from Patrick Hand. */
+.hand-ramiya {
+  --font-hand-family: var(--font-ramiya), var(--font-patrick);
+}
+/* The font's lowercase is drawn small, thin and widely spaced, so it's set a little closer and
+   with a slightly heavier line to read like the book. (Its size is raised in layout.tsx.) */
+.hand-ramiya .font-hand {
+  letter-spacing: -0.03em;
+  -webkit-text-stroke: 0.035em currentColor;
 }

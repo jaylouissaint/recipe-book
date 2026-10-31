@@ -108,7 +108,8 @@ FUNCTIONAL = [
     ("table", [2592, 6624], [
         ["Metric", "Definition / rule"],
         ["Recipe content", "Anything the cook wrote (title, amounts, ingredients, steps, notes, stat values). "
-         "Shown in the handwriting font (Patrick Hand, until the owner's own font) in plum ink."],
+         "Shown in plum ink in the handwriting font: Ramiya's own handwriting in her book (Patrick Hand for "
+         "punctuation and fractions it lacks), Patrick Hand in Jay's."],
         ["Printed labels", "Anything printed on the book's page (INGREDIENTS, DIRECTIONS, stat box headers, tag "
          "names, “recipe:”), in small gray capitals or the gray serif for “recipe:”."],
         ["Ingredient group", "A named set of ingredients such as “marinade”. A group with no name holds loose items."],
@@ -428,8 +429,10 @@ FUNCTIONAL = [
           "(FR-HOME-007, migration 005) and copying a recipe to the other book (FR-BOOKS-002) built. Owner "
           "decisions: no sign-in (the two write keys stay, so FR-AUTH-001/002 are dropped), and printing is not "
           "being pursued."),
-    ("p", "Queued (not scheduled): the owner's own handwriting font; the write keys as passphrases; Next.js 16; "
-          "optionally a custom book cover."),
+    ("p", "Change log, 2026-10-30 (later): Ramiya's own handwriting font for recipe content in her book (Patrick "
+          "Hand for missing characters and in Jay's book); Home compacted for iPhones; more room under the phone "
+          "tab bar."),
+    ("p", "Queued (not scheduled): the write keys as passphrases; Next.js 16; optionally a custom book cover."),
 
     ("h1", "Appendix A. Worked examples"),
     ("table", [2304, 6912], [
